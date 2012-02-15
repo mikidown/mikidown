@@ -8,6 +8,33 @@ from mikidown.config import *
 
 __version__ = "0.0.1"
 
+class MikiMenu(QMenuBar):
+	def __init__(self, parent=None):
+		super(MikiMenu, self).__init__(parent)
+		self.menuFile = self.addMenu(self.tr('File'))
+		self.menuEdit = self.addMenu('Edit')
+		self.menuHelp = self.addMenu('Help')
+		#self.menuFile.addAction(self.actionNew)
+		#self.menuFile.addAction(self.actionOpen)
+		self.menuExport = self.menuFile.addMenu('Export')
+
+class RecentChanged(QListWidget):
+	def __init__(self, parent=None):
+		super(RecentChanged, self).__init__(parent)
+
+class RecentViewed(QDialogButtonBox):
+	def __init__(self, parent=None):
+		super(RecentViewed, self).__init__(Qt.Horizontal, parent)
+		sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+		sizePolicy.setVerticalPolicy(QSizePolicy.Fixed)
+		self.setSizePolicy(sizePolicy)
+
+		self.addButton('old', QDialogButtonBox.ActionRole)
+		self.addButton('new', QDialogButtonBox.ActionRole)
+	
+	def sizeHint(self):
+		return QSize(400, 8)
+
 class MikiTree(QTreeWidget):
 	def __init__(self, parent=None):
 		super(MikiTree, self).__init__(parent)
@@ -37,18 +64,46 @@ class ItemDialog(QDialog):
 		self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(
 				self.editor.text()!="")
 
-class MikiDialog(QDialog):
-	#def __init__(self, parent=None, notebookDir):
-	def __init__(self, parent=None):
-		super(MikiDialog, self).__init__(parent)
-		#self.notebookDir = notebookDir
-		self.notesTree = MikiTree()
+class MikiWindow(QMainWindow):
+	def __init__(self, notebookDir=None, parent=None):
+		super(MikiWindow, self).__init__(parent)
+		self.resize(800,600)
+		screen = QDesktopWidget().screenGeometry()
+		size = self.geometry()
+		self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
+		self.menubar = MikiMenu()
+		self.setMenuBar(self.menubar)
+
+		self.tabWidget = QTabWidget()
+		self.viewedList = RecentViewed()
 		self.notesEdit = QTextEdit()
-		layout = QHBoxLayout()
-		layout.addWidget(self.notesTree)
-		layout.addWidget(self.notesEdit)
-		self.setLayout(layout)
+		self.noteSplitter = QSplitter(Qt.Horizontal)
+		self.noteSplitter.addWidget(self.notesEdit)
+		self.rightSplitter = QSplitter(Qt.Vertical)
+		self.rightSplitter.addWidget(self.viewedList)
+		self.rightSplitter.addWidget(self.noteSplitter)
+		self.mainSplitter = QSplitter(Qt.Horizontal)
+		self.mainSplitter.addWidget(self.tabWidget)
+		self.mainSplitter.addWidget(self.rightSplitter)
+		self.setCentralWidget(self.mainSplitter)
 		
+		self.mainSplitter.setStretchFactor(0, 1)
+		self.mainSplitter.setStretchFactor(1, 5)
+		sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+		sizePolicy.setVerticalPolicy(QSizePolicy.Fixed)
+		self.viewedList.setSizePolicy(sizePolicy)
+
+		self.notesTree = MikiTree()
+		self.changedList = RecentChanged()
+		self.tabWidget.addTab(self.notesTree, 'Index')
+		self.tabWidget.addTab(self.changedList, 'Recently Changed')
+		print(self.mainSplitter.sizes())
+		print(self.rightSplitter.sizes())
+		#self.rightSplitter.setSizes([600,20,600,580])
+		self.rightSplitter.setStretchFactor(0, 0)
+
+		
+		self.previewBox = QTextEdit()
 		self.connect(self.notesTree, SIGNAL('customContextMenuRequested(QPoint)'),
 				     self.treeMenu)
 		self.connect(self.notesTree, SIGNAL('itemClicked(QTreeWidgetItem *,int)'),
@@ -56,9 +111,24 @@ class MikiDialog(QDialog):
 		self.connect(self.notesTree, 
 					 SIGNAL('currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)'),
 					 self.saveNote)
-											
-	#def done(self):
-	#	self.saveNote()
+
+		QDir.setCurrent(notebookDir)
+		self.mikiDir = QDir(notebookDir)
+		self.mikiDir = QDir.current()
+		self.initTree()	
+	def initTree(self):
+		#QStringList filters("*.markdown")
+		#self.nameFilters = self.mikiDir.setNameFilters(["*.markdown"])
+		#self.sorting = self.mikiDir.setSorting(QDir.Name)
+		#self.mikiDir.entryList(self.nameFilters, self.sorting)
+		self.notesList = self.mikiDir.entryList(["*.markdown"],
+							   QDir.NoFilter,
+							   QDir.Name)
+
+		for note in self.notesList:
+			fi = QFileInfo(note)
+			QTreeWidgetItem(self.notesTree, [fi.baseName()])
+		#QTreeWidgetItem(self.dialog.notesTree, self.notesList)
 	def saveNote(self, current, previous):
 		#self.filename = self.notebookDir + previous.text(0) + '.markdown'
 		if previous is None:
@@ -151,34 +221,7 @@ class MikiDialog(QDialog):
 	def hello(self):
 		self.notesEdit.append("Hello")
 
-class MikiWindow(QMainWindow):
-	def __init__(self, notebookDir=None, parent=None):
-		super(MikiWindow, self).__init__(parent)
-		self.resize(800,600)
-		screen = QDesktopWidget().screenGeometry()
-		size = self.geometry()
-		self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
-		
-		self.dialog = MikiDialog()
-		self.setCentralWidget(self.dialog)
 
-		QDir.setCurrent(notebookDir)
-		#self.mikiDir = QDir(notebookDir)
-		self.mikiDir = QDir.current()
-		self.initTree()	
-	def initTree(self):
-		#QStringList filters("*.markdown")
-		#self.nameFilters = self.mikiDir.setNameFilters(["*.markdown"])
-		#self.sorting = self.mikiDir.setSorting(QDir.Name)
-		#self.mikiDir.entryList(self.nameFilters, self.sorting)
-		self.notesList = self.mikiDir.entryList(["*.markdown"],
-							   QDir.NoFilter,
-							   QDir.Name)
-
-		for note in self.notesList:
-			fi = QFileInfo(note)
-			QTreeWidgetItem(self.dialog.notesTree, [fi.baseName()])
-		#QTreeWidgetItem(self.dialog.notesTree, self.notesList)
 def main():
 	app = QApplication(sys.argv)
 	XDG_CONFIG_HOME = os.environ['XDG_CONFIG_HOME']
