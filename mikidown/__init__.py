@@ -111,28 +111,48 @@ class MikiWindow(QMainWindow):
 		self.connect(self.notesTree, 
 					 SIGNAL('currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)'),
 					 self.saveNote)
+		self.connect(self.notesEdit,
+					 SIGNAL('textChanged()'),
+					 self.noteEditted)
 
 		QDir.setCurrent(notebookDir)
 		self.mikiDir = QDir(notebookDir)
 		self.mikiDir = QDir.current()
-		self.initTree()	
-	def initTree(self):
-		#QStringList filters("*.markdown")
-		#self.nameFilters = self.mikiDir.setNameFilters(["*.markdown"])
-		#self.sorting = self.mikiDir.setSorting(QDir.Name)
-		#self.mikiDir.entryList(self.nameFilters, self.sorting)
-		self.notesList = self.mikiDir.entryList(["*.markdown"],
+		#self.initTree(self.mikiDir, self.notesTree)	
+		self.initTree(notebookDir, self.notesTree)
+	def initTree(self, notePath, parent):
+		#self.notesList = self.mikiDir.entryList(["*.markdown"],
+		#if noteDir is None:
+		#	return
+		if not QDir(notePath).exists():
+			return
+		noteDir = QDir(notePath)
+		#noteDir.setCurrent(notePath)
+		self.notesList = noteDir.entryList(["*.markdown"],
 							   QDir.NoFilter,
 							   QDir.Name)
 
 		for note in self.notesList:
 			fi = QFileInfo(note)
-			QTreeWidgetItem(self.notesTree, [fi.baseName()])
-		#QTreeWidgetItem(self.dialog.notesTree, self.notesList)
+			item = QTreeWidgetItem(parent, [fi.baseName()])
+			#item = QTreeWidgetItem(self.notesTree, [fi.baseName()])
+			#path = noteDir.currentPath() + '/' + fi.baseName()
+			path = self.tr(notePath + '/' + fi.baseName())
+			print(path)
+			#aDir = QDir(path)
+			#aDir.setCurrent(path)
+			#print(aDir.currentPath())
+			self.initTree(path, item)
+			#self.initIterator(
+	#def initIterator(self, path, parent):
+		
 	def saveNote(self, current, previous):
 		#self.filename = self.notebookDir + previous.text(0) + '.markdown'
 		if previous is None:
 			return
+		if self.editted == 0:
+			return
+		self.editted = 1
 		self.filename = previous.text(0)+".markdown"
 		fh = QFile(self.filename)
 		try:
@@ -148,6 +168,8 @@ class MikiWindow(QMainWindow):
 				fh.close()
 				#QTextStream(fh).writeAll()
 				#fh.writeData(self.notesEdit)
+	def noteEditted(self):
+		self.editted = 1
 	def treeMenu(self):
 		menu = QMenu()
 		#for text in ("a", "b", "c"):
@@ -164,7 +186,7 @@ class MikiWindow(QMainWindow):
 		dialog = ItemDialog(self)
 		if dialog.exec_():
 			self.filename = dialog.editor.text()
-			QDir.current().mkdir(self.filename)
+			#QDir.current().mkdir(self.filename)
 			fh = QFile(self.filename+'.markdown')
 			try:
 				if not fh.open(QIODevice.WriteOnly):
@@ -177,14 +199,27 @@ class MikiWindow(QMainWindow):
 					fh.close()
 			QTreeWidgetItem(self.notesTree, [self.filename])
 			self.notesTree.sortItems(0, Qt.AscendingOrder)
+		self.editted = 0
 	#def newSubpage(self, selectedPage=None, col=None):
 	def newSubpage(self):
-		#itemClicked
-		#QTreeWidgetItem(selectedPage, ["Subpage"])
-		QTreeWidgetItem(self.notesTree.currentItem(), ["Subpage"])
-		self.notesTree.expandItem(self.notesTree.currentItem())
 		dialog = ItemDialog(self)
-		dialog.exec_()
+		if dialog.exec_():
+			#self.filename = QDir.currentPath()+'/'+self.notesTree.currentItem().text(0)+'/'+dialog.editor.text()
+			self.filename = dialog.editor.text()
+			self.path = self.notesTree.currentItem().text(0) + '/'
+			item = self.notesTree.currentItem().parent()
+			while item is not None:
+				self.path = item.text(0) + '/' + self.path
+				item = item.parent()
+			#self.filename = self.notesTree.currentItem().text(0) + '/'+dialog.editor.text()
+			QDir.current().mkdir(self.path)
+			print(self.path + self.filename)
+			fh = QFile(self.path+self.filename+'.markdown')
+			fh.open(QIODevice.WriteOnly)
+			fh.close()
+			QTreeWidgetItem(self.notesTree.currentItem(), [dialog.editor.text()])
+			self.notesTree.expandItem(self.notesTree.currentItem())
+		self.editted = 0
 	def delPage(self):
 		#self.notesTree.removeItemWidget(self.notesTree.currentItem(),0)
 		#QTreeWidget.removeItemWidget(self.notesTree,
@@ -200,6 +235,13 @@ class MikiWindow(QMainWindow):
 	def uncollapseAll(self):
 		None
 	def showNote(self, note):
+		self.path = self.notesTree.currentItem().text(0) + '/'
+		item = self.notesTree.currentItem().parent()		
+		while item is not None:
+			self.path = item.text(0) + '/' + self.path
+			item = item.parent()
+		self.notesEdit.setText(self.path)
+
 		self.filename = note.text(0)+".markdown"
 		#self.notesEdit.clear()
 		#self.notesEdit.setText(note.text(0))
@@ -216,8 +258,9 @@ class MikiWindow(QMainWindow):
 				#noteBody = fh.readLink(self.filename)
 				fh.close()
 		#body = PyQt4.QtCore.QString(noteBody)
-		self.notesEdit.setPlainText(noteBody)
-		#self.notesEdit.insertPlainText(noteBody)
+		#self.notesEdit.setPlainText(noteBody)
+		self.notesEdit.insertPlainText(noteBody)
+		self.editted = 0
 	def hello(self):
 		self.notesEdit.append("Hello")
 
