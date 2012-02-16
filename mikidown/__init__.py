@@ -40,6 +40,9 @@ class MikiTree(QTreeWidget):
 		super(MikiTree, self).__init__(parent)
 		self.header().close()
 		self.setContextMenuPolicy(Qt.CustomContextMenu)
+	def mousePressEvent(self, event):
+		self.clearSelection()
+		super(MikiTree, self).mousePressEvent(event)
 
 class ItemDialog(QDialog):
 	def __init__(self, parent=None):
@@ -119,6 +122,7 @@ class MikiWindow(QMainWindow):
 		self.mikiDir = QDir(notebookDir)
 		self.mikiDir = QDir.current()
 		#self.initTree(self.mikiDir, self.notesTree)	
+		self.editted = 0
 		self.initTree(notebookDir, self.notesTree)
 	def initTree(self, notePath, parent):
 		#self.notesList = self.mikiDir.entryList(["*.markdown"],
@@ -145,7 +149,13 @@ class MikiWindow(QMainWindow):
 			self.initTree(path, item)
 			#self.initIterator(
 	#def initIterator(self, path, parent):
-		
+	def getPath(self, item):
+		item = item.parent()
+		path = ''
+		while item is not None:
+			path = item.text(0) + '/' + path
+			item = item.parent()
+		return path
 	def saveNote(self, current, previous):
 		#self.filename = self.notebookDir + previous.text(0) + '.markdown'
 		if previous is None:
@@ -154,7 +164,9 @@ class MikiWindow(QMainWindow):
 			return
 		self.editted = 1
 		self.filename = previous.text(0)+".markdown"
-		fh = QFile(self.filename)
+		self.path = self.getPath(previous)
+		print(self.path)
+		fh = QFile(self.path + self.filename)
 		try:
 			if not fh.open(QIODevice.WriteOnly):
 				raise IOError(fh.errorString())
@@ -176,7 +188,9 @@ class MikiWindow(QMainWindow):
 		#	action = menu.addAction(text)
 		menu.addAction("New Page", self.newPage)
 		menu.addAction("New Subpage", self.newSubpage)
-		menu.addAction("Delete Page", self.delPage)
+		self.delCallback = lambda item=self.notesTree.currentItem(): self.delPage(item)
+		menu.addAction("Delete Page", self.delCallback)
+		#menu.addAction("Delete Page", self.delPage(self.notesTree.currentItem()))
 		menu.addAction("Collapse All", self.collapseAll)
 		menu.addAction("Uncollapse All", self.uncollapseAll)
 		menu.addAction("a", self.hello)
@@ -218,34 +232,72 @@ class MikiWindow(QMainWindow):
 			fh.open(QIODevice.WriteOnly)
 			fh.close()
 			QTreeWidgetItem(self.notesTree.currentItem(), [dialog.editor.text()])
+			self.notesTree.sortItems(0, Qt.AscendingOrder)
 			self.notesTree.expandItem(self.notesTree.currentItem())
+			
 		self.editted = 0
-	def delPage(self):
+	def delPage(self, item):
 		#self.notesTree.removeItemWidget(self.notesTree.currentItem(),0)
 		#QTreeWidget.removeItemWidget(self.notesTree,
 		#		self.notesTree.currentItem(),0)
 		#self.notesTree.currentItem.delete()
-		self.dirname = self.notesTree.currentItem().text(0)
-		QDir.current().rmdir(self.dirname)
-		QDir.current().remove(self.dirname+".markdown")
-		index = self.notesTree.indexOfTopLevelItem(self.notesTree.currentItem())
-		self.notesTree.takeTopLevelItem(index)
+		#path = self.getPath(item)
+		childNum = item.childCount()
+		#if childNum == 0:
+		#	return
+		#	path = self.getPath(item)
+		#	QDir.current().remove(path + item.text(0) + '.markdown')
+		#	parent = item.parent()
+		#	if parent is not None:
+		#		index = parent.indexOfChild(item)
+		#		parent.takeChild(index)
+		#	else:
+		#		index = self.notesTree.indexOfTopLevelItem(item)
+		#		self.notesTree.takeTopLevelItem(index)	
+		if childNum > 0:
+			for index in range(0, childNum):
+				self.dirname = item.child(index).text(0)
+				#path = self.getPath(item.child(index))
+				self.delPage(item.child(index))
+				#print(path + self.dirname)
+				#QDir.current().rmdir(path + self.dirname)
+
+		path = self.getPath(item)
+		QDir.current().remove(path + item.text(0) + '.markdown')
+		parent = item.parent()
+		if parent is not None:
+			index = parent.indexOfChild(item)
+			parent.takeChild(index)
+			if parent.childCount() == 0:
+				QDir.current().rmdir(path)
+		else:
+			index = self.notesTree.indexOfTopLevelItem(item)
+			self.notesTree.takeTopLevelItem(index)	
+		print(path+item.text(0))
+		QDir.current().rmdir(path + item.text(0))
+		#print(item.text(0))
+		#self.dirname = self.notesTree.currentItem().text(0)
+		#QDir.current().rmdir(self.dirname)
+		#QDir.current().remove(self.dirname+".markdown")
+		#index = self.notesTree.indexOfTopLevelItem(self.notesTree.currentItem())
+		#self.notesTree.takeTopLevelItem(index)
 	def collapseAll(self):
-		None
+		self.notesTree.collapseAll()
 	def uncollapseAll(self):
-		None
+		self.notesTree.expandAll()
 	def showNote(self, note):
-		self.path = self.notesTree.currentItem().text(0) + '/'
-		item = self.notesTree.currentItem().parent()		
-		while item is not None:
-			self.path = item.text(0) + '/' + self.path
-			item = item.parent()
+		#self.path = self.notesTree.currentItem().text(0) + '/'
+		#item = self.notesTree.currentItem().parent()		
+		#while item is not None:
+		#	self.path = item.text(0) + '/' + self.path
+		#	item = item.parent()
+		self.path = self.getPath(self.notesTree.currentItem())
 		self.notesEdit.setText(self.path)
 
 		self.filename = note.text(0)+".markdown"
 		#self.notesEdit.clear()
 		#self.notesEdit.setText(note.text(0))
-		fh = QFile(self.filename)
+		fh = QFile(self.path + self.filename)
 		try:
 			if not fh.open(QIODevice.ReadWrite):
 				raise IOError(fh.errorString())
