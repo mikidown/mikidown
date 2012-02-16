@@ -187,51 +187,64 @@ class MikiWindow(QMainWindow):
 		#for text in ("a", "b", "c"):
 		#	action = menu.addAction(text)
 		menu.addAction("New Page", self.newPage)
-		menu.addAction("New Subpage", self.newSubpage)
+		self.subpageCallback = lambda item=self.notesTree.currentItem(): self.newSubpage(item)
+		menu.addAction("New Subpage", self.subpageCallback)
 		self.delCallback = lambda item=self.notesTree.currentItem(): self.delPage(item)
 		menu.addAction("Delete Page", self.delCallback)
-		#menu.addAction("Delete Page", self.delPage(self.notesTree.currentItem()))
 		menu.addAction("Collapse All", self.collapseAll)
 		menu.addAction("Uncollapse All", self.uncollapseAll)
 		menu.addAction("a", self.hello)
 		menu.exec_(QCursor.pos())
 	
 	def newPage(self):
-		dialog = ItemDialog(self)
-		if dialog.exec_():
-			self.filename = dialog.editor.text()
+		#dialog = ItemDialog(self)
+		#if dialog.exec_():
+		#	self.filename = dialog.editor.text()
 			#QDir.current().mkdir(self.filename)
-			fh = QFile(self.filename+'.markdown')
-			try:
-				if not fh.open(QIODevice.WriteOnly):
-					raise IOError(fh.errorString())
-			except IOError as e:
-				QMessageBox.warning(self, "Create Error",
-						"Failed to create %s: %s" % (self.filename, e))
-			finally:
-				if fh is not None:
-					fh.close()
-			QTreeWidgetItem(self.notesTree, [self.filename])
-			self.notesTree.sortItems(0, Qt.AscendingOrder)
-		self.editted = 0
+		#	fh = QFile(self.filename+'.markdown')
+		#	try:
+		#		if not fh.open(QIODevice.WriteOnly):
+		#			raise IOError(fh.errorString())
+		#	except IOError as e:
+		#		QMessageBox.warning(self, "Create Error",
+		#				"Failed to create %s: %s" % (self.filename, e))
+		#	finally:
+		#		if fh is not None:
+		#			fh.close()
+		#	QTreeWidgetItem(self.notesTree, [self.filename])
+		#	self.notesTree.sortItems(0, Qt.AscendingOrder)
+		#self.editted = 0
+
+		parent = self.notesTree.currentItem().parent()
+		if parent is not None:
+			self.newSubpage(parent)
+		else:
+			self.newSubpage(self.notesTree)
 	#def newSubpage(self, selectedPage=None, col=None):
-	def newSubpage(self):
+	def newSubpage(self, item):
 		dialog = ItemDialog(self)
 		if dialog.exec_():
-			#self.filename = QDir.currentPath()+'/'+self.notesTree.currentItem().text(0)+'/'+dialog.editor.text()
 			self.filename = dialog.editor.text()
-			self.path = self.notesTree.currentItem().text(0) + '/'
-			item = self.notesTree.currentItem().parent()
-			while item is not None:
-				self.path = item.text(0) + '/' + self.path
-				item = item.parent()
+			if hasattr(item, 'text'):
+				self.path = self.getPath(item)
+				#if item.text(0) is not None:
+				self.path = self.path + item.text(0) + '/'
+			else:
+				self.path = ''
+			#self.notesTree.currentItem().text(0) + '/'
+			#item = self.notesTree.currentItem().parent()
+			#while item is not None:
+			#	self.path = item.text(0) + '/' + self.path
+			#	item = item.parent()
 			#self.filename = self.notesTree.currentItem().text(0) + '/'+dialog.editor.text()
-			QDir.current().mkdir(self.path)
+			if not QDir(self.path).exists():
+				QDir.current().mkdir(self.path)
 			print(self.path + self.filename)
 			fh = QFile(self.path+self.filename+'.markdown')
 			fh.open(QIODevice.WriteOnly)
 			fh.close()
-			QTreeWidgetItem(self.notesTree.currentItem(), [dialog.editor.text()])
+			QTreeWidgetItem(item, [dialog.editor.text()])
+			#QTreeWidgetItem(self.notesTree.currentItem(), [dialog.editor.text()])
 			self.notesTree.sortItems(0, Qt.AscendingOrder)
 			self.notesTree.expandItem(self.notesTree.currentItem())
 			
@@ -242,7 +255,7 @@ class MikiWindow(QMainWindow):
 		#		self.notesTree.currentItem(),0)
 		#self.notesTree.currentItem.delete()
 		#path = self.getPath(item)
-		childNum = item.childCount()
+		index = item.childCount()
 		#if childNum == 0:
 		#	return
 		#	path = self.getPath(item)
@@ -254,13 +267,14 @@ class MikiWindow(QMainWindow):
 		#	else:
 		#		index = self.notesTree.indexOfTopLevelItem(item)
 		#		self.notesTree.takeTopLevelItem(index)	
-		if childNum > 0:
-			for index in range(0, childNum):
-				self.dirname = item.child(index).text(0)
-				#path = self.getPath(item.child(index))
-				self.delPage(item.child(index))
-				#print(path + self.dirname)
-				#QDir.current().rmdir(path + self.dirname)
+		while index > 0:
+			#for index in range(0, childNum):
+			index = index -1
+			self.dirname = item.child(index).text(0)
+			#path = self.getPath(item.child(index))
+			self.delPage(item.child(index))
+			#print(path + self.dirname)
+			#QDir.current().rmdir(path + self.dirname)
 
 		path = self.getPath(item)
 		QDir.current().remove(path + item.text(0) + '.markdown')
