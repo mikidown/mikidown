@@ -5,12 +5,13 @@ Mikidown is a note taking and personal wiki system. It features markdown syntax 
 Mikidown is inspired by [Zim] and [ReText].
 
 ## Features
-- Note taking and organize notes
+- Take and organize notes
 - Markdown syntax
 - Live preview
-- Import and Save as *.markdown
-- *many more to come*  
+- Import and Save as \*.markdown
+- _many more to come_
 
+## Other
 At present, the code is a bit ugly. Fork and help~
 
 
