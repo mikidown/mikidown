@@ -6,6 +6,7 @@ import os
 import sys
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from PyQt4.QtWebKit import QWebView
 from mikidown.config import *
 
 import markdown
@@ -79,23 +80,17 @@ class MikiWindow(QMainWindow):
 		screen = QDesktopWidget().screenGeometry()
 		size = self.geometry()
 		self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
-		self.menuBar = MikiMenu()
-		self.setMenuBar(self.menuBar)
-		self.toolBar = QToolBar(self.tr('toolbar'), self)
-		self.addToolBar(Qt.TopToolBarArea, self.toolBar)
-		self.actionEdit = self.act('Edit', trigbool=self.edit)
-		self.actionLiveView = self.act('Live Edit', trigbool=self.liveView)
-		self.toolBar.addAction(self.actionEdit)
-		self.toolBar.addAction(self.actionLiveView)
-
+		
 		self.tabWidget = QTabWidget()
 		self.viewedList = RecentViewed()
 		self.notesEdit = QTextEdit()
-		self.notesView = QTextEdit()
+		#self.notesView = QTextEdit()
+		self.notesView = QWebView()
 		self.noteSplitter = QSplitter(Qt.Horizontal)
 		self.noteSplitter.addWidget(self.notesEdit)
 		self.noteSplitter.addWidget(self.notesView)
 		self.notesEdit.setVisible(False)
+		#self.notesView.setReadOnly(True)
 		self.rightSplitter = QSplitter(Qt.Vertical)
 		self.rightSplitter.addWidget(self.viewedList)
 		self.rightSplitter.addWidget(self.noteSplitter)
@@ -103,7 +98,6 @@ class MikiWindow(QMainWindow):
 		self.mainSplitter.addWidget(self.tabWidget)
 		self.mainSplitter.addWidget(self.rightSplitter)
 		self.setCentralWidget(self.mainSplitter)
-		
 		self.mainSplitter.setStretchFactor(0, 1)
 		self.mainSplitter.setStretchFactor(1, 5)
 		sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -119,6 +113,41 @@ class MikiWindow(QMainWindow):
 		#self.rightSplitter.setSizes([600,20,600,580])
 		self.rightSplitter.setStretchFactor(0, 0)
 
+		#self.saveCallback = lambda item=self.notesTree.currentItem(): self.saveNote(item, item)
+		#self.actionSave = self.act(self.tr('Save'), shct=QKeySequence.Save)
+		#self.actionSave = QAction('Save', self)
+		#self.connect(self.actionSave, SIGNAL('triggered()'), self.saveCallback)
+		#self.connect(self.actionSave, SIGNAL('triggered()'), lambda item=self.notesTree.currentItem(): self.saveNote(item,item))
+		#self.actionSave = self.act(self.tr('Save'), trig=lambda item=self.notesTree.currentItem(): self.saveNote(item, item))
+		self.actionSave = self.act(self.tr('Save'), shct=QKeySequence.Save, trig=self.saveCurrentNote)
+		#self.actionSaveAs = self.act(self.tr('Save as'), shct=QKeySequence.SaveAs, trig=self.saveNoteAs)
+		self.actionSaveAs = self.act(self.tr('Save as'), trig=lambda item=self.notesEdit.isVisible(): self.saveNoteAs(item))
+		self.actionQuit = self.act(self.tr('Quit'), shct=QKeySequence.Quit)
+		#self.connect(self.actionQuit, SIGNAL('triggered()'), qApp, SLOT('close()'))
+		self.connect(self.actionQuit, SIGNAL('triggered()'), self, SLOT('close()'))
+		self.actionQuit.setMenuRole(QAction.QuitRole)
+		self.actionUndo = self.act(self.tr('Undo'), trig=lambda: self.notesEdit.undo())
+		self.menuBar = QMenuBar(self)
+		self.setMenuBar(self.menuBar)
+		self.menuFile = self.menuBar.addMenu('File')
+		self.menuEdit = self.menuBar.addMenu('Edit')
+		self.menuHelp = self.menuBar.addMenu('Help')
+		self.menuFile.addSeparator()
+		self.menuFile.addAction(self.actionSave)
+		self.menuFile.addAction(self.actionSaveAs)
+		self.menuFile.addSeparator()
+		self.menuFile.addAction(self.actionQuit)
+		self.menuEdit.addAction(self.actionUndo)
+
+		self.toolBar = QToolBar(self.tr('toolbar'), self)
+		self.addToolBar(Qt.TopToolBarArea, self.toolBar)
+		self.actionEdit = self.act('Edit', trigbool=self.edit)
+		self.actionLiveView = self.act('Live Edit', trigbool=self.liveView)
+		self.toolBar.addAction(self.actionEdit)
+		self.toolBar.addAction(self.actionLiveView)
+
+				
+		
 		
 		self.connect(self.notesTree, SIGNAL('customContextMenuRequested(QPoint)'),
 				     self.treeMenu)
@@ -129,6 +158,7 @@ class MikiWindow(QMainWindow):
 					 self.saveNote)
 		self.connect(self.notesEdit,
 					 SIGNAL('textChanged()'),
+		#			 self.updateLiveView)
 					 self.noteEditted)
 
 		QDir.setCurrent(notebookDir)
@@ -137,6 +167,16 @@ class MikiWindow(QMainWindow):
 		#self.initTree(self.mikiDir, self.notesTree)	
 		self.editted = 0
 		self.initTree(notebookDir, self.notesTree)
+	def closeEvent(self, event):
+		reply = QMessageBox.question(self, 'Message',
+				'Are you sure to quit?', 
+				QMessageBox.Yes|QMessageBox.No,
+				QMessageBox.No)
+		if reply == QMessageBox.Yes:
+			self.saveCurrentNote()
+			event.accept()
+		else:
+			event.ignore()
 	def initTree(self, notePath, parent):
 		if not QDir(notePath).exists():
 			return
@@ -158,9 +198,13 @@ class MikiWindow(QMainWindow):
 			path = item.text(0) + '/' + path
 			item = item.parent()
 		return path
+	def saveCurrentNote(self):
+		item = self.notesTree.currentItem()
+		self.saveNote(None, item)
 	def saveNote(self, current, previous):
 		if previous is None:
 			return
+		print('hello')
 		if self.editted == 0:
 			return
 		self.editted = 1
@@ -181,8 +225,11 @@ class MikiWindow(QMainWindow):
 				fh.close()
 				#QTextStream(fh).writeAll()
 				#fh.writeData(self.notesEdit)
+	def saveNoteAs(self, test):
+		print(test)
 	def noteEditted(self):
 		self.editted = 1
+		self.updateLiveView()
 	def treeMenu(self):
 		menu = QMenu()
 		#for text in ("a", "b", "c"):
@@ -270,7 +317,7 @@ class MikiWindow(QMainWindow):
 		#	self.path = item.text(0) + '/' + self.path
 		#	item = item.parent()
 		self.path = self.getPath(self.notesTree.currentItem())
-		self.notesEdit.setText(self.path)
+		#self.notesEdit.setText(self.path)
 
 		self.filename = note.text(0)+".markdown"
 		#self.notesEdit.clear()
@@ -288,8 +335,8 @@ class MikiWindow(QMainWindow):
 				#noteBody = fh.readLink(self.filename)
 				fh.close()
 		#body = PyQt4.QtCore.QString(noteBody)
-		#self.notesEdit.setPlainText(noteBody)
-		self.notesEdit.insertPlainText(noteBody)
+		self.notesEdit.setPlainText(noteBody)
+		#self.notesEdit.insertPlainText(noteBody)
 		self.editted = 0
 		self.updateView()
 	def act(self, name, icon=None, trig=None, trigbool=None, shct=None):
@@ -306,17 +353,23 @@ class MikiWindow(QMainWindow):
 			action.setShortcut(shct)
 		return action
 	def edit(self, viewmode):
+		if self.actionLiveView.isChecked():
+			self.actionLiveView.setChecked(False)
 		self.notesView.setVisible(not viewmode)
 		self.notesEdit.setVisible(viewmode)
 	def liveView(self, viewmode):
 		if self.actionEdit.isChecked():
+			self.actionEdit.setChecked(False)
 			self.notesView.setVisible(viewmode)
 		else:
 			self.notesEdit.setVisible(viewmode)
-		self.actionEdit.setDisabled(viewmode)
+		#self.actionEdit.setDisabled(viewmode)
 		self.updateView()
 	def updateView(self):
 		self.notesView.setHtml(self.parseText())
+	def updateLiveView(self):
+		if self.actionLiveView.isChecked():
+			QTimer.singleShot(1000, self.updateView)
 	def parseText(self):
 		htmltext = self.notesEdit.toPlainText()
 		return md.convert(htmltext)
