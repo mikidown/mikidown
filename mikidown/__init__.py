@@ -113,15 +113,12 @@ class MikiWindow(QMainWindow):
 		#self.rightSplitter.setSizes([600,20,600,580])
 		self.rightSplitter.setStretchFactor(0, 0)
 
-		#self.saveCallback = lambda item=self.notesTree.currentItem(): self.saveNote(item, item)
-		#self.actionSave = self.act(self.tr('Save'), shct=QKeySequence.Save)
-		#self.actionSave = QAction('Save', self)
-		#self.connect(self.actionSave, SIGNAL('triggered()'), self.saveCallback)
-		#self.connect(self.actionSave, SIGNAL('triggered()'), lambda item=self.notesTree.currentItem(): self.saveNote(item,item))
+		self.actionImportPage = self.act(self.tr('Import Page...'), trig=self.importPage)
 		#self.actionSave = self.act(self.tr('Save'), trig=lambda item=self.notesTree.currentItem(): self.saveNote(item, item))
 		self.actionSave = self.act(self.tr('Save'), shct=QKeySequence.Save, trig=self.saveCurrentNote)
+		self.actionSave.setEnabled(False)
 		#self.actionSaveAs = self.act(self.tr('Save as'), shct=QKeySequence.SaveAs, trig=self.saveNoteAs)
-		self.actionSaveAs = self.act(self.tr('Save as'), trig=lambda item=self.notesEdit.isVisible(): self.saveNoteAs(item))
+		self.actionSaveAs = self.act(self.tr('Save As...'), trig=lambda item=self.notesEdit.isVisible(): self.saveNoteAs(item))
 		self.actionQuit = self.act(self.tr('Quit'), shct=QKeySequence.Quit)
 		#self.connect(self.actionQuit, SIGNAL('triggered()'), qApp, SLOT('close()'))
 		self.connect(self.actionQuit, SIGNAL('triggered()'), self, SLOT('close()'))
@@ -132,6 +129,7 @@ class MikiWindow(QMainWindow):
 		self.menuFile = self.menuBar.addMenu('File')
 		self.menuEdit = self.menuBar.addMenu('Edit')
 		self.menuHelp = self.menuBar.addMenu('Help')
+		self.menuFile.addAction(self.actionImportPage)
 		self.menuFile.addSeparator()
 		self.menuFile.addAction(self.actionSave)
 		self.menuFile.addAction(self.actionSaveAs)
@@ -145,9 +143,9 @@ class MikiWindow(QMainWindow):
 		self.actionLiveView = self.act('Live Edit', trigbool=self.liveView)
 		self.toolBar.addAction(self.actionEdit)
 		self.toolBar.addAction(self.actionLiveView)
-
-				
 		
+		self.statusBar = QStatusBar(self)
+		self.setStatusBar(self.statusBar)		
 		
 		self.connect(self.notesTree, SIGNAL('customContextMenuRequested(QPoint)'),
 				     self.treeMenu)
@@ -181,15 +179,17 @@ class MikiWindow(QMainWindow):
 		if not QDir(notePath).exists():
 			return
 		noteDir = QDir(notePath)
-		self.notesList = noteDir.entryList(["*.markdown"],
+		self.notesList = noteDir.entryInfoList(["*.markdown"],
 							   QDir.NoFilter,
 							   QDir.Name)
 
 		for note in self.notesList:
-			fi = QFileInfo(note)
-			item = QTreeWidgetItem(parent, [fi.baseName()])
-			path = self.tr(notePath + '/' + fi.baseName())
-			print(path)
+			item = QTreeWidgetItem(parent, [note.baseName()])
+			path = self.tr(notePath + '/' + note.baseName())
+			#fi = QFileInfo(note)
+			#item = QTreeWidgetItem(parent, [fi.baseName()])
+			#path = self.tr(notePath + '/' + fi.baseName())
+			#print(path)
 			self.initTree(path, item)
 	def getPath(self, item):
 		item = item.parent()
@@ -201,6 +201,8 @@ class MikiWindow(QMainWindow):
 	def saveCurrentNote(self):
 		item = self.notesTree.currentItem()
 		self.saveNote(None, item)
+		path = self.getPath(item)
+		self.statusBar.showMessage(path + item.text(0))
 	def saveNote(self, current, previous):
 		if previous is None:
 			return
@@ -225,11 +227,23 @@ class MikiWindow(QMainWindow):
 				fh.close()
 				#QTextStream(fh).writeAll()
 				#fh.writeData(self.notesEdit)
+				self.actionSave.setEnabled(False)
+	
 	def saveNoteAs(self, test):
-		print(test)
+		filename = QFileDialog.getSaveFileName(self, self.tr('Save as'), '',
+				'(*.markdown *.mkd *.md);;'+self.tr('All files(*)'))
+		fh = QFile(filename)
+		fh.open(QIODevice.WriteOnly)
+		savestream = QTextStream(fh)
+		savestream << self.notesEdit.toPlainText()
+		fh.close()
 	def noteEditted(self):
 		self.editted = 1
 		self.updateLiveView()
+		item = self.notesTree.currentItem()
+		path = self.getPath(item)
+		self.actionSave.setEnabled(True)
+		self.statusBar.showMessage(path + item.text(0) + '*')
 	def treeMenu(self):
 		menu = QMenu()
 		#for text in ("a", "b", "c"):
@@ -276,6 +290,21 @@ class MikiWindow(QMainWindow):
 			self.notesTree.expandItem(self.notesTree.currentItem())
 			
 		self.editted = 0
+	def importPage(self):
+		filename = QFileDialog.getOpenFileName(self, self.tr('Import file'), '',
+				'(*.markdown *.mkd *.md *.txt);;'+self.tr('All files(*)'))
+		fh = QFile(filename)
+		fh.open(QIODevice.ReadOnly)
+		fileBody = QTextStream(fh).readAll()
+		fh.close()
+		note = QFileInfo(filename)
+		fh = QFile(note.baseName()+'.markdown')
+		fh.open(QIODevice.WriteOnly)
+		savestream = QTextStream(fh)
+		savestream << fileBody
+		fh.close()
+		QTreeWidgetItem(self.notesTree, [note.baseName()])
+
 	def delPage(self, item):
 		index = item.childCount()
 		while index > 0:
@@ -339,6 +368,7 @@ class MikiWindow(QMainWindow):
 		#self.notesEdit.insertPlainText(noteBody)
 		self.editted = 0
 		self.updateView()
+		self.statusBar.showMessage(self.path + note.text(0))
 	def act(self, name, icon=None, trig=None, trigbool=None, shct=None):
 		if icon:
 			action = QAction(self.actIcon(icon), name, self)
