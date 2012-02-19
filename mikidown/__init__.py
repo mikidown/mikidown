@@ -7,22 +7,13 @@ import sys
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtWebKit import QWebView
+from PyQt4.QtWebKit import QGraphicsWebView
 from mikidown.config import *
 
 import markdown
 
 md = markdown.Markdown()
 __version__ = "0.0.1"
-
-class MikiMenu(QMenuBar):
-	def __init__(self, parent=None):
-		super(MikiMenu, self).__init__(parent)
-		self.menuFile = self.addMenu(self.tr('File'))
-		self.menuEdit = self.addMenu('Edit')
-		self.menuHelp = self.addMenu('Help')
-		#self.menuFile.addAction(self.actionNew)
-		#self.menuFile.addAction(self.actionOpen)
-		self.menuExport = self.menuFile.addMenu('Export')
 
 class RecentChanged(QListWidget):
 	def __init__(self, parent=None):
@@ -74,7 +65,7 @@ class ItemDialog(QDialog):
 				self.editor.text()!="")
 
 class MikiWindow(QMainWindow):
-	def __init__(self, notebookDir=None, parent=None):
+	def __init__(self, notebookPath=None, parent=None):
 		super(MikiWindow, self).__init__(parent)
 		self.resize(800,600)
 		screen = QDesktopWidget().screenGeometry()
@@ -84,7 +75,7 @@ class MikiWindow(QMainWindow):
 		self.tabWidget = QTabWidget()
 		self.viewedList = RecentViewed()
 		self.notesEdit = QTextEdit()
-		#self.notesView = QTextEdit()
+		#self.notesView = QGraphicsWebView()
 		self.notesView = QWebView()
 		self.noteSplitter = QSplitter(Qt.Horizontal)
 		self.noteSplitter.addWidget(self.notesEdit)
@@ -113,6 +104,9 @@ class MikiWindow(QMainWindow):
 		#self.rightSplitter.setSizes([600,20,600,580])
 		self.rightSplitter.setStretchFactor(0, 0)
 
+		self.currentItem = lambda: self.notesTree.currentItem()
+		self.currentItemPath = lambda: self.getPath(self.currentItem)
+		
 		self.actionImportPage = self.act(self.tr('Import Page...'), trig=self.importPage)
 		#self.actionSave = self.act(self.tr('Save'), trig=lambda item=self.notesTree.currentItem(): self.saveNote(item, item))
 		self.actionSave = self.act(self.tr('Save'), shct=QKeySequence.Save, trig=self.saveCurrentNote)
@@ -156,15 +150,10 @@ class MikiWindow(QMainWindow):
 					 self.saveNote)
 		self.connect(self.notesEdit,
 					 SIGNAL('textChanged()'),
-		#			 self.updateLiveView)
 					 self.noteEditted)
 
-		QDir.setCurrent(notebookDir)
-		self.mikiDir = QDir(notebookDir)
-		self.mikiDir = QDir.current()
-		#self.initTree(self.mikiDir, self.notesTree)	
-		self.editted = 0
-		self.initTree(notebookDir, self.notesTree)
+		QDir.setCurrent(notebookPath)
+		self.initTree(notebookPath, self.notesTree)
 	def closeEvent(self, event):
 		reply = QMessageBox.question(self, 'Message',
 				'Are you sure to quit?', 
@@ -175,38 +164,40 @@ class MikiWindow(QMainWindow):
 			event.accept()
 		else:
 			event.ignore()
+
 	def initTree(self, notePath, parent):
 		if not QDir(notePath).exists():
 			return
 		noteDir = QDir(notePath)
 		self.notesList = noteDir.entryInfoList(["*.markdown"],
 							   QDir.NoFilter,
-							   QDir.Name)
-
+							   QDir.Name|QDir.IgnoreCase)
 		for note in self.notesList:
 			item = QTreeWidgetItem(parent, [note.baseName()])
 			path = self.tr(notePath + '/' + note.baseName())
-			#fi = QFileInfo(note)
-			#item = QTreeWidgetItem(parent, [fi.baseName()])
-			#path = self.tr(notePath + '/' + fi.baseName())
-			#print(path)
 			self.initTree(path, item)
+		self.editted = 0
+
 	def getPath(self, item):
-		item = item.parent()
 		path = ''
+		if not hasattr(item, 'text'):
+			return path
+		item = item.parent()
 		while item is not None:
 			path = item.text(0) + '/' + path
 			item = item.parent()
 		return path
+
 	def saveCurrentNote(self):
 		item = self.notesTree.currentItem()
 		self.saveNote(None, item)
 		path = self.getPath(item)
-		self.statusBar.showMessage(path + item.text(0))
+		if hasattr(item, 'text'):
+			self.statusBar.showMessage(path + item.text(0))
+
 	def saveNote(self, current, previous):
 		if previous is None:
 			return
-		print('hello')
 		if self.editted == 0:
 			return
 		self.editted = 1
@@ -225,18 +216,19 @@ class MikiWindow(QMainWindow):
 				savestream = QTextStream(fh)
 				savestream << self.notesEdit.toPlainText()
 				fh.close()
-				#QTextStream(fh).writeAll()
-				#fh.writeData(self.notesEdit)
 				self.actionSave.setEnabled(False)
 	
 	def saveNoteAs(self, test):
 		filename = QFileDialog.getSaveFileName(self, self.tr('Save as'), '',
 				'(*.markdown *.mkd *.md);;'+self.tr('All files(*)'))
+		if filename == '':
+			return
 		fh = QFile(filename)
 		fh.open(QIODevice.WriteOnly)
 		savestream = QTextStream(fh)
 		savestream << self.notesEdit.toPlainText()
 		fh.close()
+
 	def noteEditted(self):
 		self.editted = 1
 		self.updateLiveView()
@@ -244,55 +236,61 @@ class MikiWindow(QMainWindow):
 		path = self.getPath(item)
 		self.actionSave.setEnabled(True)
 		self.statusBar.showMessage(path + item.text(0) + '*')
+
 	def treeMenu(self):
 		menu = QMenu()
-		#for text in ("a", "b", "c"):
-		#	action = menu.addAction(text)
 		menu.addAction("New Page", self.newPage)
 		self.subpageCallback = lambda item=self.notesTree.currentItem(): self.newSubpage(item)
 		menu.addAction("New Subpage", self.subpageCallback)
-		self.delCallback = lambda item=self.notesTree.currentItem(): self.delPage(item)
-		menu.addAction("Delete Page", self.delCallback)
+		menu.addSeparator()
 		menu.addAction("Collapse All", self.collapseAll)
 		menu.addAction("Uncollapse All", self.uncollapseAll)
-		menu.addAction("a", self.hello)
+		menu.addSeparator()
+		menu.addAction('Rename Page', lambda: self.renamePage(self.currentItem))
+		self.delCallback = lambda item=self.notesTree.currentItem(): self.delPage(item)
+		menu.addAction("Delete Page", self.delCallback)
 		menu.exec_(QCursor.pos())
 	
 	def newPage(self):
 		parent = self.notesTree.currentItem().parent()
+		#parent = self.currentItem.parent()
 		if parent is not None:
 			self.newSubpage(parent)
 		else:
 			self.newSubpage(self.notesTree)
-	#def newSubpage(self, selectedPage=None, col=None):
+
 	def newSubpage(self, item):
 		dialog = ItemDialog(self)
 		if dialog.exec_():
 			self.filename = dialog.editor.text()
-			if hasattr(item, 'text'):
-				self.path = self.getPath(item)
-				self.path = self.path + item.text(0) + '/'
-			else:
-				self.path = ''
-			if not QDir(self.path).exists():
-				QDir.current().mkdir(self.path)
-			print(self.path + self.filename)
-			fh = QFile(self.path+self.filename+'.markdown')
-			fh.open(QIODevice.WriteOnly)
-			#now = datetime.datetime.now()
-			savestream = QTextStream(fh)
-			savestream << '# ' + dialog.editor.text() + '\n'
-			savestream << 'Created ' + str(datetime.date.today()) + '\n\n'
-			fh.close()
-			QTreeWidgetItem(item, [dialog.editor.text()])
-			#QTreeWidgetItem(self.notesTree.currentItem(), [dialog.editor.text()])
+			self.newPageWrapper(item, self.filename)
+
 			self.notesTree.sortItems(0, Qt.AscendingOrder)
-			self.notesTree.expandItem(self.notesTree.currentItem())
+			#self.notesTree.expandItem(self.notesTree.currentItem())
 			
 		self.editted = 0
+	def newPageWrapper(self, item, pageName):
+		pagePath = self.getPath(item)
+		if hasattr(item, 'text'):
+			pagePath = pagePath + item.text(0) + '/'
+		if not QDir(pagePath).exists():
+			QDir.current().mkdir(pagePath)
+		fh = QFile(pagePath+pageName+'.markdown')
+		print(pagePath + pageName)
+		fh.open(QIODevice.WriteOnly)
+		savestream = QTextStream(fh)
+		savestream << '# ' + pageName + '\n'
+		savestream << 'Created ' + str(datetime.date.today()) + '\n\n'
+		fh.close()
+		QTreeWidgetItem(item, [pageName])
+		if pagePath != '':
+			self.notesTree.expandItem(item)
+
 	def importPage(self):
 		filename = QFileDialog.getOpenFileName(self, self.tr('Import file'), '',
 				'(*.markdown *.mkd *.md *.txt);;'+self.tr('All files(*)'))
+		if filename == '':
+			return
 		fh = QFile(filename)
 		fh.open(QIODevice.ReadOnly)
 		fileBody = QTextStream(fh).readAll()
@@ -305,16 +303,15 @@ class MikiWindow(QMainWindow):
 		fh.close()
 		QTreeWidgetItem(self.notesTree, [note.baseName()])
 
+	def renamePage(self, item):
+		None
+
 	def delPage(self, item):
 		index = item.childCount()
 		while index > 0:
-			#for index in range(0, childNum):
 			index = index -1
 			self.dirname = item.child(index).text(0)
-			#path = self.getPath(item.child(index))
 			self.delPage(item.child(index))
-			#print(path + self.dirname)
-			#QDir.current().rmdir(path + self.dirname)
 
 		path = self.getPath(item)
 		QDir.current().remove(path + item.text(0) + '.markdown')
@@ -327,30 +324,18 @@ class MikiWindow(QMainWindow):
 		else:
 			index = self.notesTree.indexOfTopLevelItem(item)
 			self.notesTree.takeTopLevelItem(index)	
-		print(path+item.text(0))
+		self.showNote(self.notesTree.currentItem())
 		QDir.current().rmdir(path + item.text(0))
-		#print(item.text(0))
-		#self.dirname = self.notesTree.currentItem().text(0)
-		#QDir.current().rmdir(self.dirname)
-		#QDir.current().remove(self.dirname+".markdown")
-		#index = self.notesTree.indexOfTopLevelItem(self.notesTree.currentItem())
-		#self.notesTree.takeTopLevelItem(index)
+
 	def collapseAll(self):
 		self.notesTree.collapseAll()
+
 	def uncollapseAll(self):
 		self.notesTree.expandAll()
-	def showNote(self, note):
-		#self.path = self.notesTree.currentItem().text(0) + '/'
-		#item = self.notesTree.currentItem().parent()		
-		#while item is not None:
-		#	self.path = item.text(0) + '/' + self.path
-		#	item = item.parent()
-		self.path = self.getPath(self.notesTree.currentItem())
-		#self.notesEdit.setText(self.path)
 
+	def showNote(self, note):
+		self.path = self.getPath(self.notesTree.currentItem())
 		self.filename = note.text(0)+".markdown"
-		#self.notesEdit.clear()
-		#self.notesEdit.setText(note.text(0))
 		fh = QFile(self.path + self.filename)
 		try:
 			if not fh.open(QIODevice.ReadWrite):
@@ -361,14 +346,12 @@ class MikiWindow(QMainWindow):
 		finally:
 			if fh is not None:
 				noteBody = QTextStream(fh).readAll()
-				#noteBody = fh.readLink(self.filename)
 				fh.close()
-		#body = PyQt4.QtCore.QString(noteBody)
 		self.notesEdit.setPlainText(noteBody)
-		#self.notesEdit.insertPlainText(noteBody)
 		self.editted = 0
 		self.updateView()
 		self.statusBar.showMessage(self.path + note.text(0))
+
 	def act(self, name, icon=None, trig=None, trigbool=None, shct=None):
 		if icon:
 			action = QAction(self.actIcon(icon), name, self)
@@ -382,29 +365,31 @@ class MikiWindow(QMainWindow):
 		if shct:
 			action.setShortcut(shct)
 		return action
+
 	def edit(self, viewmode):
 		if self.actionLiveView.isChecked():
 			self.actionLiveView.setChecked(False)
 		self.notesView.setVisible(not viewmode)
 		self.notesEdit.setVisible(viewmode)
+
 	def liveView(self, viewmode):
 		if self.actionEdit.isChecked():
 			self.actionEdit.setChecked(False)
 			self.notesView.setVisible(viewmode)
 		else:
 			self.notesEdit.setVisible(viewmode)
-		#self.actionEdit.setDisabled(viewmode)
 		self.updateView()
+
 	def updateView(self):
 		self.notesView.setHtml(self.parseText())
+
 	def updateLiveView(self):
 		if self.actionLiveView.isChecked():
 			QTimer.singleShot(1000, self.updateView)
+
 	def parseText(self):
 		htmltext = self.notesEdit.toPlainText()
 		return md.convert(htmltext)
-	def hello(self):
-		self.notesEdit.append("Hello")
 
 
 def main():
