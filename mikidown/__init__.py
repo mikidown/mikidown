@@ -36,10 +36,125 @@ class MikiTree(QTreeWidget):
 	def __init__(self, parent=None):
 		super(MikiTree, self).__init__(parent)
 		self.header().close()
+		self.setAcceptDrops(True)
+		self.setDragEnabled(True)
+		#self.setDropIndicatorShown(True)
+		self.setDragDropOverwriteMode(True)
+		self.setDragDropMode(QAbstractItemView.InternalMove)
+		#self.setSelectionMode(QAbstractItemView.ExtendedSelection)
 		self.setContextMenuPolicy(Qt.CustomContextMenu)
-	def mousePressEvent(self, event):
-		self.clearSelection()
-		super(MikiTree, self).mousePressEvent(event)
+	
+	def getPath(self, item):
+		path = ''
+		if not hasattr(item, 'text'):
+			return path
+		item = item.parent()
+		while item is not None:
+			path = item.text(0) + '/' + path
+			item = item.parent()
+		return path
+
+	#def dragEnterEvent(self, event):
+
+		#if event.mimeData().hasFormat('application/x-path-and-name'):
+	#	event.setDropAction(Qt.MoveAction)	
+	#	event.accept()
+		#else:
+		#	event.ignore()
+
+	'''
+	def dragMoveEvent(self, event):
+		if event.mimeData().hasFormat('application/x-path-and-name'):
+			event.setDropAction(Qt.MoveAction)
+			event.accept()
+		else:
+			event.ignore()
+	'''
+	#def dropMimeData(self, parent, row, data, action):
+	#	if action == Qt.MoveAction:
+	#		return self.moveSelection(parent, row)
+	#	return False
+
+	#def dropEvent(self, event):
+		#event.setDropAction(Qt.CopyAction)
+		#event.accept()
+	#	QTreeWidget.dropEvent(self, event)
+	def dropEvent(self, event):
+		#event.setDropAction(Qt.MoveAction)
+		#event.accept()
+		sourceItem = self.currentItem()
+		sourcePath = self.getPath(sourceItem)
+		targetItem = self.itemAt(event.pos())
+		targetPath = self.getPath(targetItem)
+		oldName = sourcePath + sourceItem.text(0) + '.markdown'
+		newName = targetPath + targetItem.text(0) + '/' + sourceItem.text(0) + '.markdown'
+		oldDir = sourcePath + sourceItem.text(0)
+		newDir = targetPath + targetItem.text(0) + '/' + sourceItem.text(0)
+		if not QDir(newName).exists():
+			QDir.current().mkpath(targetPath+targetItem.text(0))
+		QDir.current().rename(oldName, newName)
+		if sourceItem.childCount() != 0: 
+			#if not QDir(newDir).exists():
+			#	QDir.current.mkpath(newDir)
+			QDir.current().rename(oldDir, newDir)
+		if sourceItem.parent() is not None:
+			parentItem = sourceItem.parent()
+			parentPath = self.getPath(parentItem)
+			print(parentPath+parentItem.text(0))
+			print(parentItem.childCount())
+			if parentItem.childCount() == 1:
+				QDir.current().rmdir(parentPath + parentItem.text(0))
+		print(oldName)
+		print(newName)
+		QTreeWidget.dropEvent(self, event)
+	'''
+	def dropEvent(self, event):
+		if event.mimeData().hasFormat('application/x-path-and-name'):
+			data = event.mimeData().data('application/x-path-and-name')
+			stream = QDataStream(data, QIODevice.ReadOnly)
+			path = stream.readQString()
+			name = stream.readQString()
+			drag = QDrag(self)
+			item = drag.target()
+			item0 = drag.source()
+			print('drop') #item0.text(0))
+			#item = self.currentItem()
+			QTreeWidgetItem(item, [name])
+			event.setDropAction(Qt.MoveAction)
+			event.accept()
+		else:
+			print('ignore')
+			event.ignore()
+	'''
+	'''
+	def startDrag(self, dropActions):
+		item = self.currentItem()
+		print(item.text(0))
+		data = QByteArray()
+		stream = QDataStream(data, QIODevice.WriteOnly)
+		stream.writeQString(self.getPath(item))
+		stream.writeQString(item.text(0))
+		mimeData = QMimeData()
+		mimeData.setData('application/x-path-and-name', data)
+		drag = QDrag(self)
+		drag.setMimeData(mimeData)
+		if drag.start(Qt.MoveAction) == Qt.MoveAction:
+			None
+	'''
+		#	if item.parent() is not None:
+		#		index = item.parent().indexOfChild(item)
+		#		item.parenti().takeChild(index)
+		#	else:
+		#		index = self.indexOfTopLevelItem(item)
+		#		self.takeTopLevelItem(index)
+
+	#def mouseMoveEvent(self, event):
+	#	self.startDrag()
+	#	QWidget.mouseMoveEvent(self, event)
+
+	#def mousePressEvent(self, event):
+		#self.clearSelection()
+	#	QWidget.mousePressEvent(self, event)
 
 class ItemDialog(QDialog):
 	def __init__(self, parent=None):
@@ -246,7 +361,7 @@ class MikiWindow(QMainWindow):
 		menu.addAction("Collapse All", self.collapseAll)
 		menu.addAction("Uncollapse All", self.uncollapseAll)
 		menu.addSeparator()
-		menu.addAction('Rename Page', lambda: self.renamePage(self.currentItem))
+		menu.addAction('Rename Page', lambda item=self.notesTree.currentItem(): self.renamePage(item))
 		self.delCallback = lambda item=self.notesTree.currentItem(): self.delPage(item)
 		menu.addAction("Delete Page", self.delCallback)
 		menu.exec_(QCursor.pos())
@@ -264,9 +379,7 @@ class MikiWindow(QMainWindow):
 		if dialog.exec_():
 			self.filename = dialog.editor.text()
 			self.newPageWrapper(item, self.filename)
-
 			self.notesTree.sortItems(0, Qt.AscendingOrder)
-			#self.notesTree.expandItem(self.notesTree.currentItem())
 			
 		self.editted = 0
 	def newPageWrapper(self, item, pageName):
@@ -304,7 +417,20 @@ class MikiWindow(QMainWindow):
 		QTreeWidgetItem(self.notesTree, [note.baseName()])
 
 	def renamePage(self, item):
-		None
+		dialog = ItemDialog(self)
+		if dialog.exec_():
+			pageName = dialog.editor.text()
+			pagePath = self.getPath(item)
+			oldName = pagePath + item.text(0) + '.markdown'
+			newName = pagePath + pageName + '.markdown'
+			QDir.current().rename(oldName, newName)
+			if item.childCount() != 0:
+				oldDir = pagePath + item.text(0)
+				newDir = pagePath + pageName
+				QDir.current().rename(oldDir, newDir)
+			item.setText(0, pageName)
+			self.notesTree.sortItems(0, Qt.AscendingOrder)
+
 
 	def delPage(self, item):
 		index = item.childCount()
