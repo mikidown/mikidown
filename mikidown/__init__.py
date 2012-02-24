@@ -6,7 +6,7 @@ import os
 import sys
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from PyQt4.QtWebKit import QWebView
+from PyQt4.QtWebKit import QWebView, QWebPage
 from PyQt4.QtWebKit import QGraphicsWebView
 from mikidown.config import *
 
@@ -14,6 +14,8 @@ import markdown
 
 md = markdown.Markdown()
 __version__ = "0.0.1"
+
+settings = QSettings('mikidown', 'mikidown')
 
 class RecentChanged(QListWidget):
 	def __init__(self, parent=None):
@@ -54,31 +56,6 @@ class MikiTree(QTreeWidget):
 			item = item.parent()
 		return path
 
-	#def dragEnterEvent(self, event):
-
-		#if event.mimeData().hasFormat('application/x-path-and-name'):
-	#	event.setDropAction(Qt.MoveAction)	
-	#	event.accept()
-		#else:
-		#	event.ignore()
-
-	'''
-	def dragMoveEvent(self, event):
-		if event.mimeData().hasFormat('application/x-path-and-name'):
-			event.setDropAction(Qt.MoveAction)
-			event.accept()
-		else:
-			event.ignore()
-	'''
-	#def dropMimeData(self, parent, row, data, action):
-	#	if action == Qt.MoveAction:
-	#		return self.moveSelection(parent, row)
-	#	return False
-
-	#def dropEvent(self, event):
-		#event.setDropAction(Qt.CopyAction)
-		#event.accept()
-	#	QTreeWidget.dropEvent(self, event)
 	def dropEvent(self, event):
 		#event.setDropAction(Qt.MoveAction)
 		#event.accept()
@@ -107,46 +84,6 @@ class MikiTree(QTreeWidget):
 		print(oldName)
 		print(newName)
 		QTreeWidget.dropEvent(self, event)
-	'''
-	def dropEvent(self, event):
-		if event.mimeData().hasFormat('application/x-path-and-name'):
-			data = event.mimeData().data('application/x-path-and-name')
-			stream = QDataStream(data, QIODevice.ReadOnly)
-			path = stream.readQString()
-			name = stream.readQString()
-			drag = QDrag(self)
-			item = drag.target()
-			item0 = drag.source()
-			print('drop') #item0.text(0))
-			#item = self.currentItem()
-			QTreeWidgetItem(item, [name])
-			event.setDropAction(Qt.MoveAction)
-			event.accept()
-		else:
-			print('ignore')
-			event.ignore()
-	'''
-	'''
-	def startDrag(self, dropActions):
-		item = self.currentItem()
-		print(item.text(0))
-		data = QByteArray()
-		stream = QDataStream(data, QIODevice.WriteOnly)
-		stream.writeQString(self.getPath(item))
-		stream.writeQString(item.text(0))
-		mimeData = QMimeData()
-		mimeData.setData('application/x-path-and-name', data)
-		drag = QDrag(self)
-		drag.setMimeData(mimeData)
-		if drag.start(Qt.MoveAction) == Qt.MoveAction:
-			None
-	'''
-		#	if item.parent() is not None:
-		#		index = item.parent().indexOfChild(item)
-		#		item.parenti().takeChild(index)
-		#	else:
-		#		index = self.indexOfTopLevelItem(item)
-		#		self.takeTopLevelItem(index)
 
 	#def mouseMoveEvent(self, event):
 	#	self.startDrag()
@@ -188,18 +125,23 @@ class MikiWindow(QMainWindow):
 		self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
 		
 		self.tabWidget = QTabWidget()
-		self.viewedList = RecentViewed()
+		#self.viewedList = RecentViewed()
+		self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
 		self.notesEdit = QTextEdit()
 		#self.notesView = QGraphicsWebView()
 		self.notesView = QWebView()
+		self.findBar = QToolBar(self.tr('Find'), self)
 		self.noteSplitter = QSplitter(Qt.Horizontal)
 		self.noteSplitter.addWidget(self.notesEdit)
 		self.noteSplitter.addWidget(self.notesView)
 		self.notesEdit.setVisible(False)
+		self.notesView.settings().clearMemoryCaches()
+		self.notesView.settings().setUserStyleSheetUrl(QUrl.fromLocalFile('notes.css'))
 		#self.notesView.setReadOnly(True)
 		self.rightSplitter = QSplitter(Qt.Vertical)
 		self.rightSplitter.addWidget(self.viewedList)
 		self.rightSplitter.addWidget(self.noteSplitter)
+		self.rightSplitter.addWidget(self.findBar)
 		self.mainSplitter = QSplitter(Qt.Horizontal)
 		self.mainSplitter.addWidget(self.tabWidget)
 		self.mainSplitter.addWidget(self.rightSplitter)
@@ -233,10 +175,23 @@ class MikiWindow(QMainWindow):
 		self.connect(self.actionQuit, SIGNAL('triggered()'), self, SLOT('close()'))
 		self.actionQuit.setMenuRole(QAction.QuitRole)
 		self.actionUndo = self.act(self.tr('Undo'), trig=lambda: self.notesEdit.undo())
+		self.actionUndo.setEnabled(False)
+		self.notesEdit.undoAvailable.connect(self.actionUndo.setEnabled)
+		self.menuActionFind = self.act(self.tr('Find Text'), shct=QKeySequence.Find)
+		self.menuActionFind.setCheckable(True)
+		self.menuActionFind.triggered.connect(self.findBar.setVisible)
+		self.menuActionSearch = self.act(self.tr('Search Note...'), )
+		self.findBar.visibilityChanged.connect(self.findBarVisibilityChanged)
+		self.actionFind = self.act(self.tr('Next'), shct=QKeySequence.FindNext, trig=self.findText)
+		self.actionFindPrev = self.act(self.tr('Previous'), shct=QKeySequence.FindPrevious, 
+				trig=lambda:self.findText(back=True))
+		self.actionSearch = self.act(self.tr('Search'))
+
 		self.menuBar = QMenuBar(self)
 		self.setMenuBar(self.menuBar)
 		self.menuFile = self.menuBar.addMenu('File')
 		self.menuEdit = self.menuBar.addMenu('Edit')
+		self.menuSearch = self.menuBar.addMenu('Search')
 		self.menuHelp = self.menuBar.addMenu('Help')
 		self.menuFile.addAction(self.actionImportPage)
 		self.menuFile.addSeparator()
@@ -245,6 +200,8 @@ class MikiWindow(QMainWindow):
 		self.menuFile.addSeparator()
 		self.menuFile.addAction(self.actionQuit)
 		self.menuEdit.addAction(self.actionUndo)
+		self.menuSearch.addAction(self.menuActionFind)
+		self.menuSearch.addAction(self.menuActionSearch)
 
 		self.toolBar = QToolBar(self.tr('toolbar'), self)
 		self.addToolBar(Qt.TopToolBarArea, self.toolBar)
@@ -252,23 +209,40 @@ class MikiWindow(QMainWindow):
 		self.actionLiveView = self.act('Live Edit', trigbool=self.liveView)
 		self.toolBar.addAction(self.actionEdit)
 		self.toolBar.addAction(self.actionLiveView)
+		self.findEdit = QLineEdit(self.findBar)
+		#self.findEdit.returnPressed().connect(self.findText)
+		self.connect(self.findEdit, SIGNAL('returnPressed()'), self.findText)
+		self.checkBox = QCheckBox(self.tr('Match case'), self.findBar)
+		self.findBar.addWidget(self.findEdit)
+		self.findBar.addWidget(self.checkBox)
+		self.findBar.addAction(self.actionFindPrev)
+		self.findBar.addAction(self.actionFind)
+		self.findBar.setVisible(False)
 		
 		self.statusBar = QStatusBar(self)
 		self.setStatusBar(self.statusBar)		
 		
 		self.connect(self.notesTree, SIGNAL('customContextMenuRequested(QPoint)'),
 				     self.treeMenu)
+		'''
 		self.connect(self.notesTree, SIGNAL('itemClicked(QTreeWidgetItem *,int)'),
 				self.showNote)
 		self.connect(self.notesTree, 
 					 SIGNAL('currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)'),
 					 self.saveNote)
+		'''
+		self.notesTree.currentItemChanged.connect(self.currentItemChangedWrapper)
 		self.connect(self.notesEdit,
 					 SIGNAL('textChanged()'),
 					 self.noteEditted)
 
+		self.notesView.page().linkHovered.connect(self.linkHovered)
 		QDir.setCurrent(notebookPath)
 		self.initTree(notebookPath, self.notesTree)
+		self.updateRecentViewedNotes()
+		files = readListFromSettings(settings, 'recentViewedNoteList')
+		self.notesTree.setCurrentItem(self.NameToItem(files[0]))
+		#self.openNote(files[0])
 	def closeEvent(self, event):
 		reply = QMessageBox.question(self, 'Message',
 				'Are you sure to quit?', 
@@ -292,6 +266,32 @@ class MikiWindow(QMainWindow):
 			path = self.tr(notePath + '/' + note.baseName())
 			self.initTree(path, item)
 		self.editted = 0
+
+	def ItemToName(self, noteItem):
+		pass
+	def NameToItem(self, noteName):
+		splitPath = noteName.split('/')
+		depth = len(splitPath)
+		itemList = self.notesTree.findItems(splitPath[depth-1], Qt.MatchExactly)
+		if len(itemList) == 1:
+			return itemList[0]
+
+		for item in itemList:
+			parent = item.parent()
+			for i in range(depth):
+				if parent == None:
+					break
+				if depth-i-2 < 0:
+					break
+				if parent.text(0) == splitPath[depth-i-2]:
+					if depth-i-2 == 0:
+						return item
+					else:
+						parent = parent.parent()
+
+	def currentItemChangedWrapper(self, current, previous):
+		self.saveNote(current, previous)
+		self.showNote(current)
 
 	def getPath(self, item):
 		path = ''
@@ -332,6 +332,7 @@ class MikiWindow(QMainWindow):
 				savestream << self.notesEdit.toPlainText()
 				fh.close()
 				self.actionSave.setEnabled(False)
+				self.updateView()
 	
 	def saveNoteAs(self, test):
 		filename = QFileDialog.getSaveFileName(self, self.tr('Save as'), '',
@@ -459,9 +460,15 @@ class MikiWindow(QMainWindow):
 	def uncollapseAll(self):
 		self.notesTree.expandAll()
 
-	def showNote(self, note):
+	def showNote(self, noteItem):
 		self.path = self.getPath(self.notesTree.currentItem())
-		self.filename = note.text(0)+".markdown"
+		noteFullName = self.path + noteItem.text(0)
+
+		self.openNote(noteFullName)
+		self.setCurrentFile()
+		self.updateRecentViewedNotes()
+		'''
+		self.filename = noteItem.text(0)+".markdown"
 		fh = QFile(self.path + self.filename)
 		try:
 			if not fh.open(QIODevice.ReadWrite):
@@ -476,7 +483,8 @@ class MikiWindow(QMainWindow):
 		self.notesEdit.setPlainText(noteBody)
 		self.editted = 0
 		self.updateView()
-		self.statusBar.showMessage(self.path + note.text(0))
+		self.statusBar.showMessage(self.path + noteItem.text(0))
+		'''
 
 	def act(self, name, icon=None, trig=None, trigbool=None, shct=None):
 		if icon:
@@ -495,6 +503,7 @@ class MikiWindow(QMainWindow):
 	def edit(self, viewmode):
 		if self.actionLiveView.isChecked():
 			self.actionLiveView.setChecked(False)
+		self.saveCurrentNote()
 		self.notesView.setVisible(not viewmode)
 		self.notesEdit.setVisible(viewmode)
 
@@ -517,7 +526,101 @@ class MikiWindow(QMainWindow):
 		htmltext = self.notesEdit.toPlainText()
 		return md.convert(htmltext)
 
+	def getFullPath(self):
+		item = self.notesTree.currentItem()
+		path = self.getPath(item)
+		return path + item.text(0)
 
+	def linkHovered(self, link, title, textContent):
+		if link == '':
+			self.statusBar.showMessage(self.getFullPath())
+		else:
+			self.statusBar.showMessage(link)
+
+	def findBarVisibilityChanged(self, visible):
+		self.menuActionFind.setChecked(visible)
+		if visible:
+			self.findEdit.setFocus(Qt.ShortcutFocusReason)
+
+	def findText(self, back=False):
+		flags = 0
+		if back:
+			flags = QTextDocument.FindBackward
+		if self.checkBox.isChecked():
+			flags = flags | QTextDocument.FindCaseSensitively
+		text = self.findEdit.text()
+		if not self.findMain(text, flags):
+			if text in self.notesEdit.toPlainText():
+				cursor = self.notesEdit.textCursor()
+				if back:
+					cursor.movePosition(QTextCursor.End)
+				else:
+					cursor.movePosition(QTextCursor.Start)
+				self.notesEdit.setTextCursor(cursor)
+				self.findMain(text, flags)
+		#self.notesView.findText(text, flags)
+
+	def findMain(self, text, flags):
+		viewFlags = QWebPage.FindFlags(flags) | QWebPage.FindWrapsAroundDocument
+		if flags:
+			self.notesView.findText(text, viewFlags)
+			return self.notesEdit.find(text, flags)
+		else:
+			self.notesView.findText(text)			
+			return self.notesEdit.find(text)
+	
+	def setCurrentFile(self):
+		noteItem = self.notesTree.currentItem()
+		notePath = self.getPath(noteItem)
+		noteFullName = notePath + noteItem.text(0)
+		files = readListFromSettings(settings, 'recentViewedNoteList')
+		for f in files:
+			if f == noteFullName:
+				files.remove(f)
+		files.insert(0, notePath+noteItem.text(0))
+		if len(files) > 10:
+			del files[10:]
+		writeListToSettings(settings, 'recentViewedNoteList', files)
+	
+	def updateRecentViewedNotes(self):
+		self.viewedList.clear()
+		viewedListActions = []
+		filesOld = readListFromSettings(settings, 'recentViewedNoteList')
+		files = []
+		for f in filesOld:
+			if self.existsNote(f):
+				files.append(f)
+				viewedListActions.append(self.act(f, trig=self.openFunction(f)))
+		writeListToSettings(settings, 'recentViewedNoteList', files)
+		for action in viewedListActions:
+			self.viewedList.addAction(action)
+	
+	def existsNote(self, noteFullname):
+		filename = noteFullname + '.markdown'
+		fh = QFile(filename)
+		return fh.exists()
+
+	def openFunction(self, noteFullName):
+		return lambda: self.openNote(noteFullName)
+
+	def openNote(self, noteFullName):
+		filename = noteFullName + '.markdown'
+		fh = QFile(filename)
+		try:
+			if not fh.open(QIODevice.ReadOnly):
+				raise IOError(fh.errorString())
+		except IOError as e:
+			QMessageBox.warning(self, 'Read Error', 
+					'Failed to open %s: %s' % (filename, e))
+		finally:
+			if fh is not None:
+				noteBody = QTextStream(fh).readAll()
+				fh.close()
+				self.notesEdit.setPlainText(noteBody)
+				self.editted = 0
+				self.updateView()
+				self.statusBar.showMessage(noteFullName)
+				
 def main():
 	app = QApplication(sys.argv)
 	XDG_CONFIG_HOME = os.environ['XDG_CONFIG_HOME']

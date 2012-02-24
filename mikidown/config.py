@@ -5,6 +5,23 @@ import sys
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
+def readListFromSettings(settings, key):
+	if not settings.contains(key):
+		return []
+	value = settings.value(key)
+	if isinstance(value, str):
+		return [value]
+	else:
+		return value
+
+def writeListToSettings(settings, key, value):
+	if len(value) > 1:
+		settings.setValue(key, value)
+	elif len(value) == 1:
+		settings.setValue(key, value[0])
+	else:
+		settings.remove(key)
+	
 class NewNotebookDlg(QDialog):
 	def __init__(self, parent=None):
 
