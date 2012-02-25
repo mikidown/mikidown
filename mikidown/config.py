@@ -70,6 +70,7 @@ class NotebookInfo(object):
 		f = File(uri)
 		self.uri = f.uri
 		self.name = name or f.basename
+
 class NotebookList():
 	def __init__(self, file, default=None):
 		self._file = file
@@ -95,18 +96,13 @@ class NotebookList():
 		None
 	
 	@staticmethod
-	def create():
-		XDG_CONFIG_HOME = os.environ['XDG_CONFIG_HOME']
-		filename = XDG_CONFIG_HOME + '/mikidown/notebooks.list'
+	def create(settings):
 		newNotebook = NewNotebookDlg()
 		if newNotebook.exec_():
-			fh = QFile(filename)
-			fh.open(QIODevice.WriteOnly)
-			savestream = QTextStream(fh)
-			savestream << newNotebook.nameEditor.text()
-			savestream <<  ' '
-			savestream << newNotebook.pathEditor.text()
-			fh.close()
-			None
+			notebookName = newNotebook.nameEditor.text()
+			notebookPath = newNotebook.pathEditor.text()
+			if not os.path.isdir(notebookPath):
+				os.makedirs(notebookPath)
+			writeListToSettings(settings, 'notebookList', notebookPath)
 
 
