@@ -44,10 +44,10 @@ class MikiTree(QTreeWidget):
 
 	def ItemToName(self, item):
 		name = item.text(0)
-		item = item.parent()
-		while item is not None:
-			name = item.text(0) + '/' + name
-			item = item.parent()
+		parent = item.parent()
+		while parent is not None:
+			name = parent.text(0) + '/' + name
+			parent = parent.parent()
 		return name
 
 	def NameToItem(self, name):
@@ -191,7 +191,7 @@ class MikiTree(QTreeWidget):
 		else:
 			index = self.indexOfTopLevelItem(item)
 			self.takeTopLevelItem(index)	
-		self.showNote(self.currentItem())
+		#self.showNote(self.currentItem())
 		QDir.current().rmdir(path + item.text(0))
 
 	def collapseAll(self):

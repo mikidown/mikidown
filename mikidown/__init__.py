@@ -39,7 +39,6 @@ class MikiWindow(QMainWindow):
 		self.notesEdit.setVisible(False)
 		self.notesView.settings().clearMemoryCaches()
 		self.notesView.settings().setUserStyleSheetUrl(QUrl.fromLocalFile('notes.css'))
-		#self.notesView.setReadOnly(True)
 		self.rightSplitter = QSplitter(Qt.Vertical)
 		self.rightSplitter.addWidget(self.viewedList)
 		self.rightSplitter.addWidget(self.noteSplitter)
@@ -61,17 +60,11 @@ class MikiWindow(QMainWindow):
 		#self.rightSplitter.setSizes([600,20,600,580])
 		self.rightSplitter.setStretchFactor(0, 0)
 
-		#self.currentItem = lambda: self.notesTree.currentItem()
-		#self.currentItemPath = lambda: self.getPath(self.currentItem)
-		
 		self.actionImportPage = self.act(self.tr('Import Page...'), trig=self.importPage)
-		#self.actionSave = self.act(self.tr('Save'), trig=lambda item=self.notesTree.currentItem(): self.saveNote(item, item))
 		self.actionSave = self.act(self.tr('Save'), shct=QKeySequence.Save, trig=self.saveCurrentNote)
 		self.actionSave.setEnabled(False)
-		#self.actionSaveAs = self.act(self.tr('Save as'), shct=QKeySequence.SaveAs, trig=self.saveNoteAs)
-		self.actionSaveAs = self.act(self.tr('Save As...'), trig=lambda item=self.notesEdit.isVisible(): self.saveNoteAs(item))
+		self.actionSaveAs = self.act(self.tr('Save As...'), shct=QKeySequence.SaveAs, trig=lambda item=self.notesEdit.isVisible(): self.saveNoteAs(item))
 		self.actionQuit = self.act(self.tr('Quit'), shct=QKeySequence.Quit)
-		#self.connect(self.actionQuit, SIGNAL('triggered()'), qApp, SLOT('close()'))
 		self.connect(self.actionQuit, SIGNAL('triggered()'), self, SLOT('close()'))
 		self.actionQuit.setMenuRole(QAction.QuitRole)
 		self.actionUndo = self.act(self.tr('Undo'), trig=lambda: self.notesEdit.undo())
@@ -110,8 +103,7 @@ class MikiWindow(QMainWindow):
 		self.toolBar.addAction(self.actionEdit)
 		self.toolBar.addAction(self.actionLiveView)
 		self.findEdit = QLineEdit(self.findBar)
-		#self.findEdit.returnPressed().connect(self.findText)
-		self.connect(self.findEdit, SIGNAL('returnPressed()'), self.findText)
+		self.findEdit.returnPressed.connect(self.findText)
 		self.checkBox = QCheckBox(self.tr('Match case'), self.findBar)
 		self.findBar.addWidget(self.findEdit)
 		self.findBar.addWidget(self.checkBox)
@@ -136,18 +128,6 @@ class MikiWindow(QMainWindow):
 		if len(files) != 0:
 			item = self.notesTree.NameToItem(files[0])
 			self.notesTree.setCurrentItem(item)
-		#self.openNote(files[0])
-
-	def closeEvent(self, event):
-		reply = QMessageBox.question(self, 'Message',
-				'Are you sure to quit?', 
-				QMessageBox.Yes|QMessageBox.No,
-				QMessageBox.No)
-		if reply == QMessageBox.Yes:
-			self.saveCurrentNote()
-			event.accept()
-		else:
-			event.ignore()
 
 	def initTree(self, notePath, parent):
 		if not QDir(notePath).exists():
@@ -162,9 +142,36 @@ class MikiWindow(QMainWindow):
 			self.initTree(path, item)
 		self.editted = 0
 
+	def openNote(self, noteFullName):
+		filename = noteFullName + '.markdown'
+		print(filename)
+		fh = QFile(filename)
+		try:
+			if not fh.open(QIODevice.ReadOnly):
+				raise IOError(fh.errorString())
+		except IOError as e:
+			QMessageBox.warning(self, 'Read Error', 
+					'Failed to open %s: %s' % (filename, e))
+		finally:
+			if fh is not None:
+				noteBody = QTextStream(fh).readAll()
+				fh.close()
+				self.notesEdit.setPlainText(noteBody)
+				self.editted = 0
+				self.actionSave.setEnabled(False)
+				self.updateView()
+				self.setCurrentFile()
+				self.updateRecentViewedNotes()
+				self.viewedListActions[-1].setChecked(True)
+				self.statusBar.showMessage(noteFullName)
+
 	def currentItemChangedWrapper(self, current, previous):
+		if current is None:
+			return
 		self.saveNote(current, previous)
-		self.showNote(current)
+		name = self.notesTree.ItemToName(current)
+		#name = self.notesTree.currentItemName()
+		self.openNote(name)
 
 	def saveCurrentNote(self):
 		item = self.notesTree.currentItem()
@@ -176,12 +183,10 @@ class MikiWindow(QMainWindow):
 	def saveNote(self, current, previous):
 		if previous is None:
 			return
-		if self.editted == 0:
-			return
-		self.editted = 1
+		#if self.editted == 0:
+		#	return
+		#self.editted = 1
 		self.filename = previous.text(0)+".markdown"
-		#self.path = self.getPath(previous)
-		#fh = QFile(self.path + self.filename)
 		name = self.notesTree.ItemToName(previous)
 		fh = QFile(name + '.markdown')
 		try:
@@ -212,12 +217,9 @@ class MikiWindow(QMainWindow):
 	def noteEditted(self):
 		self.editted = 1
 		self.updateLiveView()
-		item = self.notesTree.currentItem()
 		name = self.notesTree.currentItemName()
-		#path = self.getPath(item)
 		self.actionSave.setEnabled(True)
 		self.statusBar.showMessage(name + '*')
-
 
 	def importPage(self):
 		filename = QFileDialog.getOpenFileName(self, self.tr('Import file'), '',
@@ -236,14 +238,6 @@ class MikiWindow(QMainWindow):
 		fh.close()
 		QTreeWidgetItem(self.notesTree, [note.baseName()])
 
-
-	def showNote(self, noteItem):
-		#self.path = self.getPath(self.notesTree.currentItem())
-		name = self.notesTree.currentItemName()
-		self.openNote(name)
-		self.setCurrentFile()
-		self.updateRecentViewedNotes()
-		
 	def act(self, name, icon=None, trig=None, trigbool=None, shct=None):
 		if icon:
 			action = QAction(self.actIcon(icon), name, self)
@@ -324,8 +318,8 @@ class MikiWindow(QMainWindow):
 	
 	def setCurrentFile(self):
 		noteItem = self.notesTree.currentItem()
-		#notePath = self.getPath(noteItem)
-		name = self.notesTree.currentItemName()
+		#name = self.notesTree.currentItemName()
+		name = self.notesTree.ItemToName(noteItem)
 		files = readListFromSettings(settings, 'recentViewedNoteList')
 		for f in files:
 			if f == name:
@@ -334,19 +328,21 @@ class MikiWindow(QMainWindow):
 		if len(files) > 10:
 			del files[10:]
 		writeListToSettings(settings, 'recentViewedNoteList', files)
+		#self.updateRecentViewedNotes()
 	
 	def updateRecentViewedNotes(self):
 		self.viewedList.clear()
-		viewedListActions = []
+		self.viewedListActions = []
 		filesOld = readListFromSettings(settings, 'recentViewedNoteList')
 		files = []
-		for f in filesOld:
+		for f in reversed(filesOld):
 			if self.existsNote(f):
-				files.append(f)
+				files.insert(0, f)
+				#files.append(f)
 				splitName = f.split('/')
-				viewedListActions.append(self.act(splitName[-1], trig=self.openFunction(f)))
+				self.viewedListActions.append(self.act(splitName[-1], trigbool=self.openFunction(f)))
 		writeListToSettings(settings, 'recentViewedNoteList', files)
-		for action in viewedListActions:
+		for action in self.viewedListActions:
 			self.viewedList.addAction(action)
 	
 	def existsNote(self, noteFullname):
@@ -354,27 +350,21 @@ class MikiWindow(QMainWindow):
 		fh = QFile(filename)
 		return fh.exists()
 
-	def openFunction(self, noteFullName):
-		return lambda: self.openNote(noteFullName)
-
-	def openNote(self, noteFullName):
-		filename = noteFullName + '.markdown'
-		fh = QFile(filename)
-		try:
-			if not fh.open(QIODevice.ReadOnly):
-				raise IOError(fh.errorString())
-		except IOError as e:
-			QMessageBox.warning(self, 'Read Error', 
-					'Failed to open %s: %s' % (filename, e))
-		finally:
-			if fh is not None:
-				noteBody = QTextStream(fh).readAll()
-				fh.close()
-				self.notesEdit.setPlainText(noteBody)
-				self.editted = 0
-				self.updateView()
-				self.statusBar.showMessage(noteFullName)
-				
+	def openFunction(self, name):
+		item = self.notesTree.NameToItem(name)
+		return lambda: self.notesTree.setCurrentItem(item)
+	
+	def closeEvent(self, event):
+		reply = QMessageBox.question(self, 'Message',
+				'Are you sure to quit?', 
+				QMessageBox.Yes|QMessageBox.No,
+				QMessageBox.No)
+		if reply == QMessageBox.Yes:
+			self.saveCurrentNote()
+			event.accept()
+		else:
+			event.ignore()
+			
 def main():
 	app = QApplication(sys.argv)
 	notebooks = readListFromSettings(settings, 'notebookList')
