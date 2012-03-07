@@ -12,7 +12,8 @@ from mikidown.config import *
 import markdown
 
 md = markdown.Markdown()
-__version__ = "0.0.1"
+__appname__ = 'mikidown'
+__version__ = '0.0.1'
 
 settings = QSettings('mikidown', 'mikidown')
 
@@ -61,13 +62,15 @@ class MikiWindow(QMainWindow):
 		self.rightSplitter.setStretchFactor(0, 0)
 
 		self.actionNewPage = self.act(self.tr('New Page...'), shct=QKeySequence.New, trig=self.notesTree.newPage)
-		self.actionNewSubpage = self.act(self.tr('New Subpage...'), 
-				trig=lambda item=self.notesTree.currentItem(): self.notesTree.newSubpage(item))
+		self.actionNewSubpage = self.act(self.tr('New Subpage...'),trig=self.notesTree.newSubpage)
 		self.actionImportPage = self.act(self.tr('Import Page...'), trig=self.importPage)
 		self.actionSave = self.act(self.tr('Save'), shct=QKeySequence.Save, trig=self.saveCurrentNote)
 		self.actionSave.setEnabled(False)
-		self.actionSaveAs = self.act(self.tr('Save As...'), shct=QKeySequence.SaveAs, 
-				trig=lambda item=self.notesEdit.isVisible(): self.saveNoteAs(item))
+		self.actionSaveAs = self.act(self.tr('Save As...'), shct=QKeySequence.SaveAs, trig=self.saveNoteAs)
+		self.actionHtml = self.act(self.tr('to HTML'), trig=self.saveNoteAsHtml)
+		self.actionPdf = self.act(self.tr('to PDF'), trig=self.saveNoteAsPdf)
+		self.actionRenamePage = self.act(self.tr('Rename Page...'), trig=self.notesTree.renamePageWrapper)
+		self.actionDelPage = self.act(self.tr('Delete Page'), trig=self.notesTree.delPageWrapper)
 		self.actionQuit = self.act(self.tr('Quit'), shct=QKeySequence.Quit)
 		self.connect(self.actionQuit, SIGNAL('triggered()'), self, SLOT('close()'))
 		self.actionQuit.setMenuRole(QAction.QuitRole)
@@ -89,20 +92,30 @@ class MikiWindow(QMainWindow):
 
 		self.menuBar = QMenuBar(self)
 		self.setMenuBar(self.menuBar)
-		self.menuFile = self.menuBar.addMenu('File')
-		self.menuEdit = self.menuBar.addMenu('Edit')
-		self.menuSearch = self.menuBar.addMenu('Search')
-		self.menuHelp = self.menuBar.addMenu('Help')
+		self.menuFile = self.menuBar.addMenu(self.tr('&File'))
+		self.menuEdit = self.menuBar.addMenu(self.tr('&Edit'))
+		self.menuView = self.menuBar.addMenu(self.tr('&View'))
+		self.menuSearch = self.menuBar.addMenu(self.tr('&Search'))
+		self.menuHelp = self.menuBar.addMenu(self.tr('&Help'))
+		# menuFile
 		self.menuFile.addAction(self.actionNewPage)
 		self.menuFile.addAction(self.actionNewSubpage)
 		self.menuFile.addAction(self.actionImportPage)
 		self.menuFile.addSeparator()
 		self.menuFile.addAction(self.actionSave)
 		self.menuFile.addAction(self.actionSaveAs)
+		self.menuExport = self.menuFile.addMenu(self.tr('Export'))
+		self.menuExport.addAction(self.actionHtml)
+		self.menuExport.addAction(self.actionPdf)
+		self.menuFile.addSeparator()
+		self.menuFile.addAction(self.actionRenamePage)
+		self.menuFile.addAction(self.actionDelPage)
 		self.menuFile.addSeparator()
 		self.menuFile.addAction(self.actionQuit)
+		# menuEdit
 		self.menuEdit.addAction(self.actionUndo)
 		self.menuEdit.addAction(self.actionRedo)
+		# menuSearch
 		self.menuSearch.addAction(self.menuActionFind)
 		self.menuSearch.addAction(self.menuActionSearch)
 
@@ -147,7 +160,7 @@ class MikiWindow(QMainWindow):
 		if not QDir(notePath).exists():
 			return
 		noteDir = QDir(notePath)
-		self.notesList = noteDir.entryInfoList(["*.markdown"],
+		self.notesList = noteDir.entryInfoList(['*.markdown'],
 							   QDir.NoFilter,
 							   QDir.Name|QDir.IgnoreCase)
 		for note in self.notesList:
@@ -203,15 +216,15 @@ class MikiWindow(QMainWindow):
 		if self.editted == 0:
 			return
 		#self.editted = 1
-		self.filename = previous.text(0)+".markdown"
+		self.filename = previous.text(0)+'.markdown'
 		name = self.notesTree.itemToPagePath(previous)
 		fh = QFile(name + '.markdown')
 		try:
 			if not fh.open(QIODevice.WriteOnly):
 				raise IOError(fh.errorString())
 		except IOError as e:
-			QMessageBox.warning(self, "Save Error",
-						"Failed to save %s: %s" % (self.filename, e))
+			QMessageBox.warning(self, 'Save Error',
+						'Failed to save %s: %s' % (self.filename, e))
 		finally:
 			if fh is not None:
 				savestream = QTextStream(fh)
@@ -222,16 +235,45 @@ class MikiWindow(QMainWindow):
 				self.updateView()
 				self.editted = 0
 	
-	def saveNoteAs(self, test):
-		filename = QFileDialog.getSaveFileName(self, self.tr('Save as'), '',
+	def saveNoteAs(self):
+		fileName = QFileDialog.getSaveFileName(self, self.tr('Save as'), '',
 				'(*.markdown *.mkd *.md);;'+self.tr('All files(*)'))
-		if filename == '':
+		if fileName == '':
 			return
-		fh = QFile(filename)
+		if not QFileInfo(fileName).suffix():
+			fileName.append('.markdown')
+		fh = QFile(fileName)
 		fh.open(QIODevice.WriteOnly)
 		savestream = QTextStream(fh)
 		savestream << self.notesEdit.toPlainText()
 		fh.close()
+
+	def saveNoteAsHtml(self):
+		fileName = QFileDialog.getSaveFileName(self, self.tr('Export to HTML'), '',
+				'(*.html *.htm);;'+self.tr('All files(*)'))
+		if fileName == '':
+			return
+		if not QFileInfo(fileName).suffix():
+			fileName += '.html'
+		fh = QFile(fileName)
+		fh.open(QIODevice.WriteOnly)
+		savestream = QTextStream(fh)
+		savestream << self.parseText()
+		fh.close()
+		
+	def saveNoteAsPdf(self):
+		fileName = QFileDialog.getSaveFileName(self, self.tr('Export to PDF'), '',
+				'(*.pdf);;'+self.tr('All files(*)'))
+		if fileName == '':
+			return
+		if not QFileInfo(fileName).suffix():
+			fileName += '.pdf'
+		printer = QPrinter(QPrinter.HighResolution)
+		printer.setDocName(self.notesTree.currentItem().text(0))
+		printer.setCreator(__appname__ + ' ' + __version__)
+		printer.setOutputFormat(QPrinter.PdfFormat)
+		printer.setOutputFileName(fileName)
+		self.notesView.print_(printer)
 
 	def noteEditted(self):
 		self.editted = 1
@@ -263,11 +305,18 @@ class MikiWindow(QMainWindow):
 		fh.close()
 		note = QFileInfo(filename)
 		fh = QFile(note.baseName()+'.markdown')
+		if fh.exists():
+			QMessageBox.warning(self, 'Import Error', 
+					'Page already exists: %s' % note.baseName())
+			return
 		fh.open(QIODevice.WriteOnly)
 		savestream = QTextStream(fh)
 		savestream << fileBody
 		fh.close()
 		QTreeWidgetItem(self.notesTree, [note.baseName()])
+		self.notesTree.sortItems(0, Qt.AscendingOrder)
+		item = self.notesTree.pagePathToItem(note.baseName())
+		self.notesTree.setCurrentItem(item)
 
 	def act(self, name, icon=None, trig=None, trigbool=None, shct=None):
 		if icon:
@@ -291,11 +340,15 @@ class MikiWindow(QMainWindow):
 		self.notesEdit.setVisible(viewmode)
 
 	def liveView(self, viewmode):
+		sizes = self.noteSplitter.sizes()
 		if self.actionEdit.isChecked():
 			self.actionEdit.setChecked(False)
 			self.notesView.setVisible(viewmode)
+			splitSize = [sizes[0]*0.45, sizes[0]*0.55]
 		else:
 			self.notesEdit.setVisible(viewmode)
+			splitSize = [sizes[1]*0.45, sizes[1]*0.55]
+		self.noteSplitter.setSizes(splitSize)
 		self.updateView()
 
 	def updateView(self):
@@ -386,6 +439,7 @@ class MikiWindow(QMainWindow):
 		return lambda: self.notesTree.setCurrentItem(item)
 	
 	def closeEvent(self, event):
+		event.accept()
 		reply = QMessageBox.question(self, 'Message',
 				'Are you sure to quit?', 
 				QMessageBox.Yes|QMessageBox.No,

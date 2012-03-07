@@ -106,14 +106,13 @@ class MikiTree(QTreeWidget):
 	
 	def treeMenu(self):
 		menu = QMenu()
-		menu.addAction("New Page", self.newPage)
-		self.subpageCallback = lambda item=self.currentItem(): self.newSubpage(item)
-		menu.addAction("New Subpage", self.subpageCallback)
+		menu.addAction("New Page...", self.newPage)
+		menu.addAction("New Subpage...", self.newSubpage)
 		menu.addSeparator()
 		menu.addAction("Collapse All", self.collapseAll)
 		menu.addAction("Uncollapse All", self.uncollapseAll)
 		menu.addSeparator()
-		menu.addAction('Rename Page', lambda item=self.currentItem(): self.renamePage(item))
+		menu.addAction('Rename Page...', lambda item=self.currentItem(): self.renamePage(item))
 		self.delCallback = lambda item=self.currentItem(): self.delPage(item)
 		menu.addAction("Delete Page", self.delCallback)
 		menu.exec_(QCursor.pos())
@@ -124,52 +123,37 @@ class MikiTree(QTreeWidget):
 		else:
 			parent = self.currentItem().parent()
 			if parent is not None:
-				self.newSubpage(parent)
+				self.newPageCore(parent)
 			else:
-				self.newSubpage(self)
+				self.newPageCore(self)
 
-	def newSubpage(self, item):
-		print(item.text(0))
-		path = self.itemToPagePath(item)
-		print(path)
-		dialog = ItemDialog(self)
-		dialog.setPath(path)
-		if dialog.exec_():
-			self.filename = dialog.editor.text()
-			self.newPageWrapper(item, self.filename)
-			self.sortItems(0, Qt.AscendingOrder)
+	def newSubpage(self):
+		item = self.currentItem()
+		self.newPageCore(item)
 			
-		self.editted = 0
-
-	def newPageWrapper(self, item, pageName):
-		#pagePath = self.getPath(item)
+	def newPageCore(self, item):
 		pagePath = self.itemToPagePath(item)
-		if hasattr(item, 'text'):
-			pagePath = pagePath + '/'
-		if not QDir(pagePath).exists():
-			QDir.current().mkdir(pagePath)
-		fileName = pagePath + pageName + '.markdown'
-		fh = QFile(fileName)
-		fh.open(QIODevice.WriteOnly)
-		savestream = QTextStream(fh)
-		savestream << '# ' + pageName + '\n'
-		savestream << 'Created ' + str(datetime.date.today()) + '\n\n'
-		fh.close()
-		QTreeWidgetItem(item, [pageName])
-		if pagePath != '':
-			self.expandItem(item)
+		dialog = ItemDialog(self)
+		dialog.setPath(pagePath)
+		if dialog.exec_():
+			newPageName = dialog.editor.text()
+			if hasattr(item, 'text'):
+				pagePath = pagePath + '/'
+			if not QDir(pagePath).exists():
+				QDir.current().mkdir(pagePath)
+			fileName = pagePath + newPageName + '.markdown'
+			fh = QFile(fileName)
+			fh.open(QIODevice.WriteOnly)
+			savestream = QTextStream(fh)
+			savestream << '# ' + newPageName + '\n'
+			savestream << 'Created ' + str(datetime.date.today()) + '\n\n'
+			fh.close()
+			QTreeWidgetItem(item, [newPageName])
+			self.sortItems(0, Qt.AscendingOrder)
+			if pagePath != '':
+				self.expandItem(item)
 
 	def dropEvent(self, event):
-		#event.setDropAction(Qt.MoveAction)
-		#event.accept()
-		#sourceItem = self.currentItem()
-		#sourcePath = self.getPath(sourceItem)
-		#targetItem = self.itemAt(event.pos())
-		#targetPath = self.getPath(targetItem)
-		#oldName = sourcePath + sourceItem.text(0) + '.markdown'
-		#newName = targetPath + targetItem.text(0) + '/' + sourceItem.text(0) + '.markdown'
-		#oldDir = sourcePath + sourceItem.text(0)
-		#newDir = targetPath + targetItem.text(0) + '/' + sourceItem.text(0)
 		sourceItem = self.currentItem()
 		sourcePath = self.itemToPagePath(sourceItem)
 		targetItem = self.itemAt(event.pos())
@@ -180,40 +164,48 @@ class MikiTree(QTreeWidget):
 		newDir = targetPath + '/' + sourceItem.text(0)
 		if not QDir(newName).exists():
 			QDir.current().mkpath(targetPath)
-			#QDir.current().mkpath(targetPath+targetItem.text(0))
 		QDir.current().rename(oldName, newName)
 		if sourceItem.childCount() != 0: 
-			#if not QDir(newDir).exists():
-			#	QDir.current.mkpath(newDir)
 			QDir.current().rename(oldDir, newDir)
 		if sourceItem.parent() is not None:
 			parentItem = sourceItem.parent()
-			#parentPath = self.getPath(parentItem)
 			parentPath = self.itemToPagePath(parentItem)
 			if parentItem.childCount() == 1:
 				QDir.current().rmdir(parentPath)
-				#QDir.current().rmdir(parentPath + parentItem.text(0))
 		QTreeWidget.dropEvent(self, event)
 
+	def renamePageWrapper(self):
+		item = self.currentItem()
+		self.renamePage(item)
+
 	def renamePage(self, item):
+		parent = item.parent()
+		parentPath = self.itemToPagePath(parent)
 		dialog = ItemDialog(self)
+		dialog.setPath(parentPath)
 		dialog.setText(item.text(0))
 		if dialog.exec_():
-			pageName = dialog.editor.text()
-			pagePath = self.getPath(item)
-			oldName = pagePath + item.text(0) + '.markdown'
-			newName = pagePath + pageName + '.markdown'
+			newPageName = dialog.editor.text()
+			#pagePath = self.getPath(item)
+			if hasattr(item, 'text'):		# if item is not QTreeWidget
+				parentPath = parentPath + '/'
+			oldName = parentPath + item.text(0)  + '.markdown'
+			newName = parentPath + newPageName + '.markdown'
 			QDir.current().rename(oldName, newName)
 			if item.childCount() != 0:
-				oldDir = pagePath + item.text(0)
-				newDir = pagePath + pageName
+				oldDir = parentPath + item.text(0)
+				newDir = parentPath + newPageName
 				QDir.current().rename(oldDir, newDir)
-			item.setText(0, pageName)
+			item.setText(0, newPageName)
 			self.sortItems(0, Qt.AscendingOrder)
 
 	def exists(self, item):
 		notePath = self.itemToPagePath(item) + '.markdown'
 		return QFile.exists(notePath)
+
+	def delPageWrapper(self):
+		item = self.currentItem()
+		self.delPage(item)
 
 	def delPage(self, item):
 		index = item.childCount()
@@ -222,22 +214,19 @@ class MikiTree(QTreeWidget):
 			self.dirname = item.child(index).text(0)
 			self.delPage(item.child(index))
 
-		path = self.getPath(item)
-		flag = QDir.current().remove(path + item.text(0) + '.markdown')
-		#fh = QFile(path + item.text(0) + '.markdown')
-		#fh2 = QFile(QDir.currentPath()+'/'+path+item.text(0)+'.markdown')
-		#flag = fh2.remove()
+		pagePath = self.itemToPagePath(item)
+		QDir.current().remove(pagePath + '.markdown')
 		parent = item.parent()
+		parentPath = self.itemToPagePath(parent)
 		if parent is not None:
 			index = parent.indexOfChild(item)
 			parent.takeChild(index)
-			if parent.childCount() == 0:
-				QDir.current().rmdir(path)
+			if parent.childCount() == 0:	#if no child, dir not needed
+				QDir.current().rmdir(parentPath)
 		else:
 			index = self.indexOfTopLevelItem(item)
 			self.takeTopLevelItem(index)	
-		#self.showNote(self.currentItem())
-		QDir.current().rmdir(path + item.text(0))
+		QDir.current().rmdir(pagePath)
 
 	def collapseAll(self):
 		self.collapseAll()
