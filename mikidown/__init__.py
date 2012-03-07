@@ -15,7 +15,7 @@ md = markdown.Markdown()
 __appname__ = 'mikidown'
 __version__ = '0.0.1'
 
-settings = QSettings('mikidown', 'mikidown')
+#settings = QSettings('mikidown', 'mikidown')
 
 class RecentChanged(QListWidget):
 	def __init__(self, parent=None):
@@ -57,13 +57,14 @@ class MikiWindow(QMainWindow):
 		self.notesTree = MikiTree()
 		self.changedList = RecentChanged()
 		self.tabWidget.addTab(self.notesTree, 'Index')
-		self.tabWidget.addTab(self.changedList, 'Recently Changed')
+		self.tabWidget.addTab(self.changedList, 'Modified')
 		#self.rightSplitter.setSizes([600,20,600,580])
 		self.rightSplitter.setStretchFactor(0, 0)
 
 		self.actionNewPage = self.act(self.tr('New Page...'), shct=QKeySequence.New, trig=self.notesTree.newPage)
 		self.actionNewSubpage = self.act(self.tr('New Subpage...'),trig=self.notesTree.newSubpage)
 		self.actionImportPage = self.act(self.tr('Import Page...'), trig=self.importPage)
+		self.actionOpenNotebook = self.act(self.tr('Open Notebook...'), shct=QKeySequence.Open, trig=self.openNotebook)
 		self.actionSave = self.act(self.tr('Save'), shct=QKeySequence.Save, trig=self.saveCurrentNote)
 		self.actionSave.setEnabled(False)
 		self.actionSaveAs = self.act(self.tr('Save As...'), shct=QKeySequence.SaveAs, trig=self.saveNoteAs)
@@ -80,6 +81,8 @@ class MikiWindow(QMainWindow):
 		self.actionRedo = self.act(self.tr('Redo'), shct=QKeySequence.Redo, trig=lambda: self.notesEdit.redo())
 		self.actionRedo.setEnabled(False)
 		self.notesEdit.redoAvailable.connect(self.actionRedo.setEnabled)
+		self.actionEdit = self.act('Edit', shct=QKeySequence('Ctrl+E'), trigbool=self.edit)
+		self.actionLiveView = self.act('Live Edit', shct=QKeySequence('Ctrl+R'), trigbool=self.liveView)
 		self.menuActionFind = self.act(self.tr('Find Text'), shct=QKeySequence.Find)
 		self.menuActionFind.setCheckable(True)
 		self.menuActionFind.triggered.connect(self.findBar.setVisible)
@@ -101,6 +104,7 @@ class MikiWindow(QMainWindow):
 		self.menuFile.addAction(self.actionNewPage)
 		self.menuFile.addAction(self.actionNewSubpage)
 		self.menuFile.addAction(self.actionImportPage)
+		self.menuFile.addAction(self.actionOpenNotebook)
 		self.menuFile.addSeparator()
 		self.menuFile.addAction(self.actionSave)
 		self.menuFile.addAction(self.actionSaveAs)
@@ -115,14 +119,15 @@ class MikiWindow(QMainWindow):
 		# menuEdit
 		self.menuEdit.addAction(self.actionUndo)
 		self.menuEdit.addAction(self.actionRedo)
+		# menuView
+		self.menuView.addAction(self.actionEdit)
+		self.menuView.addAction(self.actionLiveView)
 		# menuSearch
 		self.menuSearch.addAction(self.menuActionFind)
 		self.menuSearch.addAction(self.menuActionSearch)
 
 		self.toolBar = QToolBar(self.tr('toolbar'), self)
 		self.addToolBar(Qt.TopToolBarArea, self.toolBar)
-		self.actionEdit = self.act('Edit', trigbool=self.edit)
-		self.actionLiveView = self.act('Live Edit', trigbool=self.liveView)
 		self.toolBar.addAction(self.actionEdit)
 		self.toolBar.addAction(self.actionLiveView)
 		self.findEdit = QLineEdit(self.findBar)
@@ -241,7 +246,7 @@ class MikiWindow(QMainWindow):
 		if fileName == '':
 			return
 		if not QFileInfo(fileName).suffix():
-			fileName.append('.markdown')
+			fileName += '.markdown'
 		fh = QFile(fileName)
 		fh.open(QIODevice.WriteOnly)
 		savestream = QTextStream(fh)
@@ -317,6 +322,11 @@ class MikiWindow(QMainWindow):
 		self.notesTree.sortItems(0, Qt.AscendingOrder)
 		item = self.notesTree.pagePathToItem(note.baseName())
 		self.notesTree.setCurrentItem(item)
+
+	def openNotebook(self):
+		dialog = NotebookListDialog(self)
+		if dialog.exec_():
+			pass
 
 	def act(self, name, icon=None, trig=None, trigbool=None, shct=None):
 		if icon:
@@ -440,6 +450,7 @@ class MikiWindow(QMainWindow):
 	
 	def closeEvent(self, event):
 		event.accept()
+		return
 		reply = QMessageBox.question(self, 'Message',
 				'Are you sure to quit?', 
 				QMessageBox.Yes|QMessageBox.No,

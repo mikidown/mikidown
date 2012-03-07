@@ -5,6 +5,8 @@ import sys
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
+settings = QSettings('mikidown', 'mikidown')
+
 def readListFromSettings(settings, key):
 	if not settings.contains(key):
 		return []
@@ -22,9 +24,42 @@ def writeListToSettings(settings, key, value):
 	else:
 		settings.remove(key)
 	
+class NotebookListDialog(QDialog):
+	def __init__(self, parent=None):
+		super(NotebookListDialog, self).__init__(parent)
+		self.notebookList = QListWidget()
+		self.moveUp = QPushButton('<<')
+		self.moveDown = QPushButton('>>')
+		self.add = QPushButton('Add')
+		self.remove = QPushButton('Remove')
+		buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
+									 QDialogButtonBox.Cancel)
+		layout = QGridLayout()
+		layout.addWidget(self.notebookList, 0, 0, 4, 6)
+		layout.addWidget(self.moveUp, 1, 6)
+		layout.addWidget(self.moveDown, 2, 6)
+		layout.addWidget(self.add, 4, 0)
+		layout.addWidget(self.remove, 4, 1)
+		layout.addWidget(buttonBox, 4, 5, 1, 2)
+		self.setLayout(layout)
+		self.add.clicked.connect(self.actionAdd)
+		buttonBox.accepted.connect(self.accept)
+		buttonBox.rejected.connect(self.reject)
+		self.initList()
+	
+	def initList(self):
+		self.notebookList.clear()
+		notebooks = readListFromSettings(settings, 'notebookList')
+		for nb in notebooks:
+			QListWidgetItem(nb, self.notebookList)
+
+	def actionAdd(self):
+		NotebookList.create(settings)
+		self.initList()
+
+	
 class NewNotebookDlg(QDialog):
 	def __init__(self, parent=None):
-
 		super(NewNotebookDlg, self).__init__(parent)
 		self.nameEditor = QLineEdit()
 		self.nameEditor.setText('Notes')
@@ -54,8 +89,6 @@ class NewNotebookDlg(QDialog):
 		self.connect(buttonBox, SIGNAL("rejected()"), self.reject)
 
 	def browse(self):
-		#default = "~/Notebooks/Notes/"
-		#default = QDesktopServices.storageLocation(QDesktopServices.HomeLocation)
 		default = os.environ['HOME']
 		path = QFileDialog.getExistingDirectory(self, 
 				"Select Folder",
@@ -103,6 +136,8 @@ class NotebookList():
 			notebookPath = newNotebook.pathEditor.text()
 			if not os.path.isdir(notebookPath):
 				os.makedirs(notebookPath)
-			writeListToSettings(settings, 'notebookList', notebookPath)
+			notebookList = readListFromSettings(settings, 'notebookList')
+			notebookList.append(notebookPath)
+			writeListToSettings(settings, 'notebookList', notebookList)
 
 
