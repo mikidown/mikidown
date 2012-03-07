@@ -60,16 +60,23 @@ class MikiWindow(QMainWindow):
 		#self.rightSplitter.setSizes([600,20,600,580])
 		self.rightSplitter.setStretchFactor(0, 0)
 
+		self.actionNewPage = self.act(self.tr('New Page...'), shct=QKeySequence.New, trig=self.notesTree.newPage)
+		self.actionNewSubpage = self.act(self.tr('New Subpage...'), 
+				trig=lambda item=self.notesTree.currentItem(): self.notesTree.newSubpage(item))
 		self.actionImportPage = self.act(self.tr('Import Page...'), trig=self.importPage)
 		self.actionSave = self.act(self.tr('Save'), shct=QKeySequence.Save, trig=self.saveCurrentNote)
 		self.actionSave.setEnabled(False)
-		self.actionSaveAs = self.act(self.tr('Save As...'), shct=QKeySequence.SaveAs, trig=lambda item=self.notesEdit.isVisible(): self.saveNoteAs(item))
+		self.actionSaveAs = self.act(self.tr('Save As...'), shct=QKeySequence.SaveAs, 
+				trig=lambda item=self.notesEdit.isVisible(): self.saveNoteAs(item))
 		self.actionQuit = self.act(self.tr('Quit'), shct=QKeySequence.Quit)
 		self.connect(self.actionQuit, SIGNAL('triggered()'), self, SLOT('close()'))
 		self.actionQuit.setMenuRole(QAction.QuitRole)
-		self.actionUndo = self.act(self.tr('Undo'), trig=lambda: self.notesEdit.undo())
+		self.actionUndo = self.act(self.tr('Undo'), shct=QKeySequence.Undo, trig=lambda: self.notesEdit.undo())
 		self.actionUndo.setEnabled(False)
 		self.notesEdit.undoAvailable.connect(self.actionUndo.setEnabled)
+		self.actionRedo = self.act(self.tr('Redo'), shct=QKeySequence.Redo, trig=lambda: self.notesEdit.redo())
+		self.actionRedo.setEnabled(False)
+		self.notesEdit.redoAvailable.connect(self.actionRedo.setEnabled)
 		self.menuActionFind = self.act(self.tr('Find Text'), shct=QKeySequence.Find)
 		self.menuActionFind.setCheckable(True)
 		self.menuActionFind.triggered.connect(self.findBar.setVisible)
@@ -86,6 +93,8 @@ class MikiWindow(QMainWindow):
 		self.menuEdit = self.menuBar.addMenu('Edit')
 		self.menuSearch = self.menuBar.addMenu('Search')
 		self.menuHelp = self.menuBar.addMenu('Help')
+		self.menuFile.addAction(self.actionNewPage)
+		self.menuFile.addAction(self.actionNewSubpage)
 		self.menuFile.addAction(self.actionImportPage)
 		self.menuFile.addSeparator()
 		self.menuFile.addAction(self.actionSave)
@@ -93,6 +102,7 @@ class MikiWindow(QMainWindow):
 		self.menuFile.addSeparator()
 		self.menuFile.addAction(self.actionQuit)
 		self.menuEdit.addAction(self.actionUndo)
+		self.menuEdit.addAction(self.actionRedo)
 		self.menuSearch.addAction(self.menuActionFind)
 		self.menuSearch.addAction(self.menuActionSearch)
 
@@ -112,21 +122,25 @@ class MikiWindow(QMainWindow):
 		self.findBar.setVisible(False)
 		
 		self.statusBar = QStatusBar(self)
-		self.setStatusBar(self.statusBar)		
+		self.setStatusBar(self.statusBar)
+		self.statusLabel = QLabel(self)
+		self.statusBar.addWidget(self.statusLabel, 1)
 		
 		#self.connect(self.notesTree, SIGNAL('customContextMenuRequested(QPoint)'), self.treeMenu)
 		self.notesTree.currentItemChanged.connect(self.currentItemChangedWrapper)
-		self.connect(self.notesEdit,
-					 SIGNAL('textChanged()'),
-					 self.noteEditted)
+		#self.connect(self.notesEdit, SIGNAL('textChanged()'), self.noteEditted)
 
+		self.notesEdit.document().modificationChanged.connect(self.modificationChanged)
 		self.notesView.page().linkHovered.connect(self.linkHovered)
 		QDir.setCurrent(notebookPath)
+		#QSettings.setPath(QSettings.NativeFormat, QSettings.UserScope, notebookPath)
+		#self.notebookSettings = QSettings('mikidown', 'notebook')
+		self.notebookSettings = QSettings(notebookPath+'/notebook.conf', QSettings.NativeFormat)
 		self.initTree(notebookPath, self.notesTree)
 		self.updateRecentViewedNotes()
-		files = readListFromSettings(settings, 'recentViewedNoteList')
+		files = readListFromSettings(self.notebookSettings, 'recentViewedNoteList')
 		if len(files) != 0:
-			item = self.notesTree.NameToItem(files[0])
+			item = self.notesTree.pagePathToItem(files[0])
 			self.notesTree.setCurrentItem(item)
 
 	def initTree(self, notePath, parent):
@@ -157,21 +171,24 @@ class MikiWindow(QMainWindow):
 				noteBody = QTextStream(fh).readAll()
 				fh.close()
 				self.notesEdit.setPlainText(noteBody)
-				self.editted = 0
-				self.actionSave.setEnabled(False)
+				#self.editted = 0
+				#self.actionSave.setEnabled(False)
+				self.notesEdit.document().setModified(False)
 				self.updateView()
 				self.setCurrentFile()
 				self.updateRecentViewedNotes()
 				self.viewedListActions[-1].setChecked(True)
-				self.statusBar.showMessage(noteFullName)
+				self.statusLabel.setText(noteFullName)
+				#self.statusBar.showMessage(noteFullName)
 
 	def currentItemChangedWrapper(self, current, previous):
 		if current is None:
 			return
-		self.saveNote(current, previous)
-		name = self.notesTree.ItemToName(current)
-		#name = self.notesTree.currentItemName()
+		if self.notesTree.exists(previous):
+			self.saveNote(current, previous)
+		name = self.notesTree.itemToPagePath(current)
 		self.openNote(name)
+		#name = self.notesTree.currentItemName()
 
 	def saveCurrentNote(self):
 		item = self.notesTree.currentItem()
@@ -183,11 +200,11 @@ class MikiWindow(QMainWindow):
 	def saveNote(self, current, previous):
 		if previous is None:
 			return
-		#if self.editted == 0:
-		#	return
+		if self.editted == 0:
+			return
 		#self.editted = 1
 		self.filename = previous.text(0)+".markdown"
-		name = self.notesTree.ItemToName(previous)
+		name = self.notesTree.itemToPagePath(previous)
 		fh = QFile(name + '.markdown')
 		try:
 			if not fh.open(QIODevice.WriteOnly):
@@ -200,8 +217,10 @@ class MikiWindow(QMainWindow):
 				savestream = QTextStream(fh)
 				savestream << self.notesEdit.toPlainText()
 				fh.close()
-				self.actionSave.setEnabled(False)
+				self.notesEdit.document().setModified(False)
+				#self.actionSave.setEnabled(False)
 				self.updateView()
+				self.editted = 0
 	
 	def saveNoteAs(self, test):
 		filename = QFileDialog.getSaveFileName(self, self.tr('Save as'), '',
@@ -219,7 +238,19 @@ class MikiWindow(QMainWindow):
 		self.updateLiveView()
 		name = self.notesTree.currentItemName()
 		self.actionSave.setEnabled(True)
-		self.statusBar.showMessage(name + '*')
+		#self.statusBar.showMessage(name + '*')
+		self.statusLabel.setText(name + '*')
+
+	def modificationChanged(self, changed):
+		self.actionSave.setEnabled(changed)
+		name = self.notesTree.currentItemName()
+		self.statusBar.clearMessage()
+		if changed:
+			self.editted = 1
+			self.statusLabel.setText(name + '*')
+		else:
+			self.editted = 0
+			self.statusLabel.setText(name)
 
 	def importPage(self):
 		filename = QFileDialog.getOpenFileName(self, self.tr('Import file'), '',
@@ -319,21 +350,21 @@ class MikiWindow(QMainWindow):
 	def setCurrentFile(self):
 		noteItem = self.notesTree.currentItem()
 		#name = self.notesTree.currentItemName()
-		name = self.notesTree.ItemToName(noteItem)
-		files = readListFromSettings(settings, 'recentViewedNoteList')
+		name = self.notesTree.itemToPagePath(noteItem)
+		files = readListFromSettings(self.notebookSettings, 'recentViewedNoteList')
 		for f in files:
 			if f == name:
 				files.remove(f)
 		files.insert(0, name)
 		if len(files) > 10:
 			del files[10:]
-		writeListToSettings(settings, 'recentViewedNoteList', files)
+		writeListToSettings(self.notebookSettings, 'recentViewedNoteList', files)
 		#self.updateRecentViewedNotes()
 	
 	def updateRecentViewedNotes(self):
 		self.viewedList.clear()
 		self.viewedListActions = []
-		filesOld = readListFromSettings(settings, 'recentViewedNoteList')
+		filesOld = readListFromSettings(self.notebookSettings, 'recentViewedNoteList')
 		files = []
 		for f in reversed(filesOld):
 			if self.existsNote(f):
@@ -341,7 +372,7 @@ class MikiWindow(QMainWindow):
 				#files.append(f)
 				splitName = f.split('/')
 				self.viewedListActions.append(self.act(splitName[-1], trigbool=self.openFunction(f)))
-		writeListToSettings(settings, 'recentViewedNoteList', files)
+		writeListToSettings(self.notebookSettings, 'recentViewedNoteList', files)
 		for action in self.viewedListActions:
 			self.viewedList.addAction(action)
 	
@@ -351,7 +382,7 @@ class MikiWindow(QMainWindow):
 		return fh.exists()
 
 	def openFunction(self, name):
-		item = self.notesTree.NameToItem(name)
+		item = self.notesTree.pagePathToItem(name)
 		return lambda: self.notesTree.setCurrentItem(item)
 	
 	def closeEvent(self, event):

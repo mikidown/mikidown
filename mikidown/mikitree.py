@@ -21,10 +21,28 @@ class ItemDialog(QDialog):
 		self.connect(self.buttonBox, SIGNAL("accepted()"), self.accept)
 		self.connect(self.buttonBox, SIGNAL("rejected()"), self.reject)
 
+	def setPath(self, path):
+		self.path = path
+	
+	def setText(self, text):
+		self.editor.setText(text)
+		self.editor.selectAll()
+
 	def updateUi(self):
 		self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(
 				self.editor.text()!="")
+	
+	def accept(self):
+		if self.path == '':
+			notePath = self.editor.text()
+		else:
+			notePath = self.path + '/' + self.editor.text()
 
+		if QFile.exists(notePath+'.markdown'):
+			QMessageBox.warning(self, 'Error',
+					'Page already exists: %s' % notePath)
+		else:
+			QDialog.accept(self)
 
 class MikiTree(QTreeWidget):
 
@@ -42,21 +60,23 @@ class MikiTree(QTreeWidget):
 		self.customContextMenuRequested.connect(self.treeMenu)
 		
 
-	def ItemToName(self, item):
-		name = item.text(0)
+	def itemToPagePath(self, item):
+		path = ''
+		if not hasattr(item, 'text'):
+			return path
+		path = item.text(0)
 		parent = item.parent()
 		while parent is not None:
-			name = parent.text(0) + '/' + name
+			path = parent.text(0) + '/' + path
 			parent = parent.parent()
-		return name
+		return path
 
-	def NameToItem(self, name):
+	def pagePathToItem(self, name):
 		splitPath = name.split('/')
 		depth = len(splitPath)
 		itemList = self.findItems(splitPath[depth-1], Qt.MatchExactly|Qt.MatchRecursive)
 		if len(itemList) == 1:
 			return itemList[0]
-
 		for item in itemList:
 			parent = item.parent()
 			for i in range(depth):
@@ -72,7 +92,7 @@ class MikiTree(QTreeWidget):
 	
 	def currentItemName(self):
 		item = self.currentItem()
-		return self.ItemToName(item)
+		return self.itemToPagePath(item)
 
 	def getPath(self, item):
 		path = ''
@@ -109,20 +129,27 @@ class MikiTree(QTreeWidget):
 				self.newSubpage(self)
 
 	def newSubpage(self, item):
+		print(item.text(0))
+		path = self.itemToPagePath(item)
+		print(path)
 		dialog = ItemDialog(self)
+		dialog.setPath(path)
 		if dialog.exec_():
 			self.filename = dialog.editor.text()
 			self.newPageWrapper(item, self.filename)
 			self.sortItems(0, Qt.AscendingOrder)
 			
 		self.editted = 0
+
 	def newPageWrapper(self, item, pageName):
-		pagePath = self.getPath(item)
+		#pagePath = self.getPath(item)
+		pagePath = self.itemToPagePath(item)
 		if hasattr(item, 'text'):
-			pagePath = pagePath + item.text(0) + '/'
+			pagePath = pagePath + '/'
 		if not QDir(pagePath).exists():
 			QDir.current().mkdir(pagePath)
-		fh = QFile(pagePath+pageName+'.markdown')
+		fileName = pagePath + pageName + '.markdown'
+		fh = QFile(fileName)
 		fh.open(QIODevice.WriteOnly)
 		savestream = QTextStream(fh)
 		savestream << '# ' + pageName + '\n'
@@ -135,16 +162,25 @@ class MikiTree(QTreeWidget):
 	def dropEvent(self, event):
 		#event.setDropAction(Qt.MoveAction)
 		#event.accept()
+		#sourceItem = self.currentItem()
+		#sourcePath = self.getPath(sourceItem)
+		#targetItem = self.itemAt(event.pos())
+		#targetPath = self.getPath(targetItem)
+		#oldName = sourcePath + sourceItem.text(0) + '.markdown'
+		#newName = targetPath + targetItem.text(0) + '/' + sourceItem.text(0) + '.markdown'
+		#oldDir = sourcePath + sourceItem.text(0)
+		#newDir = targetPath + targetItem.text(0) + '/' + sourceItem.text(0)
 		sourceItem = self.currentItem()
-		sourcePath = self.getPath(sourceItem)
+		sourcePath = self.itemToPagePath(sourceItem)
 		targetItem = self.itemAt(event.pos())
-		targetPath = self.getPath(targetItem)
-		oldName = sourcePath + sourceItem.text(0) + '.markdown'
-		newName = targetPath + targetItem.text(0) + '/' + sourceItem.text(0) + '.markdown'
-		oldDir = sourcePath + sourceItem.text(0)
-		newDir = targetPath + targetItem.text(0) + '/' + sourceItem.text(0)
+		targetPath = self.itemToPagePath(targetItem)
+		oldName = sourcePath + '.markdown'
+		newName = targetPath + '/' + sourceItem.text(0) + '.markdown'
+		oldDir = sourcePath
+		newDir = targetPath + '/' + sourceItem.text(0)
 		if not QDir(newName).exists():
-			QDir.current().mkpath(targetPath+targetItem.text(0))
+			QDir.current().mkpath(targetPath)
+			#QDir.current().mkpath(targetPath+targetItem.text(0))
 		QDir.current().rename(oldName, newName)
 		if sourceItem.childCount() != 0: 
 			#if not QDir(newDir).exists():
@@ -152,13 +188,16 @@ class MikiTree(QTreeWidget):
 			QDir.current().rename(oldDir, newDir)
 		if sourceItem.parent() is not None:
 			parentItem = sourceItem.parent()
-			parentPath = self.getPath(parentItem)
+			#parentPath = self.getPath(parentItem)
+			parentPath = self.itemToPagePath(parentItem)
 			if parentItem.childCount() == 1:
-				QDir.current().rmdir(parentPath + parentItem.text(0))
+				QDir.current().rmdir(parentPath)
+				#QDir.current().rmdir(parentPath + parentItem.text(0))
 		QTreeWidget.dropEvent(self, event)
 
 	def renamePage(self, item):
 		dialog = ItemDialog(self)
+		dialog.setText(item.text(0))
 		if dialog.exec_():
 			pageName = dialog.editor.text()
 			pagePath = self.getPath(item)
@@ -172,6 +211,9 @@ class MikiTree(QTreeWidget):
 			item.setText(0, pageName)
 			self.sortItems(0, Qt.AscendingOrder)
 
+	def exists(self, item):
+		notePath = self.itemToPagePath(item) + '.markdown'
+		return QFile.exists(notePath)
 
 	def delPage(self, item):
 		index = item.childCount()
@@ -181,7 +223,10 @@ class MikiTree(QTreeWidget):
 			self.delPage(item.child(index))
 
 		path = self.getPath(item)
-		QDir.current().remove(path + item.text(0) + '.markdown')
+		flag = QDir.current().remove(path + item.text(0) + '.markdown')
+		#fh = QFile(path + item.text(0) + '.markdown')
+		#fh2 = QFile(QDir.currentPath()+'/'+path+item.text(0)+'.markdown')
+		#flag = fh2.remove()
 		parent = item.parent()
 		if parent is not None:
 			index = parent.indexOfChild(item)
