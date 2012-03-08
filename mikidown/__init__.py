@@ -5,21 +5,16 @@ import sys
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtWebKit import QWebView, QWebPage
-from PyQt4.QtWebKit import QGraphicsWebView
-from mikidown.mikitree import *
 from mikidown.config import *
+from mikidown.mikitree import *
 
 import markdown
 
 md = markdown.Markdown()
-__appname__ = 'mikidown'
-__version__ = '0.0.1'
-
-#settings = QSettings('mikidown', 'mikidown')
 
 class RecentChanged(QListWidget):
-	def __init__(self, parent=None):
-		super(RecentChanged, self).__init__(parent)
+    def __init__(self, parent=None):
+        super(RecentChanged, self).__init__(parent)
 
 class MikiWindow(QMainWindow):
 	def __init__(self, notebookPath=None, parent=None):
@@ -460,7 +455,7 @@ class MikiWindow(QMainWindow):
 			event.accept()
 		else:
 			event.ignore()
-			
+
 def main():
 	app = QApplication(sys.argv)
 	notebooks = readListFromSettings(settings, 'notebookList')

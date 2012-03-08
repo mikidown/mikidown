@@ -4,7 +4,10 @@ import os
 import sys
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+import mikidown
 
+__appname__ = 'mikidown'
+__version__ = '0.0.1'
 settings = QSettings('mikidown', 'mikidown')
 
 def readListFromSettings(settings, key):
@@ -23,7 +26,7 @@ def writeListToSettings(settings, key, value):
 		settings.setValue(key, value[0])
 	else:
 		settings.remove(key)
-	
+
 class NotebookListDialog(QDialog):
 	def __init__(self, parent=None):
 		super(NotebookListDialog, self).__init__(parent)
@@ -32,19 +35,25 @@ class NotebookListDialog(QDialog):
 		self.moveDown = QPushButton('>>')
 		self.add = QPushButton('Add')
 		self.remove = QPushButton('Remove')
-		buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
+		self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
 									 QDialogButtonBox.Cancel)
+		self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
 		layout = QGridLayout()
 		layout.addWidget(self.notebookList, 0, 0, 4, 6)
 		layout.addWidget(self.moveUp, 1, 6)
 		layout.addWidget(self.moveDown, 2, 6)
 		layout.addWidget(self.add, 4, 0)
 		layout.addWidget(self.remove, 4, 1)
-		layout.addWidget(buttonBox, 4, 5, 1, 2)
+		layout.addWidget(self.buttonBox, 4, 5, 1, 2)
 		self.setLayout(layout)
+
+		self.notebookList.currentRowChanged.connect(self.updateUi)
 		self.add.clicked.connect(self.actionAdd)
-		buttonBox.accepted.connect(self.accept)
-		buttonBox.rejected.connect(self.reject)
+		self.remove.clicked.connect(self.actionRemove)
+		self.moveUp.clicked.connect(self.moveItemUp)
+		self.moveDown.clicked.connect(self.moveItemDown)
+		self.buttonBox.accepted.connect(self.accept)
+		self.buttonBox.rejected.connect(self.reject)
 		self.initList()
 	
 	def initList(self):
@@ -53,11 +62,64 @@ class NotebookListDialog(QDialog):
 		for nb in notebooks:
 			QListWidgetItem(nb, self.notebookList)
 
+	def updateUi(self, row):
+		flag = (row != -1)
+		self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(flag)
+		self.remove.setEnabled(flag)
+		self.moveUp.setEnabled(flag)
+		self.moveDown.setEnabled(flag)
+
 	def actionAdd(self):
 		NotebookList.create(settings)
 		self.initList()
-
+		count = self.notebookList.count()
+		self.notebookList.setCurrentRow(count-1)
 	
+	def actionRemove(self):
+		item = self.notebookList.currentItem()
+		row = self.notebookList.currentRow()
+		notebookPath = item.text()
+		notebooks = readListFromSettings(settings, 'notebookList')
+		notebooks.remove(notebookPath)
+		writeListToSettings(settings, 'notebookList', notebooks)
+		#self.notebookList.removeItemWidget(item)
+		self.notebookList.takeItem(row)
+		#self.initList()
+		#for nb in notebooks:
+		#	if nb == notebookPath:
+		#		notebooks.remove(nb)
+	
+	def moveItemUp(self):
+		item = self.notebookList.currentItem()
+		row = self.notebookList.currentRow()
+		if row != 0:
+			#self.notebookList.removeItemWidget(item)
+			self.notebookList.takeItem(row)
+			self.notebookList.insertItem(row-1, item)
+			self.notebookList.setCurrentRow(row-1)
+	
+	def moveItemDown(self):
+		item = self.notebookList.currentItem()
+		row = self.notebookList.currentRow()
+		count = self.notebookList.count()
+		if row != count-1:
+			self.notebookList.takeItem(row)
+			self.notebookList.insertItem(row+1, item)
+			self.notebookList.setCurrentRow(row+1)
+
+	def accept(self):
+		notebookPath = self.notebookList.currentItem().text()
+		window = mikidown.MikiWindow(notebookPath)
+		window.show()
+		count = self.notebookList.count()
+		notebooks = []
+		for i in range(count):
+			path = self.notebookList.item(i).text()
+			notebooks.append(path)
+			writeListToSettings(settings, 'notebookList', notebooks)
+
+		QDialog.accept(self)
+
 class NewNotebookDlg(QDialog):
 	def __init__(self, parent=None):
 		super(NewNotebookDlg, self).__init__(parent)
@@ -67,7 +129,7 @@ class NewNotebookDlg(QDialog):
 		nameLabel.setBuddy(self.nameEditor)
 		self.pathEditor = QLineEdit()
 		#self.pathEditor.setText('~/mikidown')
-		self.pathEditor.setText(os.environ['HOME']+'/mikidown')
+		self.pathEditor.setText(os.environ['HOME']+'/mikinotes')
 		pathLabel = QLabel('Path:')
 		pathLabel.setBuddy(self.pathEditor)
 		browse = QPushButton('Browse')
