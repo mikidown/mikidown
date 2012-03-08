@@ -20,12 +20,44 @@ def readListFromSettings(settings, key):
 		return value
 
 def writeListToSettings(settings, key, value):
-	if len(value) > 1:
+	if len(value) >= 1:
 		settings.setValue(key, value)
-	elif len(value) == 1:
-		settings.setValue(key, value[0])
 	else:
 		settings.remove(key)
+
+class ListDelegate(QAbstractItemDelegate):
+	def __init__(self, parent=None):
+		super(ListDelegate, self).__init__(parent)
+
+	def paint(self, painter, option, index):
+		r = option.rect
+		fontPen = QPen(QColor.fromRgb(51,51,51), 1, Qt.SolidLine)
+
+		if option.state & QStyle.State_Selected:
+			painter.setBrush(Qt.cyan)
+			painter.drawRect(r)
+		else:
+			painter.setBrush(Qt.white if (index.row() % 2)==0 else QColor(252,252,252))
+			painter.drawRect(r)
+
+		painter.setPen(fontPen)
+
+		name = index.data(Qt.DisplayRole)
+		path = index.data(Qt.UserRole)
+
+		imageSpace = 10
+		# notebook name
+		r = option.rect.adjusted(imageSpace, 0, -10, -20)
+		painter.setFont( QFont( 'Lucida Grande', 10, QFont.Bold) )
+		painter.drawText(r.left(), r.top(), r.width(), r.height(), Qt.AlignBottom|Qt.AlignLeft, name)
+		# notebook path
+		r = option.rect.adjusted(imageSpace, 20, -10, 0)
+		painter.setFont( QFont( 'Lucida Grande', 8, QFont.Normal) )
+		painter.drawText(r.left(), r.top(), r.width(), r.height(), Qt.AlignLeft, path)
+
+	def sizeHint(self, option, index):
+		return QSize(200, 40)
+
 
 class NotebookListDialog(QDialog):
 	def __init__(self, parent=None):
@@ -47,6 +79,8 @@ class NotebookListDialog(QDialog):
 		layout.addWidget(self.buttonBox, 4, 5, 1, 2)
 		self.setLayout(layout)
 
+		self.notebookList.setItemDelegate(ListDelegate(self.notebookList))
+
 		self.notebookList.currentRowChanged.connect(self.updateUi)
 		self.add.clicked.connect(self.actionAdd)
 		self.remove.clicked.connect(self.actionRemove)
@@ -60,7 +94,14 @@ class NotebookListDialog(QDialog):
 		self.notebookList.clear()
 		notebooks = readListFromSettings(settings, 'notebookList')
 		for nb in notebooks:
-			QListWidgetItem(nb, self.notebookList)
+			item = QListWidgetItem()
+			item.setData(Qt.DisplayRole, nb[0])
+			item.setData(Qt.UserRole, nb[1])
+			self.notebookList.addItem(item)
+		
+		self.updateUi(len(notebooks)!=0)
+		self.notebookList.setCurrentRow(0)
+			#QListWidgetItem(nb, self.notebookList)
 
 	def updateUi(self, row):
 		flag = (row != -1)
@@ -78,9 +119,10 @@ class NotebookListDialog(QDialog):
 	def actionRemove(self):
 		item = self.notebookList.currentItem()
 		row = self.notebookList.currentRow()
-		notebookPath = item.text()
+		name = item.data(Qt.DisplayRole)
+		path = item.data(Qt.UserRole)
 		notebooks = readListFromSettings(settings, 'notebookList')
-		notebooks.remove(notebookPath)
+		notebooks.remove([name, path])
 		writeListToSettings(settings, 'notebookList', notebooks)
 		#self.notebookList.removeItemWidget(item)
 		self.notebookList.takeItem(row)
@@ -108,14 +150,15 @@ class NotebookListDialog(QDialog):
 			self.notebookList.setCurrentRow(row+1)
 
 	def accept(self):
-		notebookPath = self.notebookList.currentItem().text()
+		notebookPath = self.notebookList.currentItem().data(Qt.UserRole)
 		window = mikidown.MikiWindow(notebookPath)
 		window.show()
 		count = self.notebookList.count()
 		notebooks = []
 		for i in range(count):
-			path = self.notebookList.item(i).text()
-			notebooks.append(path)
+			name = self.notebookList.item(i).data(Qt.DisplayRole)
+			path = self.notebookList.item(i).data(Qt.UserRole)
+			notebooks.append([name, path])
 			writeListToSettings(settings, 'notebookList', notebooks)
 
 		QDialog.accept(self)
@@ -123,6 +166,9 @@ class NotebookListDialog(QDialog):
 class NewNotebookDlg(QDialog):
 	def __init__(self, parent=None):
 		super(NewNotebookDlg, self).__init__(parent)
+		self.setWindowTitle('Add Notebook - mikidown')
+		tipLabel = QLabel('Choose a name and folder for your notebook.' +
+				'\nThe folder can be an existing notebook folder.')
 		self.nameEditor = QLineEdit()
 		self.nameEditor.setText('Notes')
 		nameLabel = QLabel('Name:')
@@ -137,18 +183,22 @@ class NewNotebookDlg(QDialog):
 										  QDialogButtonBox.Cancel)
 
 		grid = QGridLayout()
-		grid.addWidget(nameLabel, 0, 0)
-		grid.addWidget(self.nameEditor, 0, 1)
-		grid.addWidget(pathLabel, 1, 0)
-		grid.addWidget(self.pathEditor, 1, 1)
-		grid.addWidget(browse, 1, 2)
-		grid.addWidget(buttonBox, 3, 2)
+		grid.setRowMinimumHeight(1, 10)
+		grid.setRowMinimumHeight(4, 10)
+		grid.addWidget(tipLabel, 0, 0, 1, 4)
+		grid.addWidget(nameLabel, 2, 0)
+		grid.addWidget(self.nameEditor, 2, 1, 1, 4)
+		grid.addWidget(pathLabel, 3, 0)
+		grid.addWidget(self.pathEditor, 3, 1, 1, 4)
+		grid.addWidget(browse, 3, 5)
+		grid.addWidget(buttonBox, 5, 4, 1, 2)
 		self.setLayout(grid)
 
 		self.connect(browse, SIGNAL("clicked()"),
 				self.browse)
 		self.connect(buttonBox, SIGNAL("accepted()"), self.accept)
 		self.connect(buttonBox, SIGNAL("rejected()"), self.reject)
+		self.connect(self, SIGNAL('close()'), SLOT('close()'))
 
 	def browse(self):
 		default = os.environ['HOME']
@@ -157,8 +207,9 @@ class NewNotebookDlg(QDialog):
 				default,
 				QFileDialog.ShowDirsOnly)
 		self.pathEditor.setText(path)
-
-
+	
+	def closeEvent(self, event):
+		event.accept()
 
 class NotebookInfo(object):
 	def __init__(self, uri, name=None):
@@ -199,7 +250,8 @@ class NotebookList():
 			if not os.path.isdir(notebookPath):
 				os.makedirs(notebookPath)
 			notebookList = readListFromSettings(settings, 'notebookList')
-			notebookList.append(notebookPath)
+			notebookList.append([notebookName, notebookPath])
+			# TODO: make mikidown.conf become plain text
 			writeListToSettings(settings, 'notebookList', notebookList)
 
 

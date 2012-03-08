@@ -459,11 +459,12 @@ class MikiWindow(QMainWindow):
 def main():
 	app = QApplication(sys.argv)
 	notebooks = readListFromSettings(settings, 'notebookList')
-	while len(notebooks) == 0:
+	if len(notebooks) == 0:
 		NotebookList.create(settings)
 		notebooks = readListFromSettings(settings, 'notebookList')
-
-	window = MikiWindow(notebooks[0])
+	if len(notebooks) == 0:
+		return
+	window = MikiWindow(notebooks[0][1])
 	window.show()
 	sys.exit(app.exec_())
 
