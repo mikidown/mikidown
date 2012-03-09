@@ -90,6 +90,7 @@ class MikiWindow(QMainWindow):
 		self.actionFindPrev = self.act(self.tr('Previous'), shct=QKeySequence.FindPrevious, 
 				trig=lambda:self.findText(back=True))
 		self.actionSearch = self.act(self.tr('Search'))
+		self.actionReadme = self.act(self.tr('README'), trig=self.readmeHelp)
 
 		self.menuBar = QMenuBar(self)
 		self.setMenuBar(self.menuBar)
@@ -123,6 +124,8 @@ class MikiWindow(QMainWindow):
 		# menuSearch
 		self.menuSearch.addAction(self.menuActionFind)
 		self.menuSearch.addAction(self.menuActionSearch)
+		# menuHelp
+		self.menuHelp.addAction(self.actionReadme)
 
 		self.toolBar = QToolBar(self.tr('toolbar'), self)
 		self.addToolBar(Qt.TopToolBarArea, self.toolBar)
@@ -148,6 +151,11 @@ class MikiWindow(QMainWindow):
 
 		self.notesEdit.document().modificationChanged.connect(self.modificationChanged)
 		self.notesView.page().linkHovered.connect(self.linkHovered)
+		self.notesView.page().mainFrame().contentsSizeChanged.connect(self.contentsSizeChanged)
+
+		#self.scrollPosition = 0
+		#self.contentsSize = 0
+
 		QDir.setCurrent(notebookPath)
 		#QSettings.setPath(QSettings.NativeFormat, QSettings.UserScope, notebookPath)
 		#self.notebookSettings = QSettings('mikidown', 'notebook')
@@ -299,6 +307,9 @@ class MikiWindow(QMainWindow):
 				'(*.markdown *.mkd *.md *.txt);;'+self.tr('All files(*)'))
 		if filename == '':
 			return
+		self.importPageCore(filename)
+			
+	def importPageCore(self, filename):
 		fh = QFile(filename)
 		fh.open(QIODevice.ReadOnly)
 		fileBody = QTextStream(fh).readAll()
@@ -354,14 +365,27 @@ class MikiWindow(QMainWindow):
 			self.notesEdit.setVisible(viewmode)
 			splitSize = [sizes[1]*0.45, sizes[1]*0.55]
 		self.noteSplitter.setSizes(splitSize)
+		self.saveCurrentNote()
 		self.updateView()
 
 	def updateView(self):
+		viewFrame = self.notesView.page().mainFrame()
+		self.scrollPosition = viewFrame.scrollPosition()
+		self.contentsSize = viewFrame.contentsSize()
 		self.notesView.setHtml(self.parseText())
+		viewFrame.setScrollPosition(self.scrollPosition)
 
 	def updateLiveView(self):
 		if self.actionLiveView.isChecked():
 			QTimer.singleShot(1000, self.updateView)
+
+	def contentsSizeChanged(self, newSize):
+		#print('newSize: %d%d' % newSize.height, newSize.width)
+		viewFrame = self.notesView.page().mainFrame()
+		# scroll notesView when adding new line
+		newPositionY = self.scrollPosition.y() + newSize.height() - self.contentsSize.height()
+		self.scrollPosition.setY(newPositionY)
+		viewFrame.setScrollPosition(self.scrollPosition)
 
 	def parseText(self):
 		htmltext = self.notesEdit.toPlainText()
@@ -443,6 +467,10 @@ class MikiWindow(QMainWindow):
 		item = self.notesTree.pagePathToItem(name)
 		return lambda: self.notesTree.setCurrentItem(item)
 	
+	def readmeHelp(self):
+		readmeFile = '/usr/share/mikidown/README.mkd'
+		self.importPageCore(readmeFile)
+
 	def closeEvent(self, event):
 		reply = QMessageBox.question(self, 'Message',
 				'Are you sure to quit?', 

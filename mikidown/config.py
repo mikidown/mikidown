@@ -249,6 +249,9 @@ class NotebookList():
 			notebookPath = newNotebook.pathEditor.text()
 			if not os.path.isdir(notebookPath):
 				os.makedirs(notebookPath)
+			cssFile = notebookPath + '/notes.css'
+			cssTemplate = '/usr/share/mikidown/notes.css'
+			QFile.copy(cssTemplate, cssFile)
 			notebookList = readListFromSettings(settings, 'notebookList')
 			notebookList.append([notebookName, notebookPath])
 			# TODO: make mikidown.conf become plain text

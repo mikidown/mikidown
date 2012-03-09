@@ -1,29 +1,64 @@
 # Mikidown
 
-Mikidown is a note taking application.
+Mikidown is a note taking application. 
 
-<pre>Use Mikidown to visualize you notes.</pre>
+You can also use it as a markdown text editor.
 
 > Mikidown is inspired by [Zim] and based on [ReText].
 
 ---
-## Features
+## Features 
+
 - Take and organize notes
 - Markdown syntax
 - Live preview
-- Import and Export
-- Multiple notebooks support
+- Import and save as plain text files
+- Export to HTML, PDF
+- Support multiple notebooks 
 - Customise your note style (by editting CSS file)
 
 ---
-## Installation
+## Dependencies
 
-<code>python setup.py install</code>
+- Python (>3.0)
+- PyQt
+- python-markdown
 
 ---
-## Reference
-[Markdown Syntax]
+## How-To
+
+Get the source code
+<pre>
+git clone git@github.com:rnons/mikidown.git
+cd mikidown
+</pre>
+
+You should be able to **run** mikidown with <code>./mikidown.py</code>.
+
+However, to visualize your notes with the help of CSS file, you can choose to **install** mikidown.
+<pre><code>python setup.py install</code></pre>
+
+Open any terminal and issue command  <code>mikidown</code> to bring Mikidown up.
+
+---
+## Use Mikidown to visualize you notes
+
+
+You can find this file in the menu: *Help->README*.
+
+If you are unfamiliar with markdown, you can use this file as a simple reference to basic markdown syntax.
+
+However, I suggest you take a look at the complete [Markdown Syntax].
+
+---
+## Helps needed
+
+This is my first real world Python+PyQt program.
+
+Currently, the code is a bit ugly. Please [fork and help].
+
 
 [Zim]: http://zim-wiki.org/
 [ReText]: http://sourceforge.net/p/retext/
 [Markdown Syntax]: http://daringfireball.net/projects/markdown/syntax
+[fork and help]: https://github.com/rnons/mikidown
