@@ -1,19 +1,29 @@
 # Mikidown
 
-Mikidown is a note taking and personal wiki system. It features markdown syntax and can be used as markdown editor.  
+Mikidown is a note taking application.
 
-Mikidown is inspired by [Zim] and [ReText].
+<pre>Use Mikidown to visualize you notes.</pre>
 
+> Mikidown is inspired by [Zim] and based on [ReText].
+
+---
 ## Features
 - Take and organize notes
 - Markdown syntax
 - Live preview
-- Import and Save as \*.markdown
-- _many more to come_
+- Import and Export
+- Multiple notebooks support
+- Customise your note style (by editting CSS file)
 
-## Other
-At present, the code is a bit ugly. Fork and help~
+---
+## Installation
 
+<code>python setup.py install</code>
+
+---
+## Reference
+[Markdown Syntax]
 
 [Zim]: http://zim-wiki.org/
-[ReText]: http://sourceforge.net/p/retext/ 
+[ReText]: http://sourceforge.net/p/retext/
+[Markdown Syntax]: http://daringfireball.net/projects/markdown/syntax

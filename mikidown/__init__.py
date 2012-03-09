@@ -29,6 +29,8 @@ class MikiWindow(QMainWindow):
 		self.notesEdit = QTextEdit()
 		self.notesView = QWebView()
 		self.findBar = QToolBar(self.tr('Find'), self)
+		self.viewedList.setFixedHeight(25)
+		self.findBar.setFixedHeight(30)
 		self.noteSplitter = QSplitter(Qt.Horizontal)
 		self.noteSplitter.addWidget(self.notesEdit)
 		self.noteSplitter.addWidget(self.notesView)
@@ -36,6 +38,7 @@ class MikiWindow(QMainWindow):
 		self.notesView.settings().clearMemoryCaches()
 		self.notesView.settings().setUserStyleSheetUrl(QUrl.fromLocalFile('notes.css'))
 		self.rightSplitter = QSplitter(Qt.Vertical)
+		self.rightSplitter.setChildrenCollapsible(False)
 		self.rightSplitter.addWidget(self.viewedList)
 		self.rightSplitter.addWidget(self.noteSplitter)
 		self.rightSplitter.addWidget(self.findBar)
@@ -141,7 +144,7 @@ class MikiWindow(QMainWindow):
 		
 		#self.connect(self.notesTree, SIGNAL('customContextMenuRequested(QPoint)'), self.treeMenu)
 		self.notesTree.currentItemChanged.connect(self.currentItemChangedWrapper)
-		#self.connect(self.notesEdit, SIGNAL('textChanged()'), self.noteEditted)
+		self.connect(self.notesEdit, SIGNAL('textChanged()'), self.noteEditted)
 
 		self.notesEdit.document().modificationChanged.connect(self.modificationChanged)
 		self.notesView.page().linkHovered.connect(self.linkHovered)
@@ -278,12 +281,9 @@ class MikiWindow(QMainWindow):
 	def noteEditted(self):
 		self.editted = 1
 		self.updateLiveView()
-		name = self.notesTree.currentItemName()
-		self.actionSave.setEnabled(True)
-		#self.statusBar.showMessage(name + '*')
-		self.statusLabel.setText(name + '*')
 
 	def modificationChanged(self, changed):
+		self.updateLiveView()
 		self.actionSave.setEnabled(changed)
 		name = self.notesTree.currentItemName()
 		self.statusBar.clearMessage()
@@ -444,8 +444,6 @@ class MikiWindow(QMainWindow):
 		return lambda: self.notesTree.setCurrentItem(item)
 	
 	def closeEvent(self, event):
-		event.accept()
-		return
 		reply = QMessageBox.question(self, 'Message',
 				'Are you sure to quit?', 
 				QMessageBox.Yes|QMessageBox.No,

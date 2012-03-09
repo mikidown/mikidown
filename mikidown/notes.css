@@ -1,0 +1,32 @@
+blockquote {	
+	border-left: 5px solid #ddd;
+	margin-bottom: 18px;
+	padding-left: 5px;
+}
+
+pre {
+	background: #fff;
+	border: 1px solid #ddd;
+	line-height: 1.45em;
+	font-size: 1em;
+	font-family: "Menlo", "Monaco", "Andale Mono", "lucida console", "Courier New", monospace;
+	margin-bottom: 2.1em;
+	padding: .8em 1em;
+	color: #555;
+	overflow: atuo;
+}
+
+code {
+	display: inline-block;
+	white-space: no-wrap;
+	background: #fff;
+	font-size: 1em;
+	font-family: "Menlo", "Monaco", "Andale Mono", "lucida console", "Courier New", monospace;
+	line-height: 1.2em;
+	color: #555;
+	border: 1px solid #ddd;
+	border-radius: 0.4em;
+	padding: 0 .3em;
+	margin: -1px 0;
+}
+pre code { font-size: 1em; background: none; border: none; }

@@ -119,7 +119,7 @@ class MikiTree(QTreeWidget):
 	
 	def newPage(self):
 		if self.currentItem() is None:
-			self.newSubpage(self)
+			self.newPageCore(self)
 		else:
 			parent = self.currentItem().parent()
 			if parent is not None:
