@@ -2,6 +2,7 @@
 
 import os
 import sys
+from subprocess import call
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtWebKit import QWebView, QWebPage
@@ -11,10 +12,6 @@ from mikidown.mikitree import *
 import markdown
 
 md = markdown.Markdown()
-
-class RecentChanged(QListWidget):
-    def __init__(self, parent=None):
-        super(RecentChanged, self).__init__(parent)
 
 class MikiWindow(QMainWindow):
 	def __init__(self, notebookPath=None, parent=None):
@@ -26,10 +23,10 @@ class MikiWindow(QMainWindow):
 		
 		self.tabWidget = QTabWidget()
 		self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
+		self.viewedList.setFixedHeight(25)
 		self.notesEdit = QTextEdit()
 		self.notesView = QWebView()
 		self.findBar = QToolBar(self.tr('Find'), self)
-		self.viewedList.setFixedHeight(25)
 		self.findBar.setFixedHeight(30)
 		self.noteSplitter = QSplitter(Qt.Horizontal)
 		self.noteSplitter.addWidget(self.notesEdit)
@@ -48,39 +45,50 @@ class MikiWindow(QMainWindow):
 		self.setCentralWidget(self.mainSplitter)
 		self.mainSplitter.setStretchFactor(0, 1)
 		self.mainSplitter.setStretchFactor(1, 5)
-		sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-		sizePolicy.setVerticalPolicy(QSizePolicy.Fixed)
-		self.viewedList.setSizePolicy(sizePolicy)
 
 		self.notesTree = MikiTree()
-		self.changedList = RecentChanged()
+		self.searchEdit = QLineEdit()
+		self.searchEdit.returnPressed.connect(self.searchNote)
+		self.searchList = QListWidget()
+		self.searchTab = QWidget()
+		searchLayout = QVBoxLayout()
+		searchLayout.addWidget(self.searchEdit)
+		searchLayout.addWidget(self.searchList)
+		self.searchTab.setLayout(searchLayout)
 		self.tabWidget.addTab(self.notesTree, 'Index')
-		self.tabWidget.addTab(self.changedList, 'Modified')
+		self.tabWidget.addTab(self.searchTab, 'Search')
+		self.tabWidget.setMinimumWidth(150)
 		#self.rightSplitter.setSizes([600,20,600,580])
 		self.rightSplitter.setStretchFactor(0, 0)
 		
 		# actions in menuFile
-		self.actionNewPage = self.act(self.tr('New Page...'), shct=QKeySequence.New, trig=self.notesTree.newPage)
-		self.actionNewSubpage = self.act(self.tr('New Subpage...'),trig=self.notesTree.newSubpage)
-		self.actionImportPage = self.act(self.tr('Import Page...'), trig=self.importPage)
-		self.actionOpenNotebook = self.act(self.tr('Open Notebook...'), shct=QKeySequence.Open, trig=self.openNotebook)
-		self.actionSave = self.act(self.tr('Save'), shct=QKeySequence.Save, trig=self.saveCurrentNote)
+		self.actionNewPage = self.act(self.tr('&New Page...'), shct=QKeySequence.New, trig=self.notesTree.newPage)
+		self.actionNewSubpage = self.act(self.tr('New Sub&page...'), shct=QKeySequence('Ctrl+Shift+N'), trig=self.notesTree.newSubpage)
+		self.actionImportPage = self.act(self.tr('&Import Page...'), trig=self.importPage)
+		self.actionOpenNotebook = self.act(self.tr('&Open Notebook...'), shct=QKeySequence.Open, trig=self.openNotebook)
+		self.actionSave = self.act(self.tr('&Save'), shct=QKeySequence.Save, trig=self.saveCurrentNote)
 		self.actionSave.setEnabled(False)
-		self.actionSaveAs = self.act(self.tr('Save As...'), shct=QKeySequence.SaveAs, trig=self.saveNoteAs)
-		self.actionHtml = self.act(self.tr('to HTML'), trig=self.saveNoteAsHtml)
-		self.actionPdf = self.act(self.tr('to PDF'), trig=self.saveNoteAsPdf)
-		self.actionRenamePage = self.act(self.tr('Rename Page...'), trig=self.notesTree.renamePageWrapper)
-		self.actionDelPage = self.act(self.tr('Delete Page'), trig=self.notesTree.delPageWrapper)
-		self.actionQuit = self.act(self.tr('Quit'), shct=QKeySequence.Quit)
+		self.actionSaveAs = self.act(self.tr('Save &As...'), shct=QKeySequence('Ctrl+Shift+S'), trig=self.saveNoteAs)
+		self.actionHtml = self.act(self.tr('to &HTML'), trig=self.saveNoteAsHtml)
+		self.actionPdf = self.act(self.tr('to &PDF'), trig=self.saveNoteAsPdf)
+		self.actionRenamePage = self.act(self.tr('&Rename Page...'), shct=QKeySequence('F2'), trig=self.notesTree.renamePageWrapper)
+		self.actionDelPage = self.act(self.tr('&Delete Page'), shct=QKeySequence('Delete'), trig=self.notesTree.delPageWrapper)
+		self.actionQuit = self.act(self.tr('&Quit'), shct=QKeySequence.Quit)
 		self.connect(self.actionQuit, SIGNAL('triggered()'), self, SLOT('close()'))
 		self.actionQuit.setMenuRole(QAction.QuitRole)
 		# actions in menuEdit
-		self.actionUndo = self.act(self.tr('Undo'), shct=QKeySequence.Undo, trig=lambda: self.notesEdit.undo())
+		self.actionUndo = self.act(self.tr('&Undo'), shct=QKeySequence.Undo, trig=lambda: self.notesEdit.undo())
 		self.actionUndo.setEnabled(False)
 		self.notesEdit.undoAvailable.connect(self.actionUndo.setEnabled)
-		self.actionRedo = self.act(self.tr('Redo'), shct=QKeySequence.Redo, trig=lambda: self.notesEdit.redo())
+		self.actionRedo = self.act(self.tr('&Redo'), shct=QKeySequence.Redo, trig=lambda: self.notesEdit.redo())
 		self.actionRedo.setEnabled(False)
 		self.notesEdit.redoAvailable.connect(self.actionRedo.setEnabled)
+		self.actionFindText = self.act(self.tr('&Find Text'), shct=QKeySequence.Find)
+		self.actionFindText.setCheckable(True)
+		self.actionFindText.triggered.connect(self.findBar.setVisible)
+		self.actionFind = self.act(self.tr('Next'), shct=QKeySequence.FindNext, trig=self.findText)
+		self.actionFindPrev = self.act(self.tr('Previous'), shct=QKeySequence.FindPrevious, 
+				trig=lambda:self.findText(back=True))
 		# actions in menuView
 		self.actionEdit = self.act(self.tr('Edit'), shct=QKeySequence('Ctrl+E'), trigbool=self.edit)
 		self.actionLiveView = self.act(self.tr('Live Edit'), shct=QKeySequence('Ctrl+R'), trigbool=self.liveView)
@@ -90,16 +98,6 @@ class MikiWindow(QMainWindow):
 		self.actionUpAndDown = self.act(self.tr('Split into Up and Down'), trig=self.upAndDown)
 		self.actionLeftAndRight.setEnabled(False)
 		self.actionUpAndDown.setEnabled(False)
-		# actions in menuSearch
-		self.menuActionFind = self.act(self.tr('Find Text'), shct=QKeySequence.Find)
-		self.menuActionFind.setCheckable(True)
-		self.menuActionFind.triggered.connect(self.findBar.setVisible)
-		self.menuActionSearch = self.act(self.tr('Search Note...'), )
-		self.findBar.visibilityChanged.connect(self.findBarVisibilityChanged)
-		self.actionFind = self.act(self.tr('Next'), shct=QKeySequence.FindNext, trig=self.findText)
-		self.actionFindPrev = self.act(self.tr('Previous'), shct=QKeySequence.FindPrevious, 
-				trig=lambda:self.findText(back=True))
-		self.actionSearch = self.act(self.tr('Search'))
 		# actions in menuHelp
 		self.actionReadme = self.act(self.tr('README'), trig=self.readmeHelp)
 
@@ -108,7 +106,6 @@ class MikiWindow(QMainWindow):
 		self.menuFile = self.menuBar.addMenu(self.tr('&File'))
 		self.menuEdit = self.menuBar.addMenu(self.tr('&Edit'))
 		self.menuView = self.menuBar.addMenu(self.tr('&View'))
-		self.menuSearch = self.menuBar.addMenu(self.tr('&Search'))
 		self.menuHelp = self.menuBar.addMenu(self.tr('&Help'))
 		# menuFile
 		self.menuFile.addAction(self.actionNewPage)
@@ -118,7 +115,7 @@ class MikiWindow(QMainWindow):
 		self.menuFile.addSeparator()
 		self.menuFile.addAction(self.actionSave)
 		self.menuFile.addAction(self.actionSaveAs)
-		self.menuExport = self.menuFile.addMenu(self.tr('Export'))
+		self.menuExport = self.menuFile.addMenu(self.tr('&Export'))
 		self.menuExport.addAction(self.actionHtml)
 		self.menuExport.addAction(self.actionPdf)
 		self.menuFile.addSeparator()
@@ -129,6 +126,7 @@ class MikiWindow(QMainWindow):
 		# menuEdit
 		self.menuEdit.addAction(self.actionUndo)
 		self.menuEdit.addAction(self.actionRedo)
+		self.menuEdit.addAction(self.actionFindText)
 		# menuView
 		self.menuView.addAction(self.actionEdit)
 		self.menuView.addAction(self.actionLiveView)
@@ -136,9 +134,6 @@ class MikiWindow(QMainWindow):
 		self.menuMode = self.menuView.addMenu(self.tr('Mode'))
 		self.menuMode.addAction(self.actionLeftAndRight)
 		self.menuMode.addAction(self.actionUpAndDown)
-		# menuSearch
-		self.menuSearch.addAction(self.menuActionFind)
-		self.menuSearch.addAction(self.menuActionSearch)
 		# menuHelp
 		self.menuHelp.addAction(self.actionReadme)
 
@@ -154,6 +149,7 @@ class MikiWindow(QMainWindow):
 		self.findBar.addAction(self.actionFindPrev)
 		self.findBar.addAction(self.actionFind)
 		self.findBar.setVisible(False)
+		self.findBar.visibilityChanged.connect(self.findBarVisibilityChanged)
 		
 		self.statusBar = QStatusBar(self)
 		self.setStatusBar(self.statusBar)
@@ -162,6 +158,7 @@ class MikiWindow(QMainWindow):
 		
 		#self.connect(self.notesTree, SIGNAL('customContextMenuRequested(QPoint)'), self.treeMenu)
 		self.notesTree.currentItemChanged.connect(self.currentItemChangedWrapper)
+		self.searchList.currentRowChanged.connect(self.listItemChanged)
 		self.connect(self.notesEdit, SIGNAL('textChanged()'), self.noteEditted)
 
 		self.notesEdit.document().modificationChanged.connect(self.modificationChanged)
@@ -415,7 +412,7 @@ class MikiWindow(QMainWindow):
 			self.statusBar.showMessage(link)
 
 	def findBarVisibilityChanged(self, visible):
-		self.menuActionFind.setChecked(visible)
+		self.actionFindText.setChecked(visible)
 		if visible:
 			self.findEdit.setFocus(Qt.ShortcutFocusReason)
 
@@ -445,7 +442,36 @@ class MikiWindow(QMainWindow):
 		else:
 			self.notesView.findText(text)			
 			return self.notesEdit.find(text)
-	
+
+	def containWords(self, item, pattern):
+		if not pattern:
+			return True
+		pagePath = self.notesTree.itemToPagePath(item)
+		pageFile = pagePath + '.markdown'
+		cmd = 'grep -i ' + pattern + ' "' + pageFile + '"'
+		# grep return 0 when pattern found
+		return not call(cmd, stdout=None, shell=True)
+
+	def searchNote(self):
+		self.searchList.clear()
+		it = QTreeWidgetItemIterator(self.notesTree, QTreeWidgetItemIterator.All)
+		while it.value():
+			treeItem = it.value()
+			pattern = self.searchEdit.text()
+			if self.containWords(treeItem, pattern):
+				listItem = QListWidgetItem()
+				listItem.setData(Qt.DisplayRole, treeItem.text(0))
+				listItem.setData(Qt.UserRole, treeItem)
+				self.searchList.addItem(listItem)
+			it += 1
+
+	def listItemChanged(self, row):
+		if row != -1:
+			item = self.searchList.currentItem().data(Qt.UserRole)
+			self.notesTree.setCurrentItem(item)
+			flags = QWebPage.HighlightAllOccurrences
+			self.notesView.findText(self.searchEdit.text(), flags)
+
 	def setCurrentFile(self):
 		noteItem = self.notesTree.currentItem()
 		#name = self.notesTree.currentItemName()
