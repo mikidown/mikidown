@@ -58,7 +58,8 @@ class MikiWindow(QMainWindow):
 		self.tabWidget.addTab(self.changedList, 'Modified')
 		#self.rightSplitter.setSizes([600,20,600,580])
 		self.rightSplitter.setStretchFactor(0, 0)
-
+		
+		# actions in menuFile
 		self.actionNewPage = self.act(self.tr('New Page...'), shct=QKeySequence.New, trig=self.notesTree.newPage)
 		self.actionNewSubpage = self.act(self.tr('New Subpage...'),trig=self.notesTree.newSubpage)
 		self.actionImportPage = self.act(self.tr('Import Page...'), trig=self.importPage)
@@ -73,14 +74,23 @@ class MikiWindow(QMainWindow):
 		self.actionQuit = self.act(self.tr('Quit'), shct=QKeySequence.Quit)
 		self.connect(self.actionQuit, SIGNAL('triggered()'), self, SLOT('close()'))
 		self.actionQuit.setMenuRole(QAction.QuitRole)
+		# actions in menuEdit
 		self.actionUndo = self.act(self.tr('Undo'), shct=QKeySequence.Undo, trig=lambda: self.notesEdit.undo())
 		self.actionUndo.setEnabled(False)
 		self.notesEdit.undoAvailable.connect(self.actionUndo.setEnabled)
 		self.actionRedo = self.act(self.tr('Redo'), shct=QKeySequence.Redo, trig=lambda: self.notesEdit.redo())
 		self.actionRedo.setEnabled(False)
 		self.notesEdit.redoAvailable.connect(self.actionRedo.setEnabled)
-		self.actionEdit = self.act('Edit', shct=QKeySequence('Ctrl+E'), trigbool=self.edit)
-		self.actionLiveView = self.act('Live Edit', shct=QKeySequence('Ctrl+R'), trigbool=self.liveView)
+		# actions in menuView
+		self.actionEdit = self.act(self.tr('Edit'), shct=QKeySequence('Ctrl+E'), trigbool=self.edit)
+		self.actionLiveView = self.act(self.tr('Live Edit'), shct=QKeySequence('Ctrl+R'), trigbool=self.liveView)
+		self.actionFlipEditAndView = self.act(self.tr('Flip Edit and View'), trig=self.flipEditAndView)
+		self.actionFlipEditAndView.setEnabled(False)
+		self.actionLeftAndRight = self.act(self.tr('Split into Left and Right'), trig=self.leftAndRight)
+		self.actionUpAndDown = self.act(self.tr('Split into Up and Down'), trig=self.upAndDown)
+		self.actionLeftAndRight.setEnabled(False)
+		self.actionUpAndDown.setEnabled(False)
+		# actions in menuSearch
 		self.menuActionFind = self.act(self.tr('Find Text'), shct=QKeySequence.Find)
 		self.menuActionFind.setCheckable(True)
 		self.menuActionFind.triggered.connect(self.findBar.setVisible)
@@ -90,6 +100,7 @@ class MikiWindow(QMainWindow):
 		self.actionFindPrev = self.act(self.tr('Previous'), shct=QKeySequence.FindPrevious, 
 				trig=lambda:self.findText(back=True))
 		self.actionSearch = self.act(self.tr('Search'))
+		# actions in menuHelp
 		self.actionReadme = self.act(self.tr('README'), trig=self.readmeHelp)
 
 		self.menuBar = QMenuBar(self)
@@ -121,6 +132,10 @@ class MikiWindow(QMainWindow):
 		# menuView
 		self.menuView.addAction(self.actionEdit)
 		self.menuView.addAction(self.actionLiveView)
+		self.menuView.addAction(self.actionFlipEditAndView)
+		self.menuMode = self.menuView.addMenu(self.tr('Mode'))
+		self.menuMode.addAction(self.actionLeftAndRight)
+		self.menuMode.addAction(self.actionUpAndDown)
 		# menuSearch
 		self.menuSearch.addAction(self.menuActionFind)
 		self.menuSearch.addAction(self.menuActionSearch)
@@ -153,8 +168,8 @@ class MikiWindow(QMainWindow):
 		self.notesView.page().linkHovered.connect(self.linkHovered)
 		self.notesView.page().mainFrame().contentsSizeChanged.connect(self.contentsSizeChanged)
 
-		#self.scrollPosition = 0
-		#self.contentsSize = 0
+		self.scrollPosition = QPoint(0, 0)
+		self.contentsSize = QSize(0, 0)
 
 		QDir.setCurrent(notebookPath)
 		#QSettings.setPath(QSettings.NativeFormat, QSettings.UserScope, notebookPath)
@@ -364,6 +379,8 @@ class MikiWindow(QMainWindow):
 		else:
 			self.notesEdit.setVisible(viewmode)
 			splitSize = [sizes[1]*0.45, sizes[1]*0.55]
+		self.actionFlipEditAndView.setEnabled(viewmode)
+		self.actionUpAndDown.setEnabled(viewmode)
 		self.noteSplitter.setSizes(splitSize)
 		self.saveCurrentNote()
 		self.updateView()
@@ -467,6 +484,23 @@ class MikiWindow(QMainWindow):
 		item = self.notesTree.pagePathToItem(name)
 		return lambda: self.notesTree.setCurrentItem(item)
 	
+	def flipEditAndView(self):
+		index = self.noteSplitter.indexOf(self.notesEdit)
+		if index ==  0:
+			self.noteSplitter.insertWidget(1, self.notesEdit)
+		else:
+			self.noteSplitter.insertWidget(0, self.notesEdit)
+
+	def leftAndRight(self):
+		self.noteSplitter.setOrientation(Qt.Horizontal)
+		self.actionLeftAndRight.setEnabled(False)
+		self.actionUpAndDown.setEnabled(True)
+
+	def upAndDown(self):
+		self.noteSplitter.setOrientation(Qt.Vertical)
+		self.actionUpAndDown.setEnabled(False)
+		self.actionLeftAndRight.setEnabled(True)
+
 	def readmeHelp(self):
 		readmeFile = '/usr/share/mikidown/README.mkd'
 		self.importPageCore(readmeFile)
