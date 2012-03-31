@@ -1,6 +1,6 @@
 # Mikidown
 
-Mikidown is a note taking application. 
+Mikidown is a markdown note taking application. 
 
 You can also use it as a markdown text editor.
 

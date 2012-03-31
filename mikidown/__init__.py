@@ -96,8 +96,8 @@ class MikiWindow(QMainWindow):
 		self.actionFlipEditAndView.setEnabled(False)
 		self.actionLeftAndRight = self.act(self.tr('Split into Left and Right'), trig=self.leftAndRight)
 		self.actionUpAndDown = self.act(self.tr('Split into Up and Down'), trig=self.upAndDown)
-		self.actionLeftAndRight.setEnabled(False)
-		self.actionUpAndDown.setEnabled(False)
+		#self.actionLeftAndRight.setEnabled(False)
+		#self.actionUpAndDown.setEnabled(False)
 		# actions in menuHelp
 		self.actionReadme = self.act(self.tr('README'), trig=self.readmeHelp)
 
@@ -366,8 +366,11 @@ class MikiWindow(QMainWindow):
 		self.saveCurrentNote()
 		self.notesView.setVisible(not viewmode)
 		self.notesEdit.setVisible(viewmode)
+		self.actionLeftAndRight.setEnabled(True)
+		self.actionUpAndDown.setEnabled(True)
 
 	def liveView(self, viewmode):
+		self.actionLiveView.setChecked(viewmode)
 		sizes = self.noteSplitter.sizes()
 		if self.actionEdit.isChecked():
 			self.actionEdit.setChecked(False)
@@ -448,7 +451,8 @@ class MikiWindow(QMainWindow):
 			return True
 		pagePath = self.notesTree.itemToPagePath(item)
 		pageFile = pagePath + '.markdown'
-		cmd = 'grep -i ' + pattern + ' "' + pageFile + '"'
+		# not sure this is safe
+		cmd = 'grep -i "' + pattern + '" "' + pageFile + '"'
 		# grep return 0 when pattern found
 		return not call(cmd, stdout=None, shell=True)
 
@@ -518,11 +522,13 @@ class MikiWindow(QMainWindow):
 			self.noteSplitter.insertWidget(0, self.notesEdit)
 
 	def leftAndRight(self):
+		self.liveView(True)
 		self.noteSplitter.setOrientation(Qt.Horizontal)
 		self.actionLeftAndRight.setEnabled(False)
 		self.actionUpAndDown.setEnabled(True)
 
 	def upAndDown(self):
+		self.liveView(True)
 		self.noteSplitter.setOrientation(Qt.Vertical)
 		self.actionUpAndDown.setEnabled(False)
 		self.actionLeftAndRight.setEnabled(True)
