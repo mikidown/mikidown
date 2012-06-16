@@ -546,6 +546,9 @@ class MikiWindow(QMainWindow):
         self.importPageCore(readmeFile)
 
     def closeEvent(self, event):
+        self.saveCurrentNote()
+        event.accept()
+        '''
         reply = QMessageBox.question(self, 'Message',
                 'Are you sure to quit?', 
                 QMessageBox.Yes|QMessageBox.No,
@@ -555,6 +558,7 @@ class MikiWindow(QMainWindow):
             event.accept()
         else:
             event.ignore()
+        '''
 
 def main():
     app = QApplication(sys.argv)
