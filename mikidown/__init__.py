@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import re
 import sys
 from subprocess import call
 from PyQt4.QtCore import *
@@ -412,9 +413,13 @@ class MikiWindow(QMainWindow):
 
     def linkClicked(self, qlink):
         name = qlink.toString()
+        p = re.compile('http://')
+        ps = re.compile('https://')
+        if p.match(name) or ps.match(name):
+            QDesktopServices.openUrl(qlink)
+            return
         item = self.notesTree.pagePathToItem(name)
         self.notesTree.setCurrentItem(item)
-        QDesktopServices.openUrl(qlink)
 
     def linkHovered(self, link, title, textContent):
         if link == '':

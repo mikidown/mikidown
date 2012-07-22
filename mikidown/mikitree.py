@@ -74,14 +74,24 @@ class MikiTree(QTreeWidget):
     def pagePathToItem(self, name):
         splitPath = name.split('/')
         depth = len(splitPath)
+        #print(depth)
         itemList = self.findItems(splitPath[depth-1], Qt.MatchExactly|Qt.MatchRecursive)
         if len(itemList) == 1:
+            #print(itemList[0].text(0))
             return itemList[0]
         for item in itemList:
+            path = self.itemToPagePath(item)
+            if name == path:
+                return item
+            '''
             parent = item.parent()
             for i in range(depth):
+                print(i)
                 if parent == None:
-                    break
+                    if i == depth-1:
+                        return item
+                    else:
+                        continue
                 if depth-i-2 < 0:
                     break
                 if parent.text(0) == splitPath[depth-i-2]:
@@ -89,6 +99,7 @@ class MikiTree(QTreeWidget):
                         return item
                     else:
                         parent = parent.parent()
+            '''
     
     def currentItemName(self):
         item = self.currentItem()
