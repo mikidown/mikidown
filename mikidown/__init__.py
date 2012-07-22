@@ -190,7 +190,7 @@ class MikiWindow(QMainWindow):
                                QDir.Name|QDir.IgnoreCase)
         for note in self.notesList:
             item = QTreeWidgetItem(parent, [note.baseName()])
-            path = self.tr(notePath + '/' + note.baseName())
+            path = notePath + '/' + note.baseName()
             self.initTree(path, item)
         self.editted = 0
 
