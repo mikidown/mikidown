@@ -15,7 +15,7 @@ import markdown
 md = markdown.Markdown()
 
 __appname__ = 'mikidown'
-__version__ = '0.0.1'
+__version__ = '0.1.3'
 
 class MikiWindow(QMainWindow):
     def __init__(self, notebookPath=None, parent=None):
