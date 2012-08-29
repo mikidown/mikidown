@@ -425,9 +425,9 @@ class MikiWindow(QMainWindow):
         p = re.compile('(https?|file)://')
         if p.match(name):
             QDesktopServices.openUrl(qlink)
-            return
-        item = self.notesTree.pagePathToItem(name)
-        self.notesTree.setCurrentItem(item)
+        elif re.match('wiki://', name):
+            item = self.notesTree.pagePathToItem(name.replace('wiki://','')
+            self.notesTree.setCurrentItem(item)
 
     def linkHovered(self, link, title, textContent):
         if link == '':
