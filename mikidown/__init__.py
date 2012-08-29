@@ -177,6 +177,7 @@ class MikiWindow(QMainWindow):
         self.notebookSettings = QSettings(notebookPath+'/notebook.conf', QSettings.NativeFormat)
         self.initTree(notebookPath, self.notesTree)
         self.updateRecentViewedNotes()
+        self.notebookPath = notebookPath
         files = readListFromSettings(self.notebookSettings, 'recentViewedNoteList')
         if len(files) != 0:
             item = self.notesTree.pagePathToItem(files[0])
@@ -392,7 +393,12 @@ class MikiWindow(QMainWindow):
         viewFrame = self.notesView.page().mainFrame()
         self.scrollPosition = viewFrame.scrollPosition()
         self.contentsSize = viewFrame.contentsSize()
-        self.notesView.setHtml(self.parseText())
+
+        noteItem = self.notesTree.currentItem()
+        name = self.notesTree.itemToPagePath(noteItem)
+        url_here = 'file://' + os.path.join(self.notebookPath,name)
+
+        self.notesView.setHtml(self.parseText(), QUrl(url_here))
         viewFrame.setScrollPosition(self.scrollPosition)
 
     def updateLiveView(self):
