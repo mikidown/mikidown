@@ -185,7 +185,9 @@ class MikiWindow(QMainWindow):
         QDir.setCurrent(notebookPath)
         #QSettings.setPath(QSettings.NativeFormat, QSettings.UserScope, notebookPath)
         #self.notebookSettings = QSettings('mikidown', 'notebook')
-        self.notebookSettings = QSettings(notebookPath+'/notebook.conf', QSettings.NativeFormat)
+        self.notebookSettings = QSettings(os.path.join(notebookPath,
+                                                    'notebook.conf'),
+                                          QSettings.IniFormat)
         self.initTree(notebookPath, self.notesTree)
         self.updateRecentViewedNotes()
         self.notebookPath = notebookPath
