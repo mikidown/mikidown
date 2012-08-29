@@ -6,8 +6,6 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import mikidown
 
-__appname__ = 'mikidown'
-__version__ = '0.0.1'
 settings = QSettings('mikidown', 'mikidown')
 
 def readListFromSettings(settings, key):
