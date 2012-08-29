@@ -481,7 +481,7 @@ class MikiWindow(QMainWindow):
         pagePath = self.notesTree.itemToPagePath(item)
         pageFile = pagePath + '.markdown'
         # not sure this is safe
-        cmd = 'grep -i "' + pattern + '" "' + pageFile + '"'
+        cmd = ['grep', '-i', pattern, pageFile]
         # grep return 0 when pattern found
         return not call(cmd, stdout=None, shell=True)
 
