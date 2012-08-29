@@ -149,7 +149,8 @@ class NotebookListDialog(QDialog):
 
 	def accept(self):
 		notebookPath = self.notebookList.currentItem().data(Qt.UserRole)
-		window = mikidown.MikiWindow(notebookPath)
+		name = self.notebookList.currentItem().data(Qt.DataRole)
+		window = mikidown.MikiWindow(notebookPath, name)
 		window.show()
 		count = self.notebookList.count()
 		notebooks = []
@@ -247,7 +248,7 @@ class NotebookList():
 			notebookPath = newNotebook.pathEditor.text()
 			if not os.path.isdir(notebookPath):
 				os.makedirs(notebookPath)
-			cssFile = os.path.join(notebookPath , 'notes.css')
+			cssFile = os.path.join(notebookPath,'notes.css')
 			cssTemplate = '/usr/share/mikidown/notes.css'
 			QFile.copy(cssTemplate, cssFile)
 			notebookList = readListFromSettings(settings, 'notebookList')

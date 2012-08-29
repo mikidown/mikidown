@@ -15,21 +15,27 @@ import markdown
 md = markdown.Markdown()
 
 __appname__ = 'mikidown'
-__version__ = '0.1.3'
+__version__ = '0.1.4'
 
 class MikiWindow(QMainWindow):
-    def __init__(self, notebookPath=None, parent=None):
+    def __init__(self, notebookPath=None, name=None, parent=None):
         super(MikiWindow, self).__init__(parent)
         self.resize(800,600)
         screen = QDesktopWidget().screenGeometry()
         size = self.geometry()
         self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
+
+        if name is not None:
+            self.setWindowTitle("{} - {}".format(name, __appname__))
+        else:
+            self.setWindowTitle(__appname__)
         
         self.tabWidget = QTabWidget()
         self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
         self.viewedList.setFixedHeight(25)
         self.notesEdit = QTextEdit()
         self.notesView = QWebView()
+        
         self.findBar = QToolBar(self.tr('Find'), self)
         self.findBar.setFixedHeight(30)
         self.noteSplitter = QSplitter(Qt.Horizontal)
@@ -426,7 +432,7 @@ class MikiWindow(QMainWindow):
         if p.match(name):
             QDesktopServices.openUrl(qlink)
         elif re.match('wiki://', name):
-            item = self.notesTree.pagePathToItem(name.replace('wiki://','')
+            item = self.notesTree.pagePathToItem(name.replace('wiki://',''))
             self.notesTree.setCurrentItem(item)
 
     def linkHovered(self, link, title, textContent):
@@ -581,7 +587,8 @@ def main():
         notebooks = readListFromSettings(settings, 'notebookList')
     if len(notebooks) == 0:
         return
-    window = MikiWindow(notebooks[0][1])
+    window = MikiWindow(notebookPath=notebooks[0][1], 
+        name=notebooks[0][0])
     window.show()
     sys.exit(app.exec_())
 
