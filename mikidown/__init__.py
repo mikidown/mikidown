@@ -413,9 +413,8 @@ class MikiWindow(QMainWindow):
 
     def linkClicked(self, qlink):
         name = qlink.toString()
-        p = re.compile('http://')
-        ps = re.compile('https://')
-        if p.match(name) or ps.match(name):
+        p = re.compile('(https?|file)://')
+        if p.match(name):
             QDesktopServices.openUrl(qlink)
             return
         item = self.notesTree.pagePathToItem(name)
