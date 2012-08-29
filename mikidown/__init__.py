@@ -12,7 +12,8 @@ from mikidown.mikitree import *
 
 import markdown
 
-md = markdown.Markdown()
+extensions = settings.value('extensions','nl2br,strkundr').split(',')
+md = markdown.Markdown(extensions)
 
 __appname__ = 'mikidown'
 __version__ = '0.1.4'
