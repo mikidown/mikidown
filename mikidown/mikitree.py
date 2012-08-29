@@ -120,6 +120,10 @@ class MikiTree(QTreeWidget):
         menu.addAction("New Page...", self.newPage)
         menu.addAction("New Subpage...", self.newSubpage)
         menu.addSeparator()
+        menu.addAction("Collapse This Note Tree", 
+            lambda item=self.currentItem(): self.collapseItem(item))
+        menu.addAction("Uncollapse This Note Tree", 
+            lambda item=self.currentItem():  self.expandItem(item))
         menu.addAction("Collapse All", self.collapseAll)
         menu.addAction("Uncollapse All", self.uncollapseAll)
         menu.addSeparator()
