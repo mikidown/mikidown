@@ -13,7 +13,7 @@ from mikidown.mikitree import *
 import markdown
 sys.path.append(os.path.dirname(__file__))
 
-extensions = settings.value('extensions','nl2br,strkundr').split(',')
+extensions = settings.value('extensions',['nl2br','strkundr'])
 md = markdown.Markdown(extensions)
 
 __appname__ = 'mikidown'
