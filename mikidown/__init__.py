@@ -11,6 +11,7 @@ from mikidown.config import *
 from mikidown.mikitree import *
 
 import markdown
+sys.path.append(os.path.dirname(__file__))
 
 extensions = settings.value('extensions','nl2br,strkundr').split(',')
 md = markdown.Markdown(extensions)
