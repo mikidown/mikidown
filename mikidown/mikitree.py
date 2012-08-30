@@ -121,9 +121,9 @@ class MikiTree(QTreeWidget):
         menu.addAction("New Subpage...", self.newSubpage)
         menu.addSeparator()
         menu.addAction("Collapse This Note Tree", 
-            lambda item=self.currentItem(): self.collapseItem(item))
+            lambda item=self.currentItem(): self.recurseCollapse(item))
         menu.addAction("Uncollapse This Note Tree", 
-            lambda item=self.currentItem():  self.expandItem(item))
+            lambda item=self.currentItem():  self.recurseExpand(item))
         menu.addAction("Collapse All", self.collapseAll)
         menu.addAction("Uncollapse All", self.expandAll)
         menu.addSeparator()
@@ -253,6 +253,20 @@ class MikiTree(QTreeWidget):
             index = self.indexOfTopLevelItem(item)
             self.takeTopLevelItem(index)    
         QDir.current().rmdir(pagePath)
+    
+    def recurseCollapse(self, item):
+      for i in range(item.childCount()):
+        a_item = item.child(i)
+        print(a_item)
+        self.recurseCollapse(a_item)
+      self.collapseItem(item)
+    
+    def recurseExpand(self, item):
+      self.expandItem(item)
+      for i in range(item.childCount()):
+        a_item = item.child(i)
+        print(a_item)
+        self.recurseExpand(a_item)
 
     #def mouseMoveEvent(self, event):
     #   self.startDrag()
