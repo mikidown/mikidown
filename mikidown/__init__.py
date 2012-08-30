@@ -14,6 +14,7 @@ import markdown
 sys.path.append(os.path.dirname(__file__))
 
 extensions = settings.value('extensions',['nl2br','strkundr'])
+settings.setValue('extensions',extensions)
 md = markdown.Markdown(extensions)
 
 __appname__ = 'mikidown'

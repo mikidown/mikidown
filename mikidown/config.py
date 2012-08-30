@@ -122,6 +122,10 @@ class NotebookListDialog(QDialog):
 		notebooks = readListFromSettings(settings, 'notebookList')
 		notebooks.remove([name, path])
 		writeListToSettings(settings, 'notebookList', notebooks)
+		
+		extensions = settings.value('extensions',['nl2br','strkundr'])
+		settings.setValue('extensions',extensions)
+		
 		#self.notebookList.removeItemWidget(item)
 		self.notebookList.takeItem(row)
 		#self.initList()
@@ -159,6 +163,9 @@ class NotebookListDialog(QDialog):
 			path = self.notebookList.item(i).data(Qt.UserRole)
 			notebooks.append([name, path])
 			writeListToSettings(settings, 'notebookList', notebooks)
+
+		extensions = settings.value('extensions',['nl2br','strkundr'])
+		settings.setValue('extensions',extensions)
 
 		QDialog.accept(self)
 
@@ -255,5 +262,7 @@ class NotebookList():
 			notebookList.append([notebookName, notebookPath])
 			# TODO: make mikidown.conf become plain text
 			writeListToSettings(settings, 'notebookList', notebookList)
+			extensions = settings.value('extensions',['nl2br','strkundr'])
+			settings.setValue('extensions',extensions)
 
 
