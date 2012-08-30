@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Exec=mikidown
+Icon=mikidown
+StartupNotify=true
+Terminal=false
+Categories=Utility;TextEditor;Qt;
+MimeType=text/x-web-markdown
+Name=Mikidown
+Comment=Make markdown formatted wiki-style notes
+GenericName=Text Editor

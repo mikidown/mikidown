@@ -587,6 +587,7 @@ class MikiWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon.fromTheme('mikidown'))
     notebooks = readListFromSettings(settings, 'notebookList')
     if len(notebooks) == 0:
         NotebookList.create(settings)
