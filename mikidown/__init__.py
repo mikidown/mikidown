@@ -258,7 +258,7 @@ class MikiWindow(QMainWindow):
         #self.editted = 1
         self.filename = previous.text(0)+'.md'
         name = self.notesTree.itemToPagePath(previous)
-        fh = QFile(name + '.md')
+        fh = QFile('{}.md'.format(os.path.join(self.notebookPath, name)))
         try:
             if not fh.open(QIODevice.WriteOnly):
                 raise IOError(fh.errorString())
@@ -481,11 +481,13 @@ class MikiWindow(QMainWindow):
         if not pattern:
             return True
         pagePath = self.notesTree.itemToPagePath(item)
-        pageFile = pagePath + '.md'
+        pageFile = '{}.md'.format(os.path.join(self.notebookPath, pagePath))
         # not sure this is safe
-        cmd = ['grep', '-i', pattern, pageFile]
+        # should be edited to provide max config searching
+        cmd = ['grep', pattern, pageFile]
+        print(cmd)
         # grep return 0 when pattern found
-        return not call(cmd, stdout=None, shell=True)
+        return not call(cmd, stdout=None)
 
     def searchNote(self):
         self.searchList.clear()
