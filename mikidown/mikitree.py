@@ -125,7 +125,7 @@ class MikiTree(QTreeWidget):
         menu.addAction("Uncollapse This Note Tree", 
             lambda item=self.currentItem():  self.expandItem(item))
         menu.addAction("Collapse All", self.collapseAll)
-        menu.addAction("Uncollapse All", self.uncollapseAll)
+        menu.addAction("Uncollapse All", self.expandAll)
         menu.addSeparator()
         menu.addAction('Rename Page...', lambda item=self.currentItem(): self.renamePage(item))
         self.delCallback = lambda item=self.currentItem(): self.delPage(item)
