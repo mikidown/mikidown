@@ -72,6 +72,10 @@ class MikiTree(QTreeWidget):
         return path
 
     def pagePathToItem(self, name):
+        if name[0] == '/': 
+            name = name[1:len(name)]
+        if name[-1] == '/':
+            name = name[0:-1]
         splitPath = name.split('/')
         depth = len(splitPath)
         #print(depth)

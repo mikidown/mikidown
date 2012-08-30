@@ -9,8 +9,8 @@ You can also use it as a markdown text editor.
 ---
 ## Features 
 
-- Take and organize notes
-- Markdown syntax
+- Take and organize notes in Markdown
+- Page cross-link
 - Live preview
 - Import and save as plain text files
 - Export to HTML, PDF
@@ -49,6 +49,22 @@ You can find this file in the menu: *Help->README*.
 If you are unfamiliar with markdown, you can use this file as a simple reference to basic markdown syntax.
 
 However, I suggest you take a look at the complete [Markdown Syntax].
+
+---
+## Mikidown Specific Syntax
+1.  page cross link, all of the three will do 
+<pre>
+`[text](parentNode/childNode/pageName)`
+`[text](/parentNode/childNode/pageName)`
+`[text](/parentNode/childNode/pageName/)`
+</pre>
+
+2.  mikidown doesn't support relative image path (currently)
+<pre>
+`![text](file:///home/user/pic.png)` 
+</pre>
+
+`Ctrl + I` or *Edit -> Insert Image* will bring up an **insert image** dialog.
 
 ---
 ## Helps needed

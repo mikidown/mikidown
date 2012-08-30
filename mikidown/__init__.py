@@ -90,6 +90,8 @@ class MikiWindow(QMainWindow):
         self.actionFind = self.act(self.tr('Next'), shct=QKeySequence.FindNext, trig=self.findText)
         self.actionFindPrev = self.act(self.tr('Previous'), shct=QKeySequence.FindPrevious, 
                 trig=lambda:self.findText(back=True))
+        self.actionInsertImage = self.act(self.tr('&Insert Image'), shct=QKeySequence('Ctrl+I'), trig=self.insertImage)
+        self.actionInsertImage.setEnabled(False)
         # actions in menuView
         self.actionEdit = self.act(self.tr('Edit'), shct=QKeySequence('Ctrl+E'), trigbool=self.edit)
         self.actionLiveView = self.act(self.tr('Live Edit'), shct=QKeySequence('Ctrl+R'), trigbool=self.liveView)
@@ -128,6 +130,8 @@ class MikiWindow(QMainWindow):
         self.menuEdit.addAction(self.actionUndo)
         self.menuEdit.addAction(self.actionRedo)
         self.menuEdit.addAction(self.actionFindText)
+        self.menuEdit.addSeparator()
+        self.menuEdit.addAction(self.actionInsertImage)
         # menuView
         self.menuView.addAction(self.actionEdit)
         self.menuView.addAction(self.actionLiveView)
@@ -369,6 +373,7 @@ class MikiWindow(QMainWindow):
         self.saveCurrentNote()
         self.notesView.setVisible(not viewmode)
         self.notesEdit.setVisible(viewmode)
+        self.actionInsertImage.setEnabled(viewmode)
         self.actionLeftAndRight.setEnabled(True)
         self.actionUpAndDown.setEnabled(True)
 
@@ -384,6 +389,7 @@ class MikiWindow(QMainWindow):
             splitSize = [sizes[1]*0.45, sizes[1]*0.55]
         self.actionFlipEditAndView.setEnabled(viewmode)
         self.actionUpAndDown.setEnabled(viewmode)
+        self.actionInsertImage.setEnabled(viewmode)
         self.noteSplitter.setSizes(splitSize)
         self.saveCurrentNote()
         self.updateView()
@@ -419,7 +425,8 @@ class MikiWindow(QMainWindow):
             QDesktopServices.openUrl(qlink)
             return
         item = self.notesTree.pagePathToItem(name)
-        self.notesTree.setCurrentItem(item)
+        if item:        # in case item doesn't exist
+            self.notesTree.setCurrentItem(item)
 
     def linkHovered(self, link, title, textContent):
         if link == '':
@@ -459,6 +466,22 @@ class MikiWindow(QMainWindow):
             self.notesView.findText(text)           
             return self.notesEdit.find(text)
 
+    def insertImage(self):
+        #TODO how to include all image types?
+        filename = QFileDialog.getOpenFileName(self, self.tr('Insert image'), '',
+                '(*.jpg *.png *.gif *.tif);;'+self.tr('All files(*)'))
+        filename = '![](file://' + filename + ')'
+        self.notesEdit.insertPlainText(filename)
+
+    def notesEditInFocus(self, e):
+        print('hello')
+        if e.gotFocus:
+            self.actionInsertImage.setEnabled(True)
+        #if e.lostFocus:
+        #    self.actionInsertImage.setEnabled(False)
+
+        #QWidget.focusInEvent(self,f)
+       
     def containWords(self, item, pattern):
         if not pattern:
             return True
