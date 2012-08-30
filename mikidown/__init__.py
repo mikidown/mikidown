@@ -200,7 +200,7 @@ class MikiWindow(QMainWindow):
         if not QDir(notePath).exists():
             return
         noteDir = QDir(notePath)
-        self.notesList = noteDir.entryInfoList(['*.markdown'],
+        self.notesList = noteDir.entryInfoList(['*.md'],
                                QDir.NoFilter,
                                QDir.Name|QDir.IgnoreCase)
         for note in self.notesList:
@@ -210,7 +210,7 @@ class MikiWindow(QMainWindow):
         self.editted = 0
 
     def openNote(self, noteFullName):
-        filename = noteFullName + '.markdown'
+        filename = noteFullName + '.md'
         print(filename)
         fh = QFile(filename)
         try:
@@ -256,9 +256,9 @@ class MikiWindow(QMainWindow):
         if self.editted == 0:
             return
         #self.editted = 1
-        self.filename = previous.text(0)+'.markdown'
+        self.filename = previous.text(0)+'.md'
         name = self.notesTree.itemToPagePath(previous)
-        fh = QFile(name + '.markdown')
+        fh = QFile(name + '.md')
         try:
             if not fh.open(QIODevice.WriteOnly):
                 raise IOError(fh.errorString())
@@ -281,7 +281,7 @@ class MikiWindow(QMainWindow):
         if fileName == '':
             return
         if not QFileInfo(fileName).suffix():
-            fileName += '.markdown'
+            fileName += '.md'
         fh = QFile(fileName)
         fh.open(QIODevice.WriteOnly)
         savestream = QTextStream(fh)
@@ -344,7 +344,7 @@ class MikiWindow(QMainWindow):
         fileBody = QTextStream(fh).readAll()
         fh.close()
         note = QFileInfo(filename)
-        fh = QFile(note.baseName()+'.markdown')
+        fh = QFile(note.baseName()+'.md')
         if fh.exists():
             QMessageBox.warning(self, 'Import Error', 
                     'Page already exists: %s' % note.baseName())
@@ -481,7 +481,7 @@ class MikiWindow(QMainWindow):
         if not pattern:
             return True
         pagePath = self.notesTree.itemToPagePath(item)
-        pageFile = pagePath + '.markdown'
+        pageFile = pagePath + '.md'
         # not sure this is safe
         cmd = ['grep', '-i', pattern, pageFile]
         # grep return 0 when pattern found
@@ -537,7 +537,7 @@ class MikiWindow(QMainWindow):
             self.viewedList.addAction(action)
     
     def existsNote(self, noteFullname):
-        filename = noteFullname + '.markdown'
+        filename = noteFullname + '.md'
         fh = QFile(filename)
         return fh.exists()
 
