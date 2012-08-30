@@ -254,12 +254,6 @@ class MikiTree(QTreeWidget):
             self.takeTopLevelItem(index)    
         QDir.current().rmdir(pagePath)
 
-    def collapseAll(self):
-        self.collapseAll()
-
-    def uncollapseAll(self):
-        self.expandAll()
-
     #def mouseMoveEvent(self, event):
     #   self.startDrag()
     #   QWidget.mouseMoveEvent(self, event)
