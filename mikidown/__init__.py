@@ -485,7 +485,6 @@ class MikiWindow(QMainWindow):
         # not sure this is safe
         # should be edited to provide max config searching
         cmd = ['grep', pattern, pageFile]
-        print(cmd)
         # grep return 0 when pattern found
         return not call(cmd, stdout=None)
 

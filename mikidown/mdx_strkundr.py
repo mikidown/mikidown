@@ -15,7 +15,7 @@ class StrkUndrExtension(markdown.Extension):
         md.inlinePatterns.add('ins', ins_tag, '>del')
         strong_tag = markdown.inlinepatterns.SimpleTagPattern(STRONG_RE, 'strong')
         md.inlinePatterns['strong'] = strong_tag
-        emph_tag = markdown.inlinepatterns.SimpleTagPattern(EMPH_RE, 'emphasis')
+        emph_tag = markdown.inlinepatterns.SimpleTagPattern(EMPH_RE, 'em')
         md.inlinePatterns['emphasis'] = emph_tag
         del md.inlinePatterns['strong_em']
         del md.inlinePatterns['emphasis2']
