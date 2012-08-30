@@ -49,7 +49,11 @@ You can find this file in the menu: *Help->README*.
 If you are unfamiliar with markdown, you can use this file as a simple reference to basic markdown syntax.
 
 However, I suggest you take a look at the complete [Markdown Syntax].
-
+---
+Changes made by me:
+* Properly support relative URLS
+* use wiki:// to indicate a link within the notebook
+* Fix PDF support
 ---
 ## Helps needed
 

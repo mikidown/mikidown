@@ -6,8 +6,6 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import mikidown
 
-__appname__ = 'mikidown'
-__version__ = '0.0.1'
 settings = QSettings('mikidown', 'mikidown')
 
 def readListFromSettings(settings, key):
@@ -151,7 +149,8 @@ class NotebookListDialog(QDialog):
 
 	def accept(self):
 		notebookPath = self.notebookList.currentItem().data(Qt.UserRole)
-		window = mikidown.MikiWindow(notebookPath)
+		name = self.notebookList.currentItem().data(Qt.DataRole)
+		window = mikidown.MikiWindow(notebookPath, name)
 		window.show()
 		count = self.notebookList.count()
 		notebooks = []
@@ -249,7 +248,7 @@ class NotebookList():
 			notebookPath = newNotebook.pathEditor.text()
 			if not os.path.isdir(notebookPath):
 				os.makedirs(notebookPath)
-			cssFile = notebookPath + '/notes.css'
+			cssFile = os.path.join(notebookPath,'notes.css')
 			cssTemplate = '/usr/share/mikidown/notes.css'
 			QFile.copy(cssTemplate, cssFile)
 			notebookList = readListFromSettings(settings, 'notebookList')

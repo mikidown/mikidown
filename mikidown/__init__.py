@@ -11,22 +11,33 @@ from mikidown.config import *
 from mikidown.mikitree import *
 
 import markdown
+sys.path.append(os.path.dirname(__file__))
 
-md = markdown.Markdown()
+extensions = settings.value('extensions',['nl2br','strkundr'])
+md = markdown.Markdown(extensions)
+
+__appname__ = 'mikidown'
+__version__ = '0.1.4'
 
 class MikiWindow(QMainWindow):
-    def __init__(self, notebookPath=None, parent=None):
+    def __init__(self, notebookPath=None, name=None, parent=None):
         super(MikiWindow, self).__init__(parent)
         self.resize(800,600)
         screen = QDesktopWidget().screenGeometry()
         size = self.geometry()
         self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
+
+        if name is not None:
+            self.setWindowTitle("{} - {}".format(name, __appname__))
+        else:
+            self.setWindowTitle(__appname__)
         
         self.tabWidget = QTabWidget()
         self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
         self.viewedList.setFixedHeight(25)
         self.notesEdit = QTextEdit()
         self.notesView = QWebView()
+        
         self.findBar = QToolBar(self.tr('Find'), self)
         self.findBar.setFixedHeight(30)
         self.noteSplitter = QSplitter(Qt.Horizontal)
@@ -174,9 +185,12 @@ class MikiWindow(QMainWindow):
         QDir.setCurrent(notebookPath)
         #QSettings.setPath(QSettings.NativeFormat, QSettings.UserScope, notebookPath)
         #self.notebookSettings = QSettings('mikidown', 'notebook')
-        self.notebookSettings = QSettings(notebookPath+'/notebook.conf', QSettings.NativeFormat)
+        self.notebookSettings = QSettings(os.path.join(notebookPath,
+                                                    'notebook.conf'),
+                                          QSettings.IniFormat)
         self.initTree(notebookPath, self.notesTree)
         self.updateRecentViewedNotes()
+        self.notebookPath = notebookPath
         files = readListFromSettings(self.notebookSettings, 'recentViewedNoteList')
         if len(files) != 0:
             item = self.notesTree.pagePathToItem(files[0])
@@ -186,7 +200,7 @@ class MikiWindow(QMainWindow):
         if not QDir(notePath).exists():
             return
         noteDir = QDir(notePath)
-        self.notesList = noteDir.entryInfoList(['*.markdown'],
+        self.notesList = noteDir.entryInfoList(['*.md'],
                                QDir.NoFilter,
                                QDir.Name|QDir.IgnoreCase)
         for note in self.notesList:
@@ -196,7 +210,7 @@ class MikiWindow(QMainWindow):
         self.editted = 0
 
     def openNote(self, noteFullName):
-        filename = noteFullName + '.markdown'
+        filename = noteFullName + '.md'
         print(filename)
         fh = QFile(filename)
         try:
@@ -242,9 +256,9 @@ class MikiWindow(QMainWindow):
         if self.editted == 0:
             return
         #self.editted = 1
-        self.filename = previous.text(0)+'.markdown'
+        self.filename = previous.text(0)+'.md'
         name = self.notesTree.itemToPagePath(previous)
-        fh = QFile(name + '.markdown')
+        fh = QFile(name + '.md')
         try:
             if not fh.open(QIODevice.WriteOnly):
                 raise IOError(fh.errorString())
@@ -267,7 +281,7 @@ class MikiWindow(QMainWindow):
         if fileName == '':
             return
         if not QFileInfo(fileName).suffix():
-            fileName += '.markdown'
+            fileName += '.md'
         fh = QFile(fileName)
         fh.open(QIODevice.WriteOnly)
         savestream = QTextStream(fh)
@@ -330,7 +344,7 @@ class MikiWindow(QMainWindow):
         fileBody = QTextStream(fh).readAll()
         fh.close()
         note = QFileInfo(filename)
-        fh = QFile(note.baseName()+'.markdown')
+        fh = QFile(note.baseName()+'.md')
         if fh.exists():
             QMessageBox.warning(self, 'Import Error', 
                     'Page already exists: %s' % note.baseName())
@@ -392,7 +406,12 @@ class MikiWindow(QMainWindow):
         viewFrame = self.notesView.page().mainFrame()
         self.scrollPosition = viewFrame.scrollPosition()
         self.contentsSize = viewFrame.contentsSize()
-        self.notesView.setHtml(self.parseText())
+
+        noteItem = self.notesTree.currentItem()
+        name = self.notesTree.itemToPagePath(noteItem)
+        url_here = 'file://' + os.path.join(self.notebookPath,name)
+
+        self.notesView.setHtml(self.parseText(), QUrl(url_here))
         viewFrame.setScrollPosition(self.scrollPosition)
 
     def updateLiveView(self):
@@ -413,13 +432,12 @@ class MikiWindow(QMainWindow):
 
     def linkClicked(self, qlink):
         name = qlink.toString()
-        p = re.compile('http://')
-        ps = re.compile('https://')
-        if p.match(name) or ps.match(name):
+        p = re.compile('(https?|file)://')
+        if p.match(name):
             QDesktopServices.openUrl(qlink)
-            return
-        item = self.notesTree.pagePathToItem(name)
-        self.notesTree.setCurrentItem(item)
+        elif re.match('wiki://', name):
+            item = self.notesTree.pagePathToItem(name.replace('wiki://',''))
+            self.notesTree.setCurrentItem(item)
 
     def linkHovered(self, link, title, textContent):
         if link == '':
@@ -463,9 +481,9 @@ class MikiWindow(QMainWindow):
         if not pattern:
             return True
         pagePath = self.notesTree.itemToPagePath(item)
-        pageFile = pagePath + '.markdown'
+        pageFile = pagePath + '.md'
         # not sure this is safe
-        cmd = 'grep -i "' + pattern + '" "' + pageFile + '"'
+        cmd = ['grep', '-i', pattern, pageFile]
         # grep return 0 when pattern found
         return not call(cmd, stdout=None, shell=True)
 
@@ -519,7 +537,7 @@ class MikiWindow(QMainWindow):
             self.viewedList.addAction(action)
     
     def existsNote(self, noteFullname):
-        filename = noteFullname + '.markdown'
+        filename = noteFullname + '.md'
         fh = QFile(filename)
         return fh.exists()
 
@@ -573,7 +591,8 @@ def main():
         notebooks = readListFromSettings(settings, 'notebookList')
     if len(notebooks) == 0:
         return
-    window = MikiWindow(notebooks[0][1])
+    window = MikiWindow(notebookPath=notebooks[0][1], 
+        name=notebooks[0][0])
     window.show()
     sys.exit(app.exec_())
 
