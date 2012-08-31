@@ -67,14 +67,13 @@ However, I suggest you take a look at the complete [Markdown Syntax].
 `Ctrl + I` or *Edit -> Insert Image* will bring up an **insert image** dialog.
 
 ---
-## Helps needed
+## Contributor
 
-This is my first real world Python+PyQt program.
-
-Currently, the code is a bit ugly. Please [fork and help].
+[ShadowKyogre]
 
 
 [Zim]: http://zim-wiki.org/
 [ReText]: http://sourceforge.net/p/retext/
 [Markdown Syntax]: http://daringfireball.net/projects/markdown/syntax
 [fork and help]: https://github.com/rnons/mikidown
+[ShadowKyogre]: https://github.com/ShadowKyogre

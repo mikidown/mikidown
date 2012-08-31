@@ -11,17 +11,26 @@ from mikidown.config import *
 from mikidown.mikitree import *
 
 import markdown
+sys.path.append(os.path.dirname(__file__))
 
-md = markdown.Markdown()
+__appname__ = 'mikidown'
+__version__ = '0.1.4'
+extensions = settings.value('extensions',['nl2br','strkundr'])
+settings.setValue('extensions',extensions)
+md = markdown.Markdown(extensions)
 
 class MikiWindow(QMainWindow):
-    def __init__(self, notebookPath=None, parent=None):
+    def __init__(self, notebookPath=None, name=None, parent=None):
         super(MikiWindow, self).__init__(parent)
         self.resize(800,600)
         screen = QDesktopWidget().screenGeometry()
         size = self.geometry()
         self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
-        
+        if name:
+            self.setWindowTitle('{} - {}'.format(name, __appname__))
+        else:
+            self.setWindowsTitle(__appname__)
+
         self.tabWidget = QTabWidget()
         self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
         self.viewedList.setFixedHeight(25)
@@ -71,7 +80,7 @@ class MikiWindow(QMainWindow):
         self.actionSave.setEnabled(False)
         self.actionSaveAs = self.act(self.tr('Save &As...'), shct=QKeySequence('Ctrl+Shift+S'), trig=self.saveNoteAs)
         self.actionHtml = self.act(self.tr('to &HTML'), trig=self.saveNoteAsHtml)
-        self.actionPdf = self.act(self.tr('to &PDF'), trig=self.saveNoteAsPdf)
+        self.actionPrint = self.act(self.tr('&Print'), shct=QKeySequence('Ctrl+P'), trig=self.printNote)
         self.actionRenamePage = self.act(self.tr('&Rename Page...'), shct=QKeySequence('F2'), trig=self.notesTree.renamePageWrapper)
         self.actionDelPage = self.act(self.tr('&Delete Page'), shct=QKeySequence('Delete'), trig=self.notesTree.delPageWrapper)
         self.actionQuit = self.act(self.tr('&Quit'), shct=QKeySequence.Quit)
@@ -118,9 +127,9 @@ class MikiWindow(QMainWindow):
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionSave)
         self.menuFile.addAction(self.actionSaveAs)
+        self.menuFile.addAction(self.actionPrint)
         self.menuExport = self.menuFile.addMenu(self.tr('&Export'))
         self.menuExport.addAction(self.actionHtml)
-        self.menuExport.addAction(self.actionPdf)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionRenamePage)
         self.menuFile.addAction(self.actionDelPage)
@@ -177,8 +186,8 @@ class MikiWindow(QMainWindow):
 
         QDir.setCurrent(notebookPath)
         #QSettings.setPath(QSettings.NativeFormat, QSettings.UserScope, notebookPath)
-        #self.notebookSettings = QSettings('mikidown', 'notebook')
-        self.notebookSettings = QSettings(notebookPath+'/notebook.conf', QSettings.NativeFormat)
+        self.notebookSettings = QSettings(os.path.join(notebookPath, 'notebook.conf'),
+                                          QSettings.NativeFormat)
         self.initTree(notebookPath, self.notesTree)
         self.updateRecentViewedNotes()
         files = readListFromSettings(self.notebookSettings, 'recentViewedNoteList')
@@ -291,19 +300,13 @@ class MikiWindow(QMainWindow):
         savestream << self.parseText()
         fh.close()
         
-    def saveNoteAsPdf(self):
-        fileName = QFileDialog.getSaveFileName(self, self.tr('Export to PDF'), '',
-                '(*.pdf);;'+self.tr('All files(*)'))
-        if fileName == '':
-            return
-        if not QFileInfo(fileName).suffix():
-            fileName += '.pdf'
+    def printNote(self):
         printer = QPrinter(QPrinter.HighResolution)
-        printer.setDocName(self.notesTree.currentItem().text(0))
         printer.setCreator(__appname__ + ' ' + __version__)
-        printer.setOutputFormat(QPrinter.PdfFormat)
-        printer.setOutputFileName(fileName)
-        self.notesView.print_(printer)
+        printer.setDocName(self.notesTree.currentItem().text(0))
+        printdialog = QPrintDialog(printer, self)
+        if printdialog.exec() == QDialog.Accepted:
+          self.notesView.print_(printer)
 
     def noteEditted(self):
         self.editted = 1
@@ -488,9 +491,10 @@ class MikiWindow(QMainWindow):
         pagePath = self.notesTree.itemToPagePath(item)
         pageFile = pagePath + '.markdown'
         # not sure this is safe
-        cmd = 'grep -i "' + pattern + '" "' + pageFile + '"'
+        #cmd = 'grep -i "' + pattern + '" "' + pageFile + '"'
+        cmd = ['grep', '-i', pattern, pageFile]
         # grep return 0 when pattern found
-        return not call(cmd, stdout=None, shell=True)
+        return not call(cmd, stdout=None)
 
     def searchNote(self):
         self.searchList.clear()
@@ -596,7 +600,8 @@ def main():
         notebooks = readListFromSettings(settings, 'notebookList')
     if len(notebooks) == 0:
         return
-    window = MikiWindow(notebooks[0][1])
+    window = MikiWindow(notebookPath=notebooks[0][1],
+            name=notebooks[0][0])
     window.show()
     sys.exit(app.exec_())
 
