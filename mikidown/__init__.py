@@ -29,7 +29,7 @@ class MikiWindow(QMainWindow):
         self.notebookPath = notebookPath
         self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
 
-        if name is not None:
+        if name:
             self.setWindowTitle("{} - {}".format(name, __appname__))
         else:
             self.setWindowTitle(__appname__)
