@@ -63,17 +63,24 @@ However, I suggest you take a look at the complete [Markdown Syntax].
 <pre>
 `![text](file:///home/user/pic.png)` 
 </pre>
-
 `Ctrl + I` or *Edit -> Insert Image* will bring up an **insert image** dialog.
+
+3.  ins/del/bold/italics
+`~~delete~~`  will yield ~~delete~~
+`__insert__` will yield __insert__
+`**strong**` will yield **strong**
+`//emphasis//` will yield //emphasis//
 
 ---
 ## Contributor
 
 [ShadowKyogre]
 
+---
+[Fork and help] are much appreciated.
 
 [Zim]: http://zim-wiki.org/
 [ReText]: http://sourceforge.net/p/retext/
 [Markdown Syntax]: http://daringfireball.net/projects/markdown/syntax
-[fork and help]: https://github.com/rnons/mikidown
+[Fork and help]: https://github.com/rnons/mikidown
 [ShadowKyogre]: https://github.com/ShadowKyogre
