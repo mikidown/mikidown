@@ -26,6 +26,7 @@ class MikiWindow(QMainWindow):
         self.resize(800,600)
         screen = QDesktopWidget().screenGeometry()
         size = self.geometry()
+        self.notebookPath = notebookPath
         self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
 
         if name is not None:
@@ -46,7 +47,8 @@ class MikiWindow(QMainWindow):
         self.noteSplitter.addWidget(self.notesView)
         self.notesEdit.setVisible(False)
         self.notesView.settings().clearMemoryCaches()
-        self.notesView.settings().setUserStyleSheetUrl(QUrl.fromLocalFile('notes.css'))
+        notecss = QUrl.fromLocalFile(os.path.join(self.notebookPath,'notes.css'))
+        self.notesView.settings().setUserStyleSheetUrl(notecss)
         self.rightSplitter = QSplitter(Qt.Vertical)
         self.rightSplitter.setChildrenCollapsible(False)
         self.rightSplitter.addWidget(self.viewedList)
@@ -191,7 +193,6 @@ class MikiWindow(QMainWindow):
                                           QSettings.IniFormat)
         self.initTree(notebookPath, self.notesTree)
         self.updateRecentViewedNotes()
-        self.notebookPath = notebookPath
         files = readListFromSettings(self.notebookSettings, 'recentViewedNoteList')
         if len(files) != 0:
             item = self.notesTree.pagePathToItem(files[0])
