@@ -1,3 +1,7 @@
+* {
+color: CaptionText;
+}
+
 blockquote {	
 	border-left: 5px solid #ddd;
 	margin-bottom: 18px;
