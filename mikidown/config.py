@@ -256,7 +256,10 @@ class NotebookList():
 			if not os.path.isdir(notebookPath):
 				os.makedirs(notebookPath)
 			cssFile = os.path.join(notebookPath,'notes.css')
-			cssTemplate = '/usr/share/mikidown/notes.css'
+			if os.path.exists('/usr/share/mikidown/notes.css'):
+				cssTemplate = '/usr/share/mikidown/notes.css'
+			else:
+				cssTemplate = os.path.join(os.path.dirname(__file__),'notes.css')
 			QFile.copy(cssTemplate, cssFile)
 			notebookList = readListFromSettings(settings, 'notebookList')
 			notebookList.append([notebookName, notebookPath])
