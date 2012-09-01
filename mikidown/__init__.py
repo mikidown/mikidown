@@ -9,6 +9,9 @@ from PyQt4.QtGui import *
 from PyQt4.QtWebKit import QWebView, QWebPage
 from mikidown.config import *
 from mikidown.mikitree import *
+from mikidown.whoosh import *
+from whoosh.index import create_in, open_dir
+from whoosh.qparser import QueryParser
 
 import markdown
 sys.path.append(os.path.dirname(__file__))
@@ -25,12 +28,21 @@ class MikiWindow(QMainWindow):
         self.resize(800,600)
         screen = QDesktopWidget().screenGeometry()
         size = self.geometry()
-        self.notebookPath = notebookPath
         self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
         if name:
             self.setWindowTitle('{} - {}'.format(name, __appname__))
         else:
             self.setWindowsTitle(__appname__)
+        self.notebookPath = notebookPath
+        QDir.setCurrent(notebookPath)
+        #if not os.path.exists(indexdir):
+        self.ix = None
+        if not QDir(indexdir).exists():
+            QDir.current().mkdir(indexdir)
+            self.ix = create_in(indexdir, schema)
+        else:
+            self.ix = open_dir(indexdir)
+
 
         self.tabWidget = QTabWidget()
         self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
@@ -185,7 +197,6 @@ class MikiWindow(QMainWindow):
         self.scrollPosition = QPoint(0, 0)
         self.contentsSize = QSize(0, 0)
 
-        QDir.setCurrent(notebookPath)
         #QSettings.setPath(QSettings.NativeFormat, QSettings.UserScope, notebookPath)
         self.notebookSettings = QSettings(os.path.join(notebookPath, 'notebook.conf'),
                                           QSettings.NativeFormat)
@@ -270,6 +281,13 @@ class MikiWindow(QMainWindow):
                 savestream = QTextStream(fh)
                 savestream << self.notesEdit.toPlainText()
                 fh.close()
+                fileobj = open(name+'.markdown', 'r')
+                content=fileobj.read()
+                fileobj.close()
+                writer = self.ix.writer()
+                writer.add_document(path=name, content=content)
+                #writer.add_document(path=name, content=savestream)
+                writer.commit()
                 self.notesEdit.document().setModified(False)
                 #self.actionSave.setEnabled(False)
                 self.updateView()
@@ -502,7 +520,7 @@ class MikiWindow(QMainWindow):
         # grep return 0 when pattern found
         return not call(cmd, stdout=None)
 
-    def searchNote(self):
+    def searchNote_pre(self):
         self.searchList.clear()
         it = QTreeWidgetItemIterator(self.notesTree, QTreeWidgetItemIterator.All)
         while it.value():
@@ -514,6 +532,23 @@ class MikiWindow(QMainWindow):
                 listItem.setData(Qt.UserRole, treeItem)
                 self.searchList.addItem(listItem)
             it += 1
+
+    def searchNote(self):
+        self.searchList.clear()
+        pattern = self.searchEdit.text()
+        with self.ix.searcher() as searcher:
+            query = QueryParser("content", self.ix.schema).parse(pattern)
+            results = searcher.search(query)
+            print(results[0])
+            print(results[0]['path'])
+            #print(results[0]['content'])
+            for r in results:
+                listItem = QListWidgetItem()
+                text = results[0]['path']
+                treeItem = self.notesTree.pagePathToItem(text) 
+                listItem.setData(Qt.DisplayRole, treeItem.text(0))
+                listItem.setData(Qt.UserRole, treeItem)
+                self.searchList.addItem(listItem)
 
     def listItemChanged(self, row):
         if row != -1:
