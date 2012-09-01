@@ -539,12 +539,9 @@ class MikiWindow(QMainWindow):
         with self.ix.searcher() as searcher:
             query = QueryParser("content", self.ix.schema).parse(pattern)
             results = searcher.search(query)
-            print(results[0])
-            print(results[0]['path'])
-            #print(results[0]['content'])
             for r in results:
                 listItem = QListWidgetItem()
-                text = results[0]['path']
+                text = r['path']
                 treeItem = self.notesTree.pagePathToItem(text) 
                 listItem.setData(Qt.DisplayRole, treeItem.text(0))
                 listItem.setData(Qt.UserRole, treeItem)
