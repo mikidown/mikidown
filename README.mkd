@@ -59,13 +59,15 @@ However, I suggest you take a look at the complete [Markdown Syntax].
 `[text](/parentNode/childNode/pageName/)`
 </pre>
 
-2.  mikidown doesn't support relative image path (currently)
+2.  mikidown support both absolute and relative image path 
 <pre>
 `![text](file:///home/user/pic.png)` 
+`![text](pic.png)`     # path relative to notebook folder
 </pre>
 `Ctrl + I` or *Edit -> Insert Image* will bring up an **insert image** dialog.
 
-3.  ins/del/bold/italics
+3.  ins/del/bold/italics (better view in mikidown)
+
 `~~delete~~`  will yield ~~delete~~
 `__insert__` will yield __insert__
 `**strong**` will yield **strong**

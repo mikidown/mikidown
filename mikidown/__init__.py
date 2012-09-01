@@ -25,6 +25,7 @@ class MikiWindow(QMainWindow):
         self.resize(800,600)
         screen = QDesktopWidget().screenGeometry()
         size = self.geometry()
+        self.notebookPath = notebookPath
         self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
         if name:
             self.setWindowTitle('{} - {}'.format(name, __appname__))
@@ -401,7 +402,9 @@ class MikiWindow(QMainWindow):
         viewFrame = self.notesView.page().mainFrame()
         self.scrollPosition = viewFrame.scrollPosition()
         self.contentsSize = viewFrame.contentsSize()
-        self.notesView.setHtml(self.parseText())
+        #url_notebook = 'file://' + os.path.join(self.notebookPath, '/')
+        url_notebook = 'file://' + self.notebookPath + '/'
+        self.notesView.setHtml(self.parseText(), QUrl(url_notebook))
         viewFrame.setScrollPosition(self.scrollPosition)
 
     def updateLiveView(self):
@@ -422,11 +425,12 @@ class MikiWindow(QMainWindow):
 
     def linkClicked(self, qlink):
         name = qlink.toString()
-        p = re.compile('http://')
-        ps = re.compile('https://')
-        if p.match(name) or ps.match(name):
+        http = re.compile('https?://')
+        if http.match(name):
             QDesktopServices.openUrl(qlink)
             return
+        name = name.replace('file://', '')
+        name = name.replace(self.notebookPath, '')
         item = self.notesTree.pagePathToItem(name)
         if item:        # in case item doesn't exist
             self.notesTree.setCurrentItem(item)
