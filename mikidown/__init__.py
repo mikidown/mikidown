@@ -35,13 +35,6 @@ class MikiWindow(QMainWindow):
             self.setWindowsTitle(__appname__)
         self.notebookPath = notebookPath
         QDir.setCurrent(notebookPath)
-        #if not os.path.exists(indexdir):
-        self.ix = None
-        if not QDir(indexdir).exists():
-            QDir.current().mkdir(indexdir)
-            self.ix = create_in(indexdir, schema)
-        else:
-            self.ix = open_dir(indexdir)
 
 
         self.tabWidget = QTabWidget()
@@ -206,6 +199,14 @@ class MikiWindow(QMainWindow):
         if len(files) != 0:
             item = self.notesTree.pagePathToItem(files[0])
             self.notesTree.setCurrentItem(item)
+
+        self.ix = None
+        if not QDir(indexdir).exists():
+            QDir.current().mkdir(indexdir)
+            self.ix = create_in(indexdir, schema)
+            self.whoosh_index()
+        else:
+            self.ix = open_dir(indexdir)
 
     def initTree(self, notePath, parent):
         if not QDir(notePath).exists():
@@ -542,10 +543,24 @@ class MikiWindow(QMainWindow):
             for r in results:
                 listItem = QListWidgetItem()
                 text = r['path']
+                print(text)
                 treeItem = self.notesTree.pagePathToItem(text) 
                 listItem.setData(Qt.DisplayRole, treeItem.text(0))
                 listItem.setData(Qt.UserRole, treeItem)
                 self.searchList.addItem(listItem)
+
+    def whoosh_index(self):
+        it = QTreeWidgetItemIterator(self.notesTree, QTreeWidgetItemIterator.All)
+        writer = self.ix.writer()
+        while it.value():
+            treeItem = it.value()
+            name = self.notesTree.itemToPagePath(treeItem)
+            fileobj = open(name+'.markdown', 'r')
+            content=fileobj.read()
+            fileobj.close()
+            writer.add_document(path=name, content=content)
+            it +=1
+        writer.commit()
 
     def listItemChanged(self, row):
         if row != -1:

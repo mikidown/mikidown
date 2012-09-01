@@ -1,6 +1,9 @@
 import datetime
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from whoosh.index import open_dir
+from whoosh.qparser import QueryParser
+from mikidown.whoosh import *
 
 class ItemDialog(QDialog):
     def __init__(self, parent=None):
@@ -58,7 +61,7 @@ class MikiTree(QTreeWidget):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self.customContextMenuRequested.connect(self.treeMenu)
-        
+        self.ix = open_dir(indexdir)
 
     def itemToPagePath(self, item):
         path = ''
@@ -168,7 +171,17 @@ class MikiTree(QTreeWidget):
             savestream << 'Created ' + str(datetime.date.today()) + '\n\n'
             fh.close()
             QTreeWidgetItem(item, [newPageName])
+            newItem = self.pagePathToItem(pagePath + newPageName)
+            #TODO improvement needed, can be reused somehow
+            fileobj = open(fileName, 'r')
+            content=fileobj.read()
+            fileobj.close()
+            writer = self.ix.writer()
+            writer.add_document(path=pagePath+newPageName, content=content)
+            writer.commit()
+
             self.sortItems(0, Qt.AscendingOrder)
+            self.setCurrentItem(newItem)
             if pagePath != '':
                 self.expandItem(item)
 
@@ -238,6 +251,8 @@ class MikiTree(QTreeWidget):
         self.delPage(item)
 
     def delPage(self, item):
+        writer = self.ix.writer()
+
         index = item.childCount()
         while index > 0:
             index = index -1
@@ -245,6 +260,12 @@ class MikiTree(QTreeWidget):
             self.delPage(item.child(index))
 
         pagePath = self.itemToPagePath(item)
+        print(pagePath)
+        query = QueryParser('path', self.ix.schema).parse(pagePath)
+        n = writer.delete_by_query(query)
+        #n = writer.delete_by_term('path', pagePath)
+        print(n)
+        writer.commit()
         QDir.current().remove(pagePath + '.markdown')
         parent = item.parent()
         parentPath = self.itemToPagePath(parent)
