@@ -439,6 +439,8 @@ class MikiWindow(QMainWindow):
         if link == '':
             self.statusBar.showMessage(self.notesTree.currentItemName())
         else:
+            link = link.replace('file://', '')
+            link = link.replace(self.notebookPath, '')
             self.statusBar.showMessage(link)
 
     def findBarVisibilityChanged(self, visible):
