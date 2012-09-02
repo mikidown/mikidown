@@ -537,7 +537,13 @@ class MikiWindow(QMainWindow):
         self.searchList.clear()
         pattern = self.searchEdit.text()
         with self.ix.searcher() as searcher:
-            query = QueryParser("content", self.ix.schema).parse(pattern)
+            '''
+            could probably make queryparser a property of this 
+            so that way it doesn't have to keep getting recreated
+            '''
+            queryp = QueryParser("content", self.ix.schema)
+            queryp.add_plugin(RegexPlugin())
+            query = query.parse(pattern)
             results = searcher.search(query)
             for r in results:
                 listItem = QListWidgetItem()
