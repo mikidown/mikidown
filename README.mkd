@@ -23,6 +23,7 @@ You can also use it as a markdown text editor.
 - Python (>3.0)
 - PyQt
 - python-markdown
+- python-whoosh
 
 ---
 ## How-To
