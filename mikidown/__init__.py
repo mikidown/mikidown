@@ -11,7 +11,7 @@ from mikidown.config import *
 from mikidown.mikitree import *
 from mikidown.whoosh import *
 from whoosh.index import create_in, open_dir
-from whoosh.qparser import QueryParser
+from whoosh.qparser import QueryParser, RegexPlugin
 
 import markdown
 sys.path.append(os.path.dirname(__file__))
@@ -537,8 +537,10 @@ class MikiWindow(QMainWindow):
         self.searchList.clear()
         pattern = self.searchEdit.text()
         with self.ix.searcher() as searcher:
-            query = QueryParser("content", self.ix.schema).parse(pattern)
-            results = searcher.search(query)
+            queryp = QueryParser("content", self.ix.schema)
+            queryp.add_plugin(RegexPlugin())
+            query = queryp.parse('r"' + pattern + '"')    # r"pattern" is the desired regex term format
+            results = searcher.search(query, limit=None)  # default limit is 10!
             for r in results:
                 listItem = QListWidgetItem()
                 text = r['path']
