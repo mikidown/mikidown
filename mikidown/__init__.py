@@ -47,6 +47,7 @@ class MikiWindow(QMainWindow):
         self.noteSplitter = QSplitter(Qt.Horizontal)
         self.noteSplitter.addWidget(self.notesEdit)
         self.noteSplitter.addWidget(self.notesView)
+        self.notesEdit.setTabStopWidth(4)
         self.notesEdit.setVisible(False)
         self.notesView.settings().clearMemoryCaches()
         self.notesView.settings().setUserStyleSheetUrl(QUrl.fromLocalFile('notes.css'))
@@ -216,8 +217,8 @@ class MikiWindow(QMainWindow):
                                QDir.NoFilter,
                                QDir.Name|QDir.IgnoreCase)
         for note in self.notesList:
-            item = QTreeWidgetItem(parent, [note.baseName()])
-            path = notePath + '/' + note.baseName()
+            item = QTreeWidgetItem(parent, [note.completeBaseName()])
+            path = notePath + '/' + note.completeBaseName()
             self.initTree(path, item)
         self.editted = 0
 
@@ -356,18 +357,18 @@ class MikiWindow(QMainWindow):
         fileBody = QTextStream(fh).readAll()
         fh.close()
         note = QFileInfo(filename)
-        fh = QFile(note.baseName()+'.markdown')
+        fh = QFile(note.completeBaseName()+'.markdown')
         if fh.exists():
             QMessageBox.warning(self, 'Import Error', 
-                    'Page already exists: %s' % note.baseName())
+                    'Page already exists: %s' % note.completeBaseName())
             return
         fh.open(QIODevice.WriteOnly)
         savestream = QTextStream(fh)
         savestream << fileBody
         fh.close()
-        QTreeWidgetItem(self.notesTree, [note.baseName()])
+        QTreeWidgetItem(self.notesTree, [note.completeBaseName()])
         self.notesTree.sortItems(0, Qt.AscendingOrder)
-        item = self.notesTree.pagePathToItem(note.baseName())
+        item = self.notesTree.pagePathToItem(note.completeBaseName())
         self.notesTree.setCurrentItem(item)
 
     def openNotebook(self):
