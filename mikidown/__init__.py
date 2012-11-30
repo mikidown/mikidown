@@ -10,6 +10,7 @@ from PyQt4.QtWebKit import QWebView, QWebPage
 from mikidown.config import *
 from mikidown.mikitree import *
 from mikidown.whoosh import *
+from mikidown.highlighter import *
 from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser, RegexPlugin
 
@@ -41,6 +42,7 @@ class MikiWindow(QMainWindow):
         self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
         self.viewedList.setFixedHeight(25)
         self.notesEdit = QTextEdit()
+        MikiHighlighter(self.notesEdit.document())
         self.notesView = QWebView()
         self.findBar = QToolBar(self.tr('Find'), self)
         self.findBar.setFixedHeight(30)
