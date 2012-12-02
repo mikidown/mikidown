@@ -49,6 +49,7 @@ class MikiWindow(QMainWindow):
         self.noteSplitter = QSplitter(Qt.Horizontal)
         self.noteSplitter.addWidget(self.notesEdit)
         self.noteSplitter.addWidget(self.notesView)
+        self.notesEdit.setFontPointSize(12)
         self.notesEdit.setTabStopWidth(4)
         self.notesEdit.setVisible(False)
         self.notesView.settings().clearMemoryCaches()
