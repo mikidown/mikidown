@@ -18,8 +18,8 @@ import markdown
 sys.path.append(os.path.dirname(__file__))
 
 __appname__ = 'mikidown'
-__version__ = '0.1.4'
-extensions = settings.value('extensions',['nl2br','strkundr'])
+__version__ = '0.2.0'
+extensions = settings.value('extensions',['nl2br','strkundr', 'codehilite'])
 settings.setValue('extensions',extensions)
 md = markdown.Markdown(extensions)
 
@@ -53,6 +53,7 @@ class MikiWindow(QMainWindow):
         self.notesEdit.setTabStopWidth(4)
         self.notesEdit.setVisible(False)
         self.notesView.settings().clearMemoryCaches()
+        self.notesView.settings().setUserStyleSheetUrl(QUrl.fromLocalFile('notes.css.bak'))
         self.notesView.settings().setUserStyleSheetUrl(QUrl.fromLocalFile('notes.css'))
         self.rightSplitter = QSplitter(Qt.Vertical)
         self.rightSplitter.setChildrenCollapsible(False)
@@ -443,7 +444,8 @@ class MikiWindow(QMainWindow):
 
     def parseText(self):
         htmltext = self.notesEdit.toPlainText()
-        return md.convert(htmltext)
+        #return md.convert(htmltext)
+        return markdown.markdown(htmltext, ['nl2br', 'strkundr', 'codehilite', 'fenced_code'])
 
     def linkClicked(self, qlink):
         name = qlink.toString()
