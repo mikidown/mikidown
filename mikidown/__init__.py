@@ -76,12 +76,23 @@ class MikiWindow(QMainWindow):
         searchLayout.addWidget(self.searchEdit)
         searchLayout.addWidget(self.searchList)
         self.searchTab.setLayout(searchLayout)
+        # left pane
         self.tabWidget.addTab(self.notesTree, 'Index')
         self.tabWidget.addTab(self.searchTab, 'Search')
         self.tabWidget.setMinimumWidth(150)
         #self.rightSplitter.setSizes([600,20,600,580])
         self.rightSplitter.setStretchFactor(0, 0)
         
+        # Global Actions
+        actTabIndex = self.act(self.tr('Switch to Index Tab'), 
+                               QKeySequence('Ctrl+Shift+I'), 
+                               lambda: self.tabWidget.setCurrentWidget(self.notesTree))
+        actTabSearch = self.act(self.tr('Switch to Search Tab'), 
+                                QKeySequence('Ctrl+Shift+F'), 
+                                lambda: self.currentTabChanged(1))
+                                #lambda:self.tabWidget.setCurrentWidget(self.searchTab)
+        self.addAction(actTabIndex)
+        self.addAction(actTabSearch)
         # actions in menuFile
         self.actionNewPage = self.act(self.tr('&New Page...'), shct=QKeySequence.New, trig=self.notesTree.newPage)
         self.actionNewSubpage = self.act(self.tr('New Sub&page...'), shct=QKeySequence('Ctrl+Shift+N'), trig=self.notesTree.newSubpage)
@@ -181,6 +192,7 @@ class MikiWindow(QMainWindow):
         self.statusLabel = QLabel(self)
         self.statusBar.addWidget(self.statusLabel, 1)
         
+        self.tabWidget.currentChanged.connect(self.currentTabChanged)
         #self.connect(self.notesTree, SIGNAL('customContextMenuRequested(QPoint)'), self.treeMenu)
         self.notesTree.currentItemChanged.connect(self.currentItemChangedWrapper)
         self.searchList.currentRowChanged.connect(self.listItemChanged)
@@ -250,6 +262,12 @@ class MikiWindow(QMainWindow):
                 self.viewedListActions[-1].setChecked(True)
                 self.statusLabel.setText(noteFullName)
                 #self.statusBar.showMessage(noteFullName)
+
+    def currentTabChanged(self, index):
+        self.tabWidget.setCurrentIndex(index)
+        if index == 1:
+            self.searchEdit.setFocus()
+            self.searchEdit.selectAll()
 
     def currentItemChangedWrapper(self, current, previous):
         if current is None:
@@ -380,7 +398,8 @@ class MikiWindow(QMainWindow):
         if dialog.exec_():
             pass
 
-    def act(self, name, icon=None, trig=None, trigbool=None, shct=None):
+    #def act(self, name, icon=None, trig=None, trigbool=None, shct=None):
+    def act(self, name, shct=None, trig=None, trigbool=None, icon=None):
         if icon:
             action = QAction(self.actIcon(icon), name, self)
         else:
@@ -585,8 +604,9 @@ class MikiWindow(QMainWindow):
             if f == name:
                 files.remove(f)
         files.insert(0, name)
-        if len(files) > 10:
-            del files[10:]
+        # TODO: move this NUM to configuration
+        if len(files) > 20:
+            del files[20:]
         writeListToSettings(self.notebookSettings, 'recentViewedNoteList', files)
         #self.updateRecentViewedNotes()
     
