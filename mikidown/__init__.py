@@ -37,7 +37,6 @@ class MikiWindow(QMainWindow):
         self.notebookPath = notebookPath
         QDir.setCurrent(notebookPath)
 
-
         self.tabWidget = QTabWidget()
         self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
         self.viewedList.setFixedHeight(25)
@@ -53,8 +52,7 @@ class MikiWindow(QMainWindow):
         self.notesEdit.setTabStopWidth(4)
         self.notesEdit.setVisible(False)
         self.notesView.settings().clearMemoryCaches()
-        self.notesView.settings().setUserStyleSheetUrl(QUrl.fromLocalFile('notes.css.bak'))
-        self.notesView.settings().setUserStyleSheetUrl(QUrl.fromLocalFile('notes.css'))
+        self.notesView.settings().setUserStyleSheetUrl(QUrl.fromLocalFile(notebookPath + '/notes.css'))
         self.rightSplitter = QSplitter(Qt.Vertical)
         self.rightSplitter.setChildrenCollapsible(False)
         self.rightSplitter.addWidget(self.viewedList)
@@ -64,7 +62,7 @@ class MikiWindow(QMainWindow):
         self.mainSplitter.addWidget(self.tabWidget)
         self.mainSplitter.addWidget(self.rightSplitter)
         self.setCentralWidget(self.mainSplitter)
-        self.mainSplitter.setStretchFactor(0, 1)
+        self.mainSplitter.setStretchFactor(0, 1) 
         self.mainSplitter.setStretchFactor(1, 5)
 
         self.notesTree = MikiTree()
