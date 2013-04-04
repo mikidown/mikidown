@@ -18,7 +18,7 @@ import markdown
 sys.path.append(os.path.dirname(__file__))
 
 __appname__ = 'mikidown'
-__version__ = '0.2.0'
+__version__ = '0.4.0'
 extensions = settings.value('extensions',['nl2br','strkundr', 'codehilite'])
 settings.setValue('extensions',extensions)
 md = markdown.Markdown(extensions)
@@ -41,7 +41,7 @@ class MikiWindow(QMainWindow):
         self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
         self.viewedList.setFixedHeight(25)
         self.notesEdit = QTextEdit()
-        MikiHighlighter(self.notesEdit.document())
+        MikiHighlighter(self.notesEdit)
         self.notesView = QWebView()
         self.findBar = QToolBar(self.tr('Find'), self)
         self.findBar.setFixedHeight(30)
