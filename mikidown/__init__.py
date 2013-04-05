@@ -27,7 +27,7 @@ __version__ = '0.1.6'
     toc: table of content
     http://pythonhosted.org/Markdown/extensions/index.html
 '''
-extensionList = ['nl2br','strkundr', 'codehilite', 'fenced_code', 'toc']
+extensionList = ['nl2br','strkundr', 'codehilite', 'fenced_code', 'toc', 'footnotes']
 extensions = settings.value('extensions', extensionList)
 settings.setValue('extensions', extensions)
 md = markdown.Markdown(extensions)

@@ -37,7 +37,13 @@ To install
 
 In case you are unfamiliar with markdown, you can use this file (**Help->README**) as a simple reference to basic markdown syntax. However, I suggest you take a look at the complete [Markdown Syntax].
 
-## Mikidown Specific Syntax
+### [Footnote Syntax]
+
+    Footnotes[^1] have a label and a definition.
+
+    [^1]: This is a footnote
+
+### Mikidown Specific Syntax
 
 1.  page cross link, all of the three will do 
 
@@ -62,10 +68,6 @@ In case you are unfamiliar with markdown, you can use this file (**Help->README*
 - `**strong**` will yield **strong**
 - `//emphasis//` will yield //emphasis//
 
-4. table of contents
-
-Add `[TOC]` to anywhere you want to display a table-of-contents. (To be improved)
-
 ## Contributor
 
 [ShadowKyogre]
@@ -77,3 +79,4 @@ Add `[TOC]` to anywhere you want to display a table-of-contents. (To be improved
 [Markdown Syntax]: http://daringfireball.net/projects/markdown/syntax
 [Fork and help]: https://github.com/rnons/mikidown
 [ShadowKyogre]: https://github.com/ShadowKyogre
+[Footnote Syntax]: http://pythonhosted.org/Markdown/extensions/footnotes.html
