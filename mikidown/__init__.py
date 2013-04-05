@@ -128,6 +128,7 @@ class MikiWindow(QMainWindow):
         self.actionFind = self.act(self.tr('Next'), shct=QKeySequence.FindNext, trig=self.findText)
         self.actionFindPrev = self.act(self.tr('Previous'), shct=QKeySequence.FindPrevious, 
                 trig=lambda:self.findText(back=True))
+        self.actionSortLines = self.act(self.tr('&Sort Lines'), trig=self.sortLines)
         self.actionInsertImage = self.act(self.tr('&Insert Image'), shct=QKeySequence('Ctrl+I'), trig=self.insertImage)
         self.actionInsertImage.setEnabled(False)
         # actions in menuView
@@ -169,6 +170,7 @@ class MikiWindow(QMainWindow):
         self.menuEdit.addAction(self.actionRedo)
         self.menuEdit.addAction(self.actionFindText)
         self.menuEdit.addSeparator()
+        self.menuEdit.addAction(self.actionSortLines)
         self.menuEdit.addAction(self.actionInsertImage)
         # menuView
         self.menuView.addAction(self.actionEdit)
@@ -541,6 +543,17 @@ class MikiWindow(QMainWindow):
         else:
             self.notesView.findText(text)           
             return self.notesEdit.find(text)
+
+    def sortLines(self):
+        ''' sort selected lines
+            Currently, have to select whole lines. (ToFix)
+            TODO: second sort reverse the order
+        '''
+        cursor = self.notesEdit.textCursor()
+        text = cursor.selectedText()
+        lines = text.split('\u2029')      # '\u2029' is the line break
+        sortedLines = sorted(lines)
+        self.notesEdit.insertPlainText('\n'.join(sortedLines))
 
     def insertImage(self):
         #TODO how to include all image types?
