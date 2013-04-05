@@ -11,6 +11,7 @@ from mikidown.config import *
 from mikidown.mikitree import *
 from mikidown.whoosh import *
 from mikidown.highlighter import *
+from mikidown.utils import *
 from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser, RegexPlugin
 
@@ -472,7 +473,8 @@ class MikiWindow(QMainWindow):
             Previously `convert` was used, but it doens't work with fenced_code
         '''
         htmltext = self.notesEdit.toPlainText()
-        return markdown.markdown(htmltext, extensionList)
+        return markdown.markdown(preProcess(htmltext), extensionList)
+        #return markdown.markdown(htmltext, extensionList)
         #return md.convert(htmltext)            
 
     def linkClicked(self, qlink):

@@ -281,6 +281,26 @@ pre {
     background-color: transparent;
     border: none; }
     
+.toc {
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #CCCCCC;
+  border-left: 1px solid #CCCCCC;
+  border-right: 1px solid #CCCCCC;
+  z-index: 99;
+  padding: 0px;
+  position: fixed;
+  right: 5px;
+  top: 0px;
+}
+
+.toc-title {
+  display: block;
+  min-width: 50px;
+  padding: 0 20px;
+  text-align: center;
+  font-weight: bold;
+  color: #20435C; 
+}
 
 /*******************
  *    pygements    *
