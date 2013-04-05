@@ -1,23 +1,19 @@
 # Mikidown
 
-Mikidown is a markdown note taking application. 
+Mikidown is note taking application with markdown support.
 
-You can also use it as a markdown text editor.
+> Mikidown was inspired by [Zim] and based on [ReText].
 
-> Mikidown is inspired by [Zim] and based on [ReText].
-
----
 ## Features 
 
-- Take and organize notes in Markdown
+- Take and organize notes in markdown
 - Page cross-link
 - Live preview
 - Import and save as plain text files
 - Export to HTML, PDF
 - Support multiple notebooks 
-- Customise your note style (by editting CSS file)
+- Customise your note style (by editing CSS file)
 
----
 ## Dependencies
 
 - Python (>3.0)
@@ -25,61 +21,55 @@ You can also use it as a markdown text editor.
 - python-markdown
 - python-whoosh
 
----
 ## How-To
 
-Get the source code
-<pre>
-git clone git@github.com:rnons/mikidown.git
-cd mikidown
-</pre>
+    git clone git@github.com:rnons/mikidown.git
+    cd mikidown
 
-You should be able to **run** mikidown with <code>./mikidown.py</code>.
+You should be able to **run** mikidown with <code>./mikidown.py</code>. 
 
-However, to visualize your notes with the help of CSS file, you can choose to **install** mikidown.
-<pre><code>python setup.py install</code></pre>
+To install
+ 
+    python setup.py install
+    mikidown
 
-Open any terminal and issue command  <code>mikidown</code> to bring Mikidown up.
-
----
 ## Use Mikidown to visualize you notes
 
+In case you are unfamiliar with markdown, you can use this file (**Help->README**) as a simple reference to basic markdown syntax. However, I suggest you take a look at the complete [Markdown Syntax].
 
-You can find this file in the menu: *Help->README*.
-
-If you are unfamiliar with markdown, you can use this file as a simple reference to basic markdown syntax.
-
-However, I suggest you take a look at the complete [Markdown Syntax].
-
----
 ## Mikidown Specific Syntax
+
 1.  page cross link, all of the three will do 
-<pre>
-`[text](parentNode/childNode/pageName)`
-`[text](/parentNode/childNode/pageName)`
-`[text](/parentNode/childNode/pageName/)`
-</pre>
+
+    `[text](/parentNode/childNode/pageName)`
+
+*Feature to come*:
+
+    `[text](/parentNode/childNode/pageName#anchor)`
+
 
 2.  mikidown support both absolute and relative image path 
-<pre>
-`![text](file:///home/user/pic.png)` 
-`![text](pic.png)`     # path relative to notebook folder
-</pre>
-`Ctrl + I` or *Edit -> Insert Image* will bring up an **insert image** dialog.
+
+    `![text](file:///home/user/pic.png)` 
+    `![text](pic.png)`     # path relative to notebook folder
+
+`Ctrl + I` or **Edit -> Insert Image** will bring up an *insert image* dialog.
 
 3.  ins/del/bold/italics (better view in mikidown)
 
-`~~delete~~`  will yield ~~delete~~
-`__insert__` will yield __insert__
-`**strong**` will yield **strong**
-`//emphasis//` will yield //emphasis//
+- `~~delete~~`  will yield ~~delete~~
+- `__insert__` will yield __insert__
+- `**strong**` will yield **strong**
+- `//emphasis//` will yield //emphasis//
 
----
+4. table of contents
+
+Add `[TOC]` to anywhere you want to display a table-of-contents. (To be improved)
+
 ## Contributor
 
 [ShadowKyogre]
 
----
 [Fork and help] are much appreciated.
 
 [Zim]: http://zim-wiki.org/

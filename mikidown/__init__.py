@@ -18,9 +18,17 @@ import markdown
 sys.path.append(os.path.dirname(__file__))
 
 __appname__ = 'mikidown'
-__version__ = '0.4.0'
-extensions = settings.value('extensions',['nl2br','strkundr', 'codehilite'])
-settings.setValue('extensions',extensions)
+__version__ = '0.1.6'
+'''Extensions of python-markdown used.
+    nl2br: newline IS newline
+    codehilite: code syntax highlight
+    fenced code: code block
+    toc: table of content
+    http://pythonhosted.org/Markdown/extensions/index.html
+'''
+extensionList = ['nl2br','strkundr', 'codehilite', 'fenced_code', 'toc']
+extensions = settings.value('extensions', extensionList)
+settings.setValue('extensions', extensions)
 md = markdown.Markdown(extensions)
 
 class MikiWindow(QMainWindow):
@@ -460,26 +468,42 @@ class MikiWindow(QMainWindow):
         viewFrame.setScrollPosition(self.scrollPosition)
 
     def parseText(self):
+        '''markdown.Markdown.convert v.s. markdown.markdown
+            Previously `convert` was used, but it doens't work with fenced_code
+        '''
         htmltext = self.notesEdit.toPlainText()
-        #return md.convert(htmltext)
-        return markdown.markdown(htmltext, ['nl2br', 'strkundr', 'codehilite', 'fenced_code'])
+        return markdown.markdown(htmltext, extensionList)
+        #return md.convert(htmltext)            
 
     def linkClicked(self, qlink):
+        '''three kinds of link:
+            external uri: http/https
+            page ref link:
+            toc anchor link: #
+        '''
+        #TODO: add Go-To-Top
         name = qlink.toString()
         http = re.compile('https?://')
         if http.match(name):
-            QDesktopServices.openUrl(qlink)
+            QDesktopServices.openUrl(qlink)         # external uri
             return
         name = name.replace('file://', '')
         name = name.replace(self.notebookPath, '')
         item = self.notesTree.pagePathToItem(name)
-        if item:        # in case item doesn't exist
-            self.notesTree.setCurrentItem(item)
+        if item:                  
+            self.notesTree.setCurrentItem(item)     # page ref link
+        else:
+            self.notesView.load(qlink)              # toc anchor link
 
     def linkHovered(self, link, title, textContent):
-        if link == '':
+        '''show link in status bar
+            ref link shown as: /parent/child/pageName
+            toc link shown as: /parent/child/pageName#anchor (ToFix)
+        '''
+        #TODO: link to page by: /parent/child/pageName#anchor
+        if link == '':                              # not hovered
             self.statusBar.showMessage(self.notesTree.currentItemName())
-        else:
+        else:                                       # beautify link
             link = link.replace('file://', '')
             link = link.replace(self.notebookPath, '')
             self.statusBar.showMessage(link)
