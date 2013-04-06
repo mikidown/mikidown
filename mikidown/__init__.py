@@ -270,7 +270,6 @@ class MikiWindow(QMainWindow):
                 self.updateRecentViewedNotes()
                 self.viewedListActions[-1].setChecked(True)
                 self.statusLabel.setText(noteFullName)
-                #self.statusBar.showMessage(noteFullName)
 
     def currentTabChanged(self, index):
         self.tabWidget.setCurrentIndex(index)
@@ -463,9 +462,13 @@ class MikiWindow(QMainWindow):
             QTimer.singleShot(1000, self.updateView)
 
     def contentsSizeChanged(self, newSize):
-        #print('newSize: %d%d' % newSize.height, newSize.width)
+        '''scroll notesView while editing (adding new lines)
+           Whithout this, every `updateView` will result in scroll to top.
+        '''
+        if self.scrollPosition == QPoint(0, 0):         
+            # prevent scrolling to bottom
+            return
         viewFrame = self.notesView.page().mainFrame()
-        # scroll notesView when adding new line
         newPositionY = self.scrollPosition.y() + newSize.height() - self.contentsSize.height()
         self.scrollPosition.setY(newPositionY)
         viewFrame.setScrollPosition(self.scrollPosition)
