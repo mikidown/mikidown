@@ -207,6 +207,7 @@ class MikiWindow(QMainWindow):
         self.tabWidget.currentChanged.connect(self.currentTabChanged)
         #self.connect(self.notesTree, SIGNAL('customContextMenuRequested(QPoint)'), self.treeMenu)
         self.notesTree.currentItemChanged.connect(self.currentItemChangedWrapper)
+        self.tocTree.currentItemChanged.connect(self.tocNavigate)
         self.searchList.currentRowChanged.connect(self.listItemChanged)
         self.connect(self.notesEdit, SIGNAL('textChanged()'), self.noteEditted)
 
@@ -293,6 +294,15 @@ class MikiWindow(QMainWindow):
         name = self.notesTree.itemToPagePath(current)
         self.openNote(name)
         #name = self.notesTree.currentItemName()
+
+    def tocNavigate(self, current, previous):
+        ''' works for notesEdit now '''
+        if current is None:
+            return
+        h = current.text(0)
+        flags = QTextDocument.FindCaseSensitively | QTextDocument.FindWholeWords
+        self.notesEdit.moveCursor(QTextCursor.Start)
+        self.notesEdit.find(h, flags)
 
     def saveCurrentNote(self):
         item = self.notesTree.currentItem()
