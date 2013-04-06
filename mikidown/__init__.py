@@ -83,10 +83,13 @@ class MikiWindow(QMainWindow):
         searchLayout.addWidget(self.searchEdit)
         searchLayout.addWidget(self.searchList)
         self.searchTab.setLayout(searchLayout)
+        self.tocTree = QTreeWidget()
+        self.tocTree.header().close()
         # left pane
         self.tabWidget.addTab(self.notesTree, 'Index')
         self.tabWidget.addTab(self.searchTab, 'Search')
-        self.tabWidget.setMinimumWidth(150)
+        self.tabWidget.addTab(self.tocTree, 'TOC')
+        self.tabWidget.setMinimumWidth(200)
         #self.rightSplitter.setSizes([600,20,600,580])
         self.rightSplitter.setStretchFactor(0, 0)
         
@@ -246,6 +249,11 @@ class MikiWindow(QMainWindow):
             path = notePath + '/' + note.completeBaseName()
             self.initTree(path, item)
         self.editted = 0
+    
+    def updateToc(self, parent):
+        ''' TOC is called in `updateView` '''
+        for h in parseHeaders(self.notesEdit.toPlainText()):
+            item = QTreeWidgetItem(parent, [h])
 
     def openNote(self, noteFullName):
         filename = noteFullName + '.markdown'
@@ -456,6 +464,7 @@ class MikiWindow(QMainWindow):
         url_notebook = 'file://' + self.notebookPath + '/'
         self.notesView.setHtml(self.parseText(), QUrl(url_notebook))
         viewFrame.setScrollPosition(self.scrollPosition)
+        self.updateToc(self.tocTree)
 
     def updateLiveView(self):
         if self.actionLiveView.isChecked():
