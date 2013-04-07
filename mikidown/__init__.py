@@ -252,9 +252,11 @@ class MikiWindow(QMainWindow):
         self.editted = 0
     
     def updateToc(self, parent):
-        ''' TOC is called in `updateView` '''
-        for h in parseHeaders(self.notesEdit.toPlainText()):
-            item = QTreeWidgetItem(parent, [h])
+        ''' TOC is updated in `updateView`
+            tocTree fields: [headerText, headerPosition]
+        '''
+        for (h, p) in parseHeaders(self.notesEdit.toPlainText()):
+            item = QTreeWidgetItem(parent, [h, str(p)])
 
     def openNote(self, noteFullName):
         filename = noteFullName + '.markdown'
@@ -274,6 +276,7 @@ class MikiWindow(QMainWindow):
                 #self.editted = 0
                 #self.actionSave.setEnabled(False)
                 self.notesEdit.document().setModified(False)
+                self.tocTree.clear()
                 self.updateView()
                 self.setCurrentFile()
                 self.updateRecentViewedNotes()
@@ -299,10 +302,13 @@ class MikiWindow(QMainWindow):
         ''' works for notesEdit now '''
         if current is None:
             return
-        h = current.text(0)
-        flags = QTextDocument.FindCaseSensitively | QTextDocument.FindWholeWords
-        self.notesEdit.moveCursor(QTextCursor.Start)
-        self.notesEdit.find(h, flags)
+        pos = int(current.text(1))
+        # Move cursor to END first will ensure 
+        # header is positioned at the top of visual area.
+        self.notesEdit.moveCursor(QTextCursor.End)
+        cur = self.notesEdit.textCursor()
+        cur.setPosition(pos, QTextCursor.MoveAnchor)
+        self.notesEdit.setTextCursor(cur)
 
     def saveCurrentNote(self):
         item = self.notesTree.currentItem()
