@@ -251,13 +251,27 @@ class MikiWindow(QMainWindow):
             self.initTree(path, item)
         self.editted = 0
     
-    def updateToc(self, parent):
+    def updateToc(self):
         ''' TOC is updated in `updateView`
-            tocTree fields: [headerText, headerPosition]
+            tocTree fields: [hdrText, hdrPosition, hdrAnchor]
         '''
+        root = self.notesTree.currentItemName()
         self.tocTree.clear()
-        for (h, p, a) in parseHeaders(self.notesEdit.toPlainText()):
-            item = QTreeWidgetItem(parent, [h, str(p), a])
+        item = QTreeWidgetItem(self.tocTree, [root, '0'])
+        curLevel = 0
+        for (l, h, p, a) in parseHeaders(self.notesEdit.toPlainText()):
+            ac = len(l)             # hdrLevel is the number of asterisk
+            #print("curLevel: %d, ac: %d" % (curLevel, ac))
+            val = [h, str(p), a]
+            if ac == curLevel:
+                item = QTreeWidgetItem(item.parent(), val)
+            elif ac < curLevel:
+                item = QTreeWidgetItem(item.parent().parent(), val)
+                curLevel = ac
+            else:
+                item = QTreeWidgetItem(item, val)
+                curLevel = ac
+        self.tocTree.expandAll()
 
     def openNote(self, noteFullName):
         filename = noteFullName + '.markdown'
@@ -387,7 +401,7 @@ class MikiWindow(QMainWindow):
     def noteEditted(self):
         """ Continuously get fired while editing"""
         self.editted = 1
-        self.updateToc(self.tocTree)
+        self.updateToc()
         self.updateLiveView()
 
     def modificationChanged(self, changed):
