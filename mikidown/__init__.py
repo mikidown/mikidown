@@ -27,7 +27,7 @@ __version__ = '0.1.6'
     toc: table of content
     http://pythonhosted.org/Markdown/extensions/index.html
 '''
-extensionList = ['nl2br','strkundr', 'codehilite', 'fenced_code', 'toc', 'footnotes']
+extensionList = ['nl2br','strkundr', 'codehilite', 'fenced_code', 'headerid', 'footnotes']
 extensions = settings.value('extensions', extensionList)
 settings.setValue('extensions', extensions)
 md = markdown.Markdown(extensions)
@@ -255,8 +255,9 @@ class MikiWindow(QMainWindow):
         ''' TOC is updated in `updateView`
             tocTree fields: [headerText, headerPosition]
         '''
-        for (h, p) in parseHeaders(self.notesEdit.toPlainText()):
-            item = QTreeWidgetItem(parent, [h, str(p)])
+        self.tocTree.clear()
+        for (h, p, a) in parseHeaders(self.notesEdit.toPlainText()):
+            item = QTreeWidgetItem(parent, [h, str(p), a])
 
     def openNote(self, noteFullName):
         filename = noteFullName + '.markdown'
@@ -276,7 +277,6 @@ class MikiWindow(QMainWindow):
                 #self.editted = 0
                 #self.actionSave.setEnabled(False)
                 self.notesEdit.document().setModified(False)
-                self.tocTree.clear()
                 self.updateView()
                 self.setCurrentFile()
                 self.updateRecentViewedNotes()
@@ -303,12 +303,14 @@ class MikiWindow(QMainWindow):
         if current is None:
             return
         pos = int(current.text(1))
+        link = "file://" + self.notebookPath + "/#" + current.text(2)
         # Move cursor to END first will ensure 
         # header is positioned at the top of visual area.
         self.notesEdit.moveCursor(QTextCursor.End)
         cur = self.notesEdit.textCursor()
         cur.setPosition(pos, QTextCursor.MoveAnchor)
         self.notesEdit.setTextCursor(cur)
+        self.notesView.load(QUrl(link))
 
     def saveCurrentNote(self):
         item = self.notesTree.currentItem()
@@ -383,10 +385,13 @@ class MikiWindow(QMainWindow):
           self.notesView.print_(printer)
 
     def noteEditted(self):
+        """ Continuously get fired while editing"""
         self.editted = 1
+        self.updateToc(self.tocTree)
         self.updateLiveView()
 
     def modificationChanged(self, changed):
+        """ Fired one time: modified or not """
         self.updateLiveView()
         self.actionSave.setEnabled(changed)
         name = self.notesTree.currentItemName()
@@ -480,7 +485,6 @@ class MikiWindow(QMainWindow):
         url_notebook = 'file://' + self.notebookPath + '/'
         self.notesView.setHtml(self.parseText(), QUrl(url_notebook))
         viewFrame.setScrollPosition(self.scrollPosition)
-        self.updateToc(self.tocTree)
 
     def updateLiveView(self):
         if self.actionLiveView.isChecked():
@@ -503,8 +507,7 @@ class MikiWindow(QMainWindow):
             Previously `convert` was used, but it doens't work with fenced_code
         '''
         htmltext = self.notesEdit.toPlainText()
-        return markdown.markdown(preProcess(htmltext), extensionList)
-        #return markdown.markdown(htmltext, extensionList)
+        return markdown.markdown(htmltext, extensionList)
         #return md.convert(htmltext)            
 
     def linkClicked(self, qlink):
