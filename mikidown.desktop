@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=0.1.6
+Type=Application
+Name=Mikidown
+GenericName=Note Taking App
+Comment=Note taking with markdown
+Icon=/usr/share/icons/hicolor/scalable/apps/mikidown.svg
+Exec=mikidown
+Terminal=false
+Categories=Office;Qt;
+StartupNotify=true

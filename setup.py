@@ -8,6 +8,8 @@ setup(name = 'mikidown',
 	  data_files = [ ('share/mikidown', ['README.mkd'])
                    , ('share/mikidown', ['mikidown/notes.css'])
                    , ('share/mikidown/css', glob.glob("mikidown/css/*"))
+                   , ('share/icons/hicolor/scalable/apps', ['mikidown.svg'])
+                   , ('share/applications', ['mikidown.desktop'])
                    ],
 	  requires = ['PyQt', 'markdown']
 	  )
