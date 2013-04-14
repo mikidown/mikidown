@@ -20,14 +20,15 @@ sys.path.append(os.path.dirname(__file__))
 
 __appname__ = 'mikidown'
 __version__ = '0.1.6'
-'''Extensions of python-markdown used.
-    nl2br: newline IS newline
-    codehilite: code syntax highlight
-    fenced code: code block
-    toc: table of content
-    http://pythonhosted.org/Markdown/extensions/index.html
-'''
-extensionList = ['nl2br','strkundr', 'codehilite', 'fenced_code', 'headerid', 'footnotes']
+""" http://pythonhosted.org/Markdown/extensions/index.html """
+extensionList = [ 'nl2br'           # newline to break
+                , 'strkundr'        # bold-italics-underline-delete style
+                , 'codehilite'      # code syntax highlight
+                , 'fenced_code'     # code block
+                , 'headerid'        # add id to headers
+                , 'headerlink'      # add anchor to headers
+                , 'footnotes'
+                ]
 extensions = settings.value('extensions', extensionList)
 settings.setValue('extensions', extensions)
 md = markdown.Markdown(extensions)
@@ -71,7 +72,7 @@ class MikiWindow(QMainWindow):
         self.mainSplitter.addWidget(self.tabWidget)
         self.mainSplitter.addWidget(self.rightSplitter)
         self.setCentralWidget(self.mainSplitter)
-        self.mainSplitter.setStretchFactor(0, 1) 
+        self.mainSplitter.setStretchFactor(0, 1)
         self.mainSplitter.setStretchFactor(1, 5)
 
         self.notesTree = MikiTree()
@@ -92,13 +93,13 @@ class MikiWindow(QMainWindow):
         self.tabWidget.setMinimumWidth(200)
         #self.rightSplitter.setSizes([600,20,600,580])
         self.rightSplitter.setStretchFactor(0, 0)
-        
+
         # Global Actions
-        actTabIndex = self.act(self.tr('Switch to Index Tab'), 
-                               QKeySequence('Ctrl+Shift+I'), 
+        actTabIndex = self.act(self.tr('Switch to Index Tab'),
+                               QKeySequence('Ctrl+Shift+I'),
                                lambda: self.tabWidget.setCurrentWidget(self.notesTree))
-        actTabSearch = self.act(self.tr('Switch to Search Tab'), 
-                                QKeySequence('Ctrl+Shift+F'), 
+        actTabSearch = self.act(self.tr('Switch to Search Tab'),
+                                QKeySequence('Ctrl+Shift+F'),
                                 lambda: self.currentTabChanged(1))
                                 #lambda:self.tabWidget.setCurrentWidget(self.searchTab)
         self.addAction(actTabIndex)
@@ -129,7 +130,7 @@ class MikiWindow(QMainWindow):
         self.actionFindText.setCheckable(True)
         self.actionFindText.triggered.connect(self.findBar.setVisible)
         self.actionFind = self.act(self.tr('Next'), shct=QKeySequence.FindNext, trig=self.findText)
-        self.actionFindPrev = self.act(self.tr('Previous'), shct=QKeySequence.FindPrevious, 
+        self.actionFindPrev = self.act(self.tr('Previous'), shct=QKeySequence.FindPrevious,
                 trig=lambda:self.findText(back=True))
         self.actionSortLines = self.act(self.tr('&Sort Lines'), trig=self.sortLines)
         self.actionInsertImage = self.act(self.tr('&Insert Image'), shct=QKeySequence('Ctrl+I'), trig=self.insertImage)
@@ -198,12 +199,12 @@ class MikiWindow(QMainWindow):
         self.findBar.addAction(self.actionFind)
         self.findBar.setVisible(False)
         self.findBar.visibilityChanged.connect(self.findBarVisibilityChanged)
-        
+
         self.statusBar = QStatusBar(self)
         self.setStatusBar(self.statusBar)
         self.statusLabel = QLabel(self)
         self.statusBar.addWidget(self.statusLabel, 1)
-        
+
         self.tabWidget.currentChanged.connect(self.currentTabChanged)
         #self.connect(self.notesTree, SIGNAL('customContextMenuRequested(QPoint)'), self.treeMenu)
         self.notesTree.currentItemChanged.connect(self.currentItemChangedWrapper)
@@ -216,9 +217,6 @@ class MikiWindow(QMainWindow):
         self.notesView.page().linkClicked.connect(self.linkClicked)
         self.notesView.page().linkHovered.connect(self.linkHovered)
         self.notesView.page().mainFrame().contentsSizeChanged.connect(self.contentsSizeChanged)
-
-        self.scrollPosition = QPoint(0, 0)
-        self.contentsSize = QSize(0, 0)
 
         #QSettings.setPath(QSettings.NativeFormat, QSettings.UserScope, notebookPath)
         self.notebookSettings = QSettings(os.path.join(notebookPath, 'notebook.conf'),
@@ -249,8 +247,7 @@ class MikiWindow(QMainWindow):
             item = QTreeWidgetItem(parent, [note.completeBaseName()])
             path = notePath + '/' + note.completeBaseName()
             self.initTree(path, item)
-        self.editted = 0
-    
+
     def updateToc(self):
         ''' TOC is updated in `updateView`
             tocTree fields: [hdrText, hdrPosition, hdrAnchor]
@@ -281,7 +278,7 @@ class MikiWindow(QMainWindow):
             if not fh.open(QIODevice.ReadOnly):
                 raise IOError(fh.errorString())
         except IOError as e:
-            QMessageBox.warning(self, 'Read Error', 
+            QMessageBox.warning(self, 'Read Error',
                     'Failed to open %s: %s' % (filename, e))
         finally:
             if fh is not None:
@@ -289,6 +286,7 @@ class MikiWindow(QMainWindow):
                 fh.close()
                 self.notesEdit.setPlainText(noteBody)
                 #self.editted = 0
+                self.scrollPosition = QPoint(0,0)
                 #self.actionSave.setEnabled(False)
                 self.notesEdit.document().setModified(False)
                 self.updateView()
@@ -318,7 +316,7 @@ class MikiWindow(QMainWindow):
             return
         pos = int(current.text(1))
         link = "file://" + self.notebookPath + "/#" + current.text(2)
-        # Move cursor to END first will ensure 
+        # Move cursor to END first will ensure
         # header is positioned at the top of visual area.
         self.notesEdit.moveCursor(QTextCursor.End)
         cur = self.notesEdit.textCursor()
@@ -335,8 +333,6 @@ class MikiWindow(QMainWindow):
 
     def saveNote(self, current, previous):
         if previous is None:
-            return
-        if self.editted == 0:
             return
         #self.editted = 1
         self.filename = previous.text(0)+'.markdown'
@@ -362,8 +358,7 @@ class MikiWindow(QMainWindow):
                 self.notesEdit.document().setModified(False)
                 #self.actionSave.setEnabled(False)
                 self.updateView()
-                self.editted = 0
-    
+
     def saveNoteAs(self):
         fileName = QFileDialog.getSaveFileName(self, self.tr('Save as'), '',
                 '(*.markdown *.mkd *.md);;'+self.tr('All files(*)'))
@@ -389,7 +384,7 @@ class MikiWindow(QMainWindow):
         savestream = QTextStream(fh)
         savestream << self.parseText()
         fh.close()
-        
+
     def printNote(self):
         printer = QPrinter(QPrinter.HighResolution)
         printer.setCreator(__appname__ + ' ' + __version__)
@@ -400,13 +395,11 @@ class MikiWindow(QMainWindow):
 
     def noteEditted(self):
         """ Continuously get fired while editing"""
-        self.editted = 1
         self.updateToc()
         self.updateLiveView()
 
     def modificationChanged(self, changed):
         """ Fired one time: modified or not """
-        self.updateLiveView()
         self.actionSave.setEnabled(changed)
         name = self.notesTree.currentItemName()
         self.statusBar.clearMessage()
@@ -423,7 +416,7 @@ class MikiWindow(QMainWindow):
         if filename == '':
             return
         self.importPageCore(filename)
-            
+
     def importPageCore(self, filename):
         fh = QFile(filename)
         fh.open(QIODevice.ReadOnly)
@@ -432,7 +425,7 @@ class MikiWindow(QMainWindow):
         note = QFileInfo(filename)
         fh = QFile(note.completeBaseName()+'.markdown')
         if fh.exists():
-            QMessageBox.warning(self, 'Import Error', 
+            QMessageBox.warning(self, 'Import Error',
                     'Page already exists: %s' % note.completeBaseName())
             return
         fh.open(QIODevice.WriteOnly)
@@ -467,9 +460,9 @@ class MikiWindow(QMainWindow):
     def edit(self, viewmode):
         if self.actionLiveView.isChecked():
             self.actionLiveView.setChecked(False)
-        self.saveCurrentNote()
         self.notesView.setVisible(not viewmode)
         self.notesEdit.setVisible(viewmode)
+        self.saveCurrentNote()
         self.actionInsertImage.setEnabled(viewmode)
         self.actionLeftAndRight.setEnabled(True)
         self.actionUpAndDown.setEnabled(True)
@@ -489,15 +482,16 @@ class MikiWindow(QMainWindow):
         self.actionInsertImage.setEnabled(viewmode)
         self.noteSplitter.setSizes(splitSize)
         self.saveCurrentNote()
-        self.updateView()
 
     def updateView(self):
+        #url_notebook = 'file://' + os.path.join(self.notebookPath, '/')
         viewFrame = self.notesView.page().mainFrame()
+        # Store scrollPosition before update notesView
         self.scrollPosition = viewFrame.scrollPosition()
         self.contentsSize = viewFrame.contentsSize()
-        #url_notebook = 'file://' + os.path.join(self.notebookPath, '/')
         url_notebook = 'file://' + self.notebookPath + '/'
         self.notesView.setHtml(self.parseText(), QUrl(url_notebook))
+        # Restore previous scrollPosition
         viewFrame.setScrollPosition(self.scrollPosition)
 
     def updateLiveView(self):
@@ -508,12 +502,11 @@ class MikiWindow(QMainWindow):
         '''scroll notesView while editing (adding new lines)
            Whithout this, every `updateView` will result in scroll to top.
         '''
-        if self.scrollPosition == QPoint(0, 0):         
-            # prevent scrolling to bottom
+        if self.scrollPosition == QPoint(0,0):
             return
         viewFrame = self.notesView.page().mainFrame()
-        newPositionY = self.scrollPosition.y() + newSize.height() - self.contentsSize.height()
-        self.scrollPosition.setY(newPositionY)
+        newY = self.scrollPosition.y() + newSize.height() - self.contentsSize.height()
+        self.scrollPosition.setY(newY)
         viewFrame.setScrollPosition(self.scrollPosition)
 
     def parseText(self):
@@ -522,7 +515,7 @@ class MikiWindow(QMainWindow):
         '''
         htmltext = self.notesEdit.toPlainText()
         return markdown.markdown(htmltext, extensionList)
-        #return md.convert(htmltext)            
+        #return md.convert(htmltext)
 
     def linkClicked(self, qlink):
         '''three kinds of link:
@@ -530,19 +523,23 @@ class MikiWindow(QMainWindow):
             page ref link:
             toc anchor link: #
         '''
-        #TODO: add Go-To-Top
         name = qlink.toString()
         http = re.compile('https?://')
-        if http.match(name):
-            QDesktopServices.openUrl(qlink)         # external uri
+        if http.match(name):                        # external uri
+            QDesktopServices.openUrl(qlink)
             return
-        name = name.replace('file://', '')
-        name = name.replace(self.notebookPath, '')
-        item = self.notesTree.pagePathToItem(name)
-        if item:                  
-            self.notesTree.setCurrentItem(item)     # page ref link
-        else:
-            self.notesView.load(qlink)              # toc anchor link
+        if self.notebookPath in name:               # toc anchor link
+            self.notesView.load(qlink)
+        else:                                       # page ref link
+            name = name.replace('file://', '')
+            name = name.replace(self.notebookPath, '').split('#')
+            item = self.notesTree.pagePathToItem(name[0])
+            if item:
+                self.notesTree.setCurrentItem(item)
+                link = "file://" + self.notebookPath + "/#" + name[1]
+                self.notesView.load(QUrl(link))
+                viewFrame = self.notesView.page().mainFrame()
+                self.scrollPosition = viewFrame.scrollPosition()
 
     def linkHovered(self, link, title, textContent):
         '''show link in status bar
@@ -586,7 +583,7 @@ class MikiWindow(QMainWindow):
             self.notesView.findText(text, viewFlags)
             return self.notesEdit.find(text, flags)
         else:
-            self.notesView.findText(text)           
+            self.notesView.findText(text)
             return self.notesEdit.find(text)
 
     def sortLines(self):
@@ -615,7 +612,7 @@ class MikiWindow(QMainWindow):
         #    self.actionInsertImage.setEnabled(False)
 
         #QWidget.focusInEvent(self,f)
-       
+
     def containWords(self, item, pattern):
         if not pattern:
             return True
@@ -652,7 +649,7 @@ class MikiWindow(QMainWindow):
                 listItem = QListWidgetItem()
                 text = r['path']
                 print(text)
-                treeItem = self.notesTree.pagePathToItem(text) 
+                treeItem = self.notesTree.pagePathToItem(text)
                 listItem.setData(Qt.DisplayRole, treeItem.text(0))
                 listItem.setData(Qt.UserRole, treeItem)
                 self.searchList.addItem(listItem)
@@ -691,7 +688,7 @@ class MikiWindow(QMainWindow):
             del files[20:]
         writeListToSettings(self.notebookSettings, 'recentViewedNoteList', files)
         #self.updateRecentViewedNotes()
-    
+
     def updateRecentViewedNotes(self):
         self.viewedList.clear()
         self.viewedListActions = []
@@ -706,7 +703,7 @@ class MikiWindow(QMainWindow):
         writeListToSettings(self.notebookSettings, 'recentViewedNoteList', files)
         for action in self.viewedListActions:
             self.viewedList.addAction(action)
-    
+
     def existsNote(self, noteFullname):
         filename = noteFullname + '.markdown'
         fh = QFile(filename)
@@ -715,7 +712,7 @@ class MikiWindow(QMainWindow):
     def openFunction(self, name):
         item = self.notesTree.pagePathToItem(name)
         return lambda: self.notesTree.setCurrentItem(item)
-    
+
     def flipEditAndView(self):
         index = self.noteSplitter.indexOf(self.notesEdit)
         if index ==  0:
@@ -744,7 +741,7 @@ class MikiWindow(QMainWindow):
         event.accept()
         '''
         reply = QMessageBox.question(self, 'Message',
-                'Are you sure to quit?', 
+                'Are you sure to quit?',
                 QMessageBox.Yes|QMessageBox.No,
                 QMessageBox.No)
         if reply == QMessageBox.Yes:
