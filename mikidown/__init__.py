@@ -8,6 +8,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtWebKit import QWebView, QWebPage
 from mikidown.config import *
+from mikidown.mikibook import NotebookList 
 from mikidown.mikitree import *
 from mikidown.mikiedit import *
 from mikidown.mikiview import *
@@ -699,6 +700,7 @@ def main():
     
     ''' Configuration. '''
     # Read notebooks info from global_settings
+    global_settings = Default.global_settings
     notebooks = readListFromSettings(global_settings, 'notebookList')
     if len(notebooks) == 0:
         NotebookList.create(global_settings)
