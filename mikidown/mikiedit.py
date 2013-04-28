@@ -3,16 +3,24 @@ from PyQt4.QtGui import QTextEdit
 import markdown
 from whoosh.index import open_dir
 
-from mikidown.config import settings
+from mikidown.config import *
 
 class MikiEdit(QTextEdit):
 
-    def __init__(self, parent=None):
+    def __init__(self, settings, parent=None):
         super(MikiEdit, self).__init__(parent)
         self.setFontPointSize(12)
         self.setTabStopWidth(4)
         self.setVisible(False)
-        self.ix = open_dir("indexdir")
+        self.ix = open_dir(Default.indexdir)
+
+        # Enabled extensions of python-markdown
+        self.extensions = readListFromSettings(settings, 'extensions')
+        if not self.extensions:
+            self.extensions = Default.extensionList
+            writeListToSettings(settings, 'extensions', self.extensions)
+        # This is needed if a GUI to select extensions is provided later.
+        settings.setValue('extensions', self.extensions)
         
     def save(self, pageName, filePath):
         fh = QFile(filePath)
@@ -41,8 +49,7 @@ class MikiEdit(QTextEdit):
             Previously `convert` was used, but it doens't work with fenced_code
         '''
         htmltext = self.toPlainText()
-        extensionList = settings.value('extensions')
-        return markdown.markdown(htmltext, extensionList)
+        return markdown.markdown(htmltext, self.extensions)
         #md = markdown.Markdown(extensions)
         #return md.convert(htmltext)
 

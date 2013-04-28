@@ -6,7 +6,28 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import mikidown
 
-settings = QSettings('mikidown', 'mikidown')
+
+""" ~/.config/mikidown/mikidown.conf
+    Apply to all notebooks created by one user.
+"""
+global_settings = QSettings('mikidown', 'mikidown')
+
+
+class Default():
+    """ Several default settings """
+
+    # Default enabled python-markdown extensions.
+    # http://pythonhosted.org/Markdown/extensions/index.html 
+    extensionList = [ 'nl2br'           # newline to break
+                    , 'strkundr'        # bold-italics-underline-delete style
+                    , 'codehilite'      # code syntax highlight
+                    , 'fenced_code'     # code block
+                    , 'headerid'        # add id to headers
+                    , 'headerlink'      # add anchor to headers
+                    , 'footnotes'
+                    ]
+    # Index directory of whoosh, located in notebookPath.
+    indexdir = ".indexdir"
 
 def readListFromSettings(settings, key):
     if not settings.contains(key):

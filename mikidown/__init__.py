@@ -22,17 +22,6 @@ sys.path.append(os.path.dirname(__file__))
 
 __appname__ = 'mikidown'
 __version__ = '0.1.6'
-""" http://pythonhosted.org/Markdown/extensions/index.html """
-extensionList = [ 'nl2br'           # newline to break
-                , 'strkundr'        # bold-italics-underline-delete style
-                , 'codehilite'      # code syntax highlight
-                , 'fenced_code'     # code block
-                , 'headerid'        # add id to headers
-                , 'headerlink'      # add anchor to headers
-                , 'footnotes'
-                ]
-extensions = settings.value('extensions', extensionList)
-settings.setValue('extensions', extensions)
 
 class MikiWindow(QMainWindow):
     def __init__(self, notebookPath=None, name=None, parent=None):
@@ -47,12 +36,15 @@ class MikiWindow(QMainWindow):
             self.setWindowsTitle(__appname__)
         self.notebookPath = notebookPath
         QDir.setCurrent(notebookPath)
+        # Settings specific to one notebook. 
+        self.notebookSettings = QSettings(os.path.join(notebookPath, 'notebook.conf'),
+                                          QSettings.NativeFormat)
 
         self.tabWidget = QTabWidget()
         self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
         self.viewedList.setFixedHeight(25)
         #self.notesEdit = QTextEdit()
-        self.notesEdit = MikiEdit()
+        self.notesEdit = MikiEdit(self.notebookSettings)
         MikiHighlighter(self.notesEdit)
         #self.notesView = QWebView()
         self.notesView = MikiView()
@@ -215,9 +207,6 @@ class MikiWindow(QMainWindow):
         self.notesView.page().linkHovered.connect(self.linkHovered)
         self.notesView.page().mainFrame().contentsSizeChanged.connect(self.contentsSizeChanged)
 
-        #QSettings.setPath(QSettings.NativeFormat, QSettings.UserScope, notebookPath)
-        self.notebookSettings = QSettings(os.path.join(notebookPath, 'notebook.conf'),
-                                          QSettings.NativeFormat)
         self.initTree(notebookPath, self.notesTree)
         self.updateRecentViewedNotes()
         files = readListFromSettings(self.notebookSettings, 'recentViewedNoteList')
@@ -225,7 +214,9 @@ class MikiWindow(QMainWindow):
             item = self.notesTree.pagePathToItem(files[0])
             self.notesTree.setCurrentItem(item)
 
+        # Initialize whoosh index
         self.ix = None
+        indexdir = Default.indexdir
         if not QDir(indexdir).exists():
             QDir.current().mkdir(indexdir)
             self.ix = create_in(indexdir, schema)
@@ -705,14 +696,17 @@ class MikiWindow(QMainWindow):
         '''
 
 def main():
+    
+    ''' Configuration. '''
+    # Read notebooks info from global_settings
+    notebooks = readListFromSettings(global_settings, 'notebookList')
+    if len(notebooks) == 0:
+        NotebookList.create(global_settings)
+        notebooks = readListFromSettings(global_settings, 'notebookList')
+    
+    ''' Initialize application and main window. '''
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon("/usr/share/icons/hicolor/scalable/apps/mikidown.svg"))
-    notebooks = readListFromSettings(settings, 'notebookList')
-    if len(notebooks) == 0:
-        NotebookList.create(settings)
-        notebooks = readListFromSettings(settings, 'notebookList')
-    if len(notebooks) == 0:
-        return
     window = MikiWindow(notebookPath=notebooks[0][1],
             name=notebooks[0][0])
     window.show()
