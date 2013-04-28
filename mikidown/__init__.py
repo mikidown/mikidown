@@ -9,6 +9,8 @@ from PyQt4.QtGui import *
 from PyQt4.QtWebKit import QWebView, QWebPage
 from mikidown.config import *
 from mikidown.mikitree import *
+from mikidown.mikiedit import *
+from mikidown.mikiview import *
 from mikidown.whoosh import *
 from mikidown.highlighter import *
 from mikidown.utils import *
@@ -31,7 +33,6 @@ extensionList = [ 'nl2br'           # newline to break
                 ]
 extensions = settings.value('extensions', extensionList)
 settings.setValue('extensions', extensions)
-md = markdown.Markdown(extensions)
 
 class MikiWindow(QMainWindow):
     def __init__(self, notebookPath=None, name=None, parent=None):
@@ -50,19 +51,16 @@ class MikiWindow(QMainWindow):
         self.tabWidget = QTabWidget()
         self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
         self.viewedList.setFixedHeight(25)
-        self.notesEdit = QTextEdit()
+        #self.notesEdit = QTextEdit()
+        self.notesEdit = MikiEdit()
         MikiHighlighter(self.notesEdit)
-        self.notesView = QWebView()
+        #self.notesView = QWebView()
+        self.notesView = MikiView()
         self.findBar = QToolBar(self.tr('Find'), self)
         self.findBar.setFixedHeight(30)
         self.noteSplitter = QSplitter(Qt.Horizontal)
         self.noteSplitter.addWidget(self.notesEdit)
         self.noteSplitter.addWidget(self.notesView)
-        self.notesEdit.setFontPointSize(12)
-        self.notesEdit.setTabStopWidth(4)
-        self.notesEdit.setVisible(False)
-        self.notesView.settings().clearMemoryCaches()
-        self.notesView.settings().setUserStyleSheetUrl(QUrl.fromLocalFile(notebookPath + '/notes.css'))
         self.rightSplitter = QSplitter(Qt.Vertical)
         self.rightSplitter.setChildrenCollapsible(False)
         self.rightSplitter.addWidget(self.viewedList)
@@ -112,7 +110,7 @@ class MikiWindow(QMainWindow):
         self.actionSave = self.act(self.tr('&Save'), shct=QKeySequence.Save, trig=self.saveCurrentNote)
         self.actionSave.setEnabled(False)
         self.actionSaveAs = self.act(self.tr('Save &As...'), shct=QKeySequence('Ctrl+Shift+S'), trig=self.saveNoteAs)
-        self.actionHtml = self.act(self.tr('to &HTML'), trig=self.saveNoteAsHtml)
+        self.actionHtml = self.act(self.tr('to &HTML'), trig=self.notesEdit.saveNoteAsHtml)
         self.actionPrint = self.act(self.tr('&Print'), shct=QKeySequence('Ctrl+P'), trig=self.printNote)
         self.actionRenamePage = self.act(self.tr('&Rename Page...'), shct=QKeySequence('F2'), trig=self.notesTree.renamePageWrapper)
         self.actionDelPage = self.act(self.tr('&Delete Page'), shct=QKeySequence('Delete'), trig=self.notesTree.delPageWrapper)
@@ -213,7 +211,6 @@ class MikiWindow(QMainWindow):
         self.connect(self.notesEdit, SIGNAL('textChanged()'), self.noteEditted)
 
         self.notesEdit.document().modificationChanged.connect(self.modificationChanged)
-        self.notesView.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
         self.notesView.page().linkClicked.connect(self.linkClicked)
         self.notesView.page().linkHovered.connect(self.linkHovered)
         self.notesView.page().mainFrame().contentsSizeChanged.connect(self.contentsSizeChanged)
@@ -305,7 +302,7 @@ class MikiWindow(QMainWindow):
         if current is None:
             return
         if self.notesTree.exists(previous):
-            self.saveNote(current, previous)
+            self.saveNote(previous)
         name = self.notesTree.itemToPagePath(current)
         self.openNote(name)
         #name = self.notesTree.currentItemName()
@@ -326,38 +323,15 @@ class MikiWindow(QMainWindow):
 
     def saveCurrentNote(self):
         item = self.notesTree.currentItem()
-        self.saveNote(None, item)
+        self.saveNote(item)
         name = self.notesTree.currentItemName()
         if hasattr(item, 'text'):
             self.statusBar.showMessage(name)
 
-    def saveNote(self, current, previous):
-        if previous is None:
-            return
-        #self.editted = 1
-        self.filename = previous.text(0)+'.markdown'
-        name = self.notesTree.itemToPagePath(previous)
-        fh = QFile(name + '.markdown')
-        try:
-            if not fh.open(QIODevice.WriteOnly):
-                raise IOError(fh.errorString())
-        except IOError as e:
-            QMessageBox.warning(self, 'Save Error',
-                        'Failed to save %s: %s' % (self.filename, e))
-        finally:
-            if fh is not None:
-                savestream = QTextStream(fh)
-                savestream << self.notesEdit.toPlainText()
-                fh.close()
-                fileobj = open(name+'.markdown', 'r')
-                content=fileobj.read()
-                fileobj.close()
-                writer = self.ix.writer()
-                writer.update_document(path=name, content=content)
-                writer.commit()
-                self.notesEdit.document().setModified(False)
-                #self.actionSave.setEnabled(False)
-                self.updateView()
+    def saveNote(self, item):
+        pageName = item.text(0)
+        filePath = self.notesTree.itemToPagePath(item) + '.markdown'
+        self.notesEdit.save(pageName, filePath)
 
     def saveNoteAs(self):
         fileName = QFileDialog.getSaveFileName(self, self.tr('Save as'), '',
@@ -370,19 +344,6 @@ class MikiWindow(QMainWindow):
         fh.open(QIODevice.WriteOnly)
         savestream = QTextStream(fh)
         savestream << self.notesEdit.toPlainText()
-        fh.close()
-
-    def saveNoteAsHtml(self):
-        fileName = QFileDialog.getSaveFileName(self, self.tr('Export to HTML'), '',
-                '(*.html *.htm);;'+self.tr('All files(*)'))
-        if fileName == '':
-            return
-        if not QFileInfo(fileName).suffix():
-            fileName += '.html'
-        fh = QFile(fileName)
-        fh.open(QIODevice.WriteOnly)
-        savestream = QTextStream(fh)
-        savestream << self.parseText()
         fh.close()
 
     def printNote(self):
@@ -490,7 +451,7 @@ class MikiWindow(QMainWindow):
         self.scrollPosition = viewFrame.scrollPosition()
         self.contentsSize = viewFrame.contentsSize()
         url_notebook = 'file://' + self.notebookPath + '/'
-        self.notesView.setHtml(self.parseText(), QUrl(url_notebook))
+        self.notesView.setHtml(self.notesEdit.toHtml(), QUrl(url_notebook))
         # Restore previous scrollPosition
         viewFrame.setScrollPosition(self.scrollPosition)
 
@@ -508,14 +469,6 @@ class MikiWindow(QMainWindow):
         newY = self.scrollPosition.y() + newSize.height() - self.contentsSize.height()
         self.scrollPosition.setY(newY)
         viewFrame.setScrollPosition(self.scrollPosition)
-
-    def parseText(self):
-        '''markdown.Markdown.convert v.s. markdown.markdown
-            Previously `convert` was used, but it doens't work with fenced_code
-        '''
-        htmltext = self.notesEdit.toPlainText()
-        return markdown.markdown(htmltext, extensionList)
-        #return md.convert(htmltext)
 
     def linkClicked(self, qlink):
         '''three kinds of link:
