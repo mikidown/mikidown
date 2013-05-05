@@ -1,3 +1,4 @@
+from multiprocessing import Process
 from PyQt4.QtCore import QDir, QFile, QFileInfo, QTextStream, QIODevice
 from PyQt4.QtGui import QTextEdit, QFileDialog 
 import markdown
@@ -21,7 +22,13 @@ class MikiEdit(QTextEdit):
             writeListToSettings(settings, 'extensions', self.extensions)
         # This is needed if a GUI to select extensions is provided later.
         settings.setValue('extensions', self.extensions)
-        
+    
+    def updateIndex(self, path, content):
+            ''' Update whoosh index, which cost much computing resource '''
+            writer = self.ix.writer()
+            writer.update_document(path = path, content = content)
+            writer.commit()
+
     def save(self, pageName, filePath):
         fh = QFile(filePath)
         try:
@@ -36,10 +43,9 @@ class MikiEdit(QTextEdit):
                 savestream << self.toPlainText()
                 fh.close()
                 self.document().setModified(False)
-                ''' Update whoosh index, which cost much computing resource '''
-                writer = self.ix.writer()
-                writer.update_document(path = pageName, content = self.toPlainText())
-                writer.commit()
+                # Fork a process to update index, which benefit responsiveness.
+                p = Process(target=self.updateIndex, args=(pageName,self.toPlainText(),))
+                p.start()
 
     def toHtml(self):
         '''markdown.Markdown.convert v.s. markdown.markdown

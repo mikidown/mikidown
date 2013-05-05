@@ -3,7 +3,7 @@
 import os
 import re
 import sys
-from subprocess import call
+from multiprocessing import Process
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtWebKit import QWebView, QWebPage
@@ -41,6 +41,21 @@ class MikiWindow(QMainWindow):
         self.notebookSettings = QSettings(os.path.join(notebookPath, 'notebook.conf'),
                                           QSettings.NativeFormat)
 
+        self.notesTree = MikiTree()
+        self.initTree(notebookPath, self.notesTree)
+
+        # Initialize whoosh index, make sure notebookPath/.indexdir exists
+        self.ix = None
+        indexdir = Default.indexdir
+        if not QDir(indexdir).exists():
+            QDir.current().mkdir(indexdir)
+            self.ix = create_in(indexdir, schema)
+            # Fork a process to update index, which benefit responsiveness.
+            p = Process(target=self.whoosh_index, args=())
+            p.start()
+        else:
+            self.ix = open_dir(indexdir)
+
         self.tabWidget = QTabWidget()
         self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
         self.viewedList.setFixedHeight(25)
@@ -66,7 +81,6 @@ class MikiWindow(QMainWindow):
         self.mainSplitter.setStretchFactor(0, 1)
         self.mainSplitter.setStretchFactor(1, 5)
 
-        self.notesTree = MikiTree()
         self.searchEdit = QLineEdit()
         self.searchEdit.returnPressed.connect(self.searchNote)
         self.searchList = QListWidget()
@@ -208,22 +222,11 @@ class MikiWindow(QMainWindow):
         self.notesView.page().linkHovered.connect(self.linkHovered)
         self.notesView.page().mainFrame().contentsSizeChanged.connect(self.contentsSizeChanged)
 
-        self.initTree(notebookPath, self.notesTree)
         self.updateRecentViewedNotes()
         files = readListFromSettings(self.notebookSettings, 'recentViewedNoteList')
         if len(files) != 0:
             item = self.notesTree.pagePathToItem(files[0])
             self.notesTree.setCurrentItem(item)
-
-        # Initialize whoosh index
-        self.ix = None
-        indexdir = Default.indexdir
-        if not QDir(indexdir).exists():
-            QDir.current().mkdir(indexdir)
-            self.ix = create_in(indexdir, schema)
-            self.whoosh_index()
-        else:
-            self.ix = open_dir(indexdir)
 
     def initTree(self, notePath, parent):
         if not QDir(notePath).exists():
@@ -556,30 +559,6 @@ class MikiWindow(QMainWindow):
         #    self.actionInsertImage.setEnabled(False)
 
         #QWidget.focusInEvent(self,f)
-
-    def containWords(self, item, pattern):
-        if not pattern:
-            return True
-        pagePath = self.notesTree.itemToPagePath(item)
-        pageFile = pagePath + '.markdown'
-        # not sure this is safe
-        #cmd = 'grep -i "' + pattern + '" "' + pageFile + '"'
-        cmd = ['grep', '-i', pattern, pageFile]
-        # grep return 0 when pattern found
-        return not call(cmd, stdout=None)
-
-    def searchNote_pre(self):
-        self.searchList.clear()
-        it = QTreeWidgetItemIterator(self.notesTree, QTreeWidgetItemIterator.All)
-        while it.value():
-            treeItem = it.value()
-            pattern = self.searchEdit.text()
-            if self.containWords(treeItem, pattern):
-                listItem = QListWidgetItem()
-                listItem.setData(Qt.DisplayRole, treeItem.text(0))
-                listItem.setData(Qt.UserRole, treeItem)
-                self.searchList.addItem(listItem)
-            it += 1
 
     def searchNote(self):
         self.searchList.clear()
