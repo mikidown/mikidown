@@ -274,7 +274,6 @@ class MikiWindow(QMainWindow):
                 noteBody = QTextStream(fh).readAll()
                 fh.close()
                 self.notesEdit.setPlainText(noteBody)
-                #self.editted = 0
                 self.scrollPosition = QPoint(0,0)
                 #self.actionSave.setEnabled(False)
                 self.notesEdit.document().setModified(False)
@@ -316,16 +315,18 @@ class MikiWindow(QMainWindow):
     def saveCurrentNote(self):
         item = self.notesTree.currentItem()
         self.saveNote(item)
-        name = self.notesTree.currentItemName()
-        if hasattr(item, 'text'):
-            self.statusBar.showMessage(name)
 
     def saveNote(self, item):
+        if self.notesEdit.document().isModified():
+            self.notesEdit.document().setModified(False)
+        else:
+            return
         pageName = item.text(0)
         filePath = self.notesTree.itemToPagePath(item) + '.markdown'
         self.notesEdit.save(pageName, filePath)
 
     def saveNoteAs(self):
+        self.saveCurrentNote()
         fileName = QFileDialog.getSaveFileName(self, self.tr('Save as'), '',
                 '(*.markdown *.mkd *.md);;'+self.tr('All files(*)'))
         if fileName == '':
@@ -357,10 +358,8 @@ class MikiWindow(QMainWindow):
         name = self.notesTree.currentItemName()
         self.statusBar.clearMessage()
         if changed:
-            self.editted = 1
             self.statusLabel.setText(name + '*')
         else:
-            self.editted = 0
             self.statusLabel.setText(name)
 
     def importPage(self):

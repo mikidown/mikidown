@@ -35,11 +35,8 @@ class MikiEdit(QTextEdit):
                 savestream = QTextStream(fh)
                 savestream << self.toPlainText()
                 fh.close()
-                #fileobj = open(filePath, 'r')
-                #content = fileobj.read()
-                #fileobj.close()
                 self.document().setModified(False)
-                ''' update whoosh index '''
+                ''' Update whoosh index, which cost much computing resource '''
                 writer = self.ix.writer()
                 writer.update_document(path = pageName, content = self.toPlainText())
                 writer.commit()
