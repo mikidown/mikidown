@@ -103,7 +103,7 @@ class MikiWindow(QMainWindow):
         self.actionSave = self.act(self.tr('&Save'), shct=QKeySequence.Save, trig=self.saveCurrentNote)
         self.actionSave.setEnabled(False)
         self.actionSaveAs = self.act(self.tr('Save &As...'), shct=QKeySequence('Ctrl+Shift+S'), trig=self.saveNoteAs)
-        self.actionHtml = self.act(self.tr('to &HTML'), trig=self.notesEdit.saveNoteAsHtml)
+        self.actionHtml = self.act(self.tr('to &HTML'), trig=self.notesEdit.saveAsHtml)
         self.actionPrint = self.act(self.tr('&Print'), shct=QKeySequence('Ctrl+P'), trig=self.printNote)
         self.actionRenamePage = self.act(self.tr('&Rename Page...'), shct=QKeySequence('F2'), trig=self.notesTree.renamePageWrapper)
         self.actionDelPage = self.act(self.tr('&Delete Page'), shct=QKeySequence('Delete'), trig=self.notesTree.delPageWrapper)

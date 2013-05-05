@@ -1,5 +1,5 @@
-from PyQt4.QtCore import QFile, QTextStream, QIODevice
-from PyQt4.QtGui import QTextEdit 
+from PyQt4.QtCore import QDir, QFile, QFileInfo, QTextStream, QIODevice
+from PyQt4.QtGui import QTextEdit, QFileDialog 
 import markdown
 from whoosh.index import open_dir
 
@@ -53,17 +53,28 @@ class MikiEdit(QTextEdit):
         #md = markdown.Markdown(extensions)
         #return md.convert(htmltext)
 
-    def saveNoteAsHtml(self):
-        fileName = QFileDialog.getSaveFileName(self, self.tr('Export to HTML'), '',
-                '(*.html *.htm);;'+self.tr('All files(*)'))
+    def saveAsHtml(self):
+        """ Export current note as html file
+        """
+        fileName = QFileDialog.getSaveFileName(self, self.tr('Export to HTML'), 
+                    '', '(*.html *.htm);;'+self.tr('All files(*)'))
         if fileName == '':
             return
         if not QFileInfo(fileName).suffix():
             fileName += '.html'
-        fh = QFile(fileName)
-        fh.open(QIODevice.WriteOnly)
-        savestream = QTextStream(fh)
+        html = QFile(fileName)
+        html.open(QIODevice.WriteOnly)
+        savestream = QTextStream(html)
+        notebookPath = QDir.currentPath()
+        css = QFile(notebookPath + '/notes.css')
+        css.open(QIODevice.ReadOnly)
+        # Use a html lib may be a better idea?
+        savestream << "<html><head><meta charset='utf-8'></head>"
+        # Css is inlined.
+        savestream << "<style>"
+        savestream << QTextStream(css).readAll()
+        savestream << "</style>"
+        # Note content
         savestream << self.toHtml()
-        fh.close()
-
-
+        savestream << "</html>"
+        html.close()
