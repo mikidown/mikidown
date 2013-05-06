@@ -12,7 +12,7 @@ class MikiHighlighter(QSyntaxHighlighter):
         font = [0]*NUM
         color = [0]*NUM
         # 0: html tags - <pre></pre>
-        regexp[0] = '</?[0-z]+>'
+        regexp[0] = '</?[^>]+>'
         font[0] = QFont("monospace", baseFontSize, -1)
         color[0] = QColor("#A40000")
         # 1: h1 - #
