@@ -1,10 +1,11 @@
 from multiprocessing import Process
 from PyQt4.QtCore import QDir, QFile, QFileInfo, QTextStream, QIODevice
-from PyQt4.QtGui import QTextEdit, QFileDialog 
+from PyQt4.QtGui import QTextEdit, QFileDialog
 import markdown
 from whoosh.index import open_dir
 
 from mikidown.config import *
+
 
 class MikiEdit(QTextEdit):
 
@@ -22,11 +23,11 @@ class MikiEdit(QTextEdit):
             writeListToSettings(settings, 'extensions', self.extensions)
         # This is needed if a GUI to select extensions is provided later.
         settings.setValue('extensions', self.extensions)
-    
+
     def updateIndex(self, path, content):
             ''' Update whoosh index, which cost much computing resource '''
             writer = self.ix.writer()
-            writer.update_document(path = path, content = content)
+            writer.update_document(path=path, content=content)
             writer.commit()
 
     def save(self, pageName, filePath):
@@ -36,7 +37,7 @@ class MikiEdit(QTextEdit):
                 raise IOError(fh.errorString())
         except IOError as e:
             QMessageBox.warning(self, 'Save Error',
-                        'Failed to save %s: %s' % (pageName, e))
+                                'Failed to save %s: %s' % (pageName, e))
         finally:
             if fh is not None:
                 savestream = QTextStream(fh)
@@ -44,7 +45,8 @@ class MikiEdit(QTextEdit):
                 fh.close()
                 self.document().setModified(False)
                 # Fork a process to update index, which benefit responsiveness.
-                p = Process(target=self.updateIndex, args=(pageName,self.toPlainText(),))
+                p = Process(target=self.updateIndex, args=(
+                    pageName, self.toPlainText(),))
                 p.start()
 
     def toHtml(self):
@@ -53,14 +55,14 @@ class MikiEdit(QTextEdit):
         '''
         htmltext = self.toPlainText()
         return markdown.markdown(htmltext, self.extensions)
-        #md = markdown.Markdown(extensions)
-        #return md.convert(htmltext)
+        # md = markdown.Markdown(extensions)
+        # return md.convert(htmltext)
 
     def saveAsHtml(self):
         """ Export current note as html file
         """
-        fileName = QFileDialog.getSaveFileName(self, self.tr('Export to HTML'), 
-                    '', '(*.html *.htm);;'+self.tr('All files(*)'))
+        fileName = QFileDialog.getSaveFileName(self, self.tr('Export to HTML'),
+                                               '', '(*.html *.htm);;'+self.tr('All files(*)'))
         if fileName == '':
             return
         if not QFileInfo(fileName).suffix():

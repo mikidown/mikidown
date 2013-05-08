@@ -4,8 +4,8 @@ HeaderLink Extension for Python-Markdown
 
 !!HeaderID extension must be enabled to use this!!
 
-With HeaderId, #Header will become 
-    
+With HeaderId, #Header will become
+
     <h1 id="header">Header</h1>
 
 With HeaderLink, #Header will become

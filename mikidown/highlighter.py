@@ -1,8 +1,9 @@
 from mikidown import *
 import re
 
+
 class MikiHighlighter(QSyntaxHighlighter):
-    
+
     def __init__(self, parent=None):
         super(MikiHighlighter, self).__init__(parent)
         baseFontSize = 12
@@ -85,14 +86,15 @@ class MikiHighlighter(QSyntaxHighlighter):
         self.fenced_block = re.compile("^(?:~{3,}|`{3,}).*$")
         self.fenced_format = QTextCharFormat()
         self.fenced_format.setFont(fenced_font)
-    
+
     def highlightBlock(self, text):
         # highlight patterns
-        for i in range(0,len(self.patterns)):
+        for i in range(0, len(self.patterns)):
             p = self.patterns[i]
             for match in p[0].finditer(text):
-                self.setFormat(match.start(), match.end() - match.start(), p[1])
-        
+                self.setFormat(
+                    match.start(), match.end() - match.start(), p[1])
+
         # escape highlights in fenced_block
         m = self.fenced_block.match(text)
         self.setCurrentBlockState(0)
@@ -105,4 +107,3 @@ class MikiHighlighter(QSyntaxHighlighter):
             else:
                 self.setCurrentBlockState(1)
                 self.setFormat(0, len(text), self.fenced_format)
-

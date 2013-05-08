@@ -1,13 +1,14 @@
 import re
 from markdown.extensions.headerid import slugify, unique
 
+
 def parseHeaders(source):
     ''' Quite basic header parser
         Headers are used to construct Table Of Contents
 
         return: [(hdrLevel, hdrText, hdrPosition, hdrAnchor)]
     '''
-    #RE = re.compile(r'(^|\n)(?P<level>#{1,6})(?P<header>.*?)#*(\n|$)')
+    # RE = re.compile(r'(^|\n)(?P<level>#{1,6})(?P<header>.*?)#*(\n|$)')
     hdrs = []
     used_ids = set()           # In case there are headers with the same name.
     RE = re.compile(r'^(#+)(.+)', re.MULTILINE)
@@ -18,4 +19,3 @@ def parseHeaders(source):
         anchor = unique(slugify(hdr, '-'), used_ids)
         hdrs.append((hdrLevel, hdr, pos, anchor))
     return hdrs
-
