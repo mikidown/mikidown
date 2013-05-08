@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import os
 import re
 import sys
@@ -12,6 +10,7 @@ from mikidown.mikibook import NotebookList
 from mikidown.mikitree import *
 from mikidown.mikiedit import *
 from mikidown.mikiview import *
+from mikidown.mikitray import MikiTray
 from mikidown.whoosh import *
 from mikidown.highlighter import *
 from mikidown.utils import *
@@ -26,7 +25,7 @@ __version__ = '0.1.6'
 
 
 class MikiWindow(QMainWindow):
-    def __init__(self, notebookPath=None, name=None, parent=None):
+    def __init__(self, tray, notebookPath=None, name=None, parent=None):
         super(MikiWindow, self).__init__(parent)
         self.resize(800, 600)
         screen = QDesktopWidget().screenGeometry()
@@ -236,9 +235,10 @@ class MikiWindow(QMainWindow):
         self.statusLabel = QLabel(self)
         self.statusBar.addWidget(self.statusLabel, 1)
 
+        tray.activated.connect(self.toggleShow)
+
         self.tabWidget.currentChanged.connect(self.currentTabChanged)
-        # self.connect(self.notesTree,
-        # SIGNAL('customContextMenuRequested(QPoint)'), self.treeMenu)
+
         self.notesTree.currentItemChanged.connect(
             self.currentItemChangedWrapper)
         self.tocTree.currentItemChanged.connect(self.tocNavigate)
@@ -270,6 +270,22 @@ class MikiWindow(QMainWindow):
             item = QTreeWidgetItem(parent, [note.completeBaseName()])
             path = notePath + '/' + note.completeBaseName()
             self.initTree(path, item)
+
+    def toggleShow(self, reason):
+        """ Left click tray icon to toggle the display of MainWindow. 
+        """
+        if reason != QSystemTrayIcon.Trigger:
+            return
+        s = self.windowState() 
+        if self.isVisible():
+            if s == Qt.WindowMinimized:
+                self.showNormal()
+                self.show()
+            else:
+                self.showMaximized
+                self.hide()
+        else:
+            self.show()
 
     def updateToc(self):
         ''' TOC is updated in `updateView`
@@ -729,12 +745,14 @@ def main():
         notebooks = readListFromSettings(global_settings, 'notebookList')
 
     ''' Initialize application and main window. '''
+    icon = QIcon("/usr/share/icons/hicolor/scalable/apps/mikidown.svg")
     app = QApplication(sys.argv)
-    app.setWindowIcon(
-        QIcon("/usr/share/icons/hicolor/scalable/apps/mikidown.svg"))
-    window = MikiWindow(notebookPath=notebooks[0][1],
+    app.setWindowIcon(icon)
+    tray = MikiTray(icon)
+    window = MikiWindow(tray, notebookPath=notebooks[0][1],
                         name=notebooks[0][0])
     window.show()
+    tray.show()
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
