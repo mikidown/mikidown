@@ -25,7 +25,7 @@ __version__ = '0.1.6'
 
 
 class MikiWindow(QMainWindow):
-    def __init__(self, tray, notebookPath=None, name=None, parent=None):
+    def __init__(self, notebookPath=None, name=None, parent=None):
         super(MikiWindow, self).__init__(parent)
         self.resize(800, 600)
         screen = QDesktopWidget().screenGeometry()
@@ -235,8 +235,6 @@ class MikiWindow(QMainWindow):
         self.statusLabel = QLabel(self)
         self.statusBar.addWidget(self.statusLabel, 1)
 
-        tray.activated.connect(self.toggleShow)
-
         self.tabWidget.currentChanged.connect(self.currentTabChanged)
 
         self.notesTree.currentItemChanged.connect(
@@ -270,22 +268,6 @@ class MikiWindow(QMainWindow):
             item = QTreeWidgetItem(parent, [note.completeBaseName()])
             path = notePath + '/' + note.completeBaseName()
             self.initTree(path, item)
-
-    def toggleShow(self, reason):
-        """ Left click tray icon to toggle the display of MainWindow. 
-        """
-        if reason != QSystemTrayIcon.Trigger:
-            return
-        s = self.windowState() 
-        if self.isVisible():
-            if s == Qt.WindowMinimized:
-                self.showNormal()
-                self.show()
-            else:
-                self.showMaximized
-                self.hide()
-        else:
-            self.show()
 
     def updateToc(self):
         ''' TOC is updated in `updateView`
@@ -748,10 +730,10 @@ def main():
     icon = QIcon("/usr/share/icons/hicolor/scalable/apps/mikidown.svg")
     app = QApplication(sys.argv)
     app.setWindowIcon(icon)
-    tray = MikiTray(icon)
-    window = MikiWindow(tray, notebookPath=notebooks[0][1],
+    window = MikiWindow(notebookPath=notebooks[0][1],
                         name=notebooks[0][0])
     window.show()
+    tray = MikiTray(icon, window)
     tray.show()
     sys.exit(app.exec_())
 
