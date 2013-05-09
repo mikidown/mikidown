@@ -103,6 +103,8 @@ class MikiWindow(QMainWindow):
         self.addDockWidget(Qt.LeftDockWidgetArea, dockToc)
         self.tabifyDockWidget(dockIndex, dockSearch)
         self.tabifyDockWidget(dockSearch, dockToc)
+        self.setTabPosition(Qt.LeftDockWidgetArea, QTabWidget.North)
+        dockIndex.raise_()      # Put dockIndex on top of the tab stack
         # left pane
         #self.tabWidget.addTab(self.notesTree, 'Index')
         #self.tabWidget.addTab(self.searchTab, 'Search')
@@ -269,8 +271,10 @@ class MikiWindow(QMainWindow):
             self.notesTree.setCurrentItem(item)
 
         # Restore saved geometry and state
-        self.restoreGeometry(self.notebookSettings.value("geometry"))
-        self.restoreState(self.notebookSettings.value("windowstate"))
+        if self.notebookSettings.value("geometry"):
+            self.restoreGeometry(self.notebookSettings.value("geometry"))
+        if self.notebookSettings.value("windowstate"):
+            self.restoreState(self.notebookSettings.value("windowstate"))
 
     def initTree(self, notebookPath, parent):
         if not QDir(notebookPath).exists():
