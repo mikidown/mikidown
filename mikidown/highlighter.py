@@ -1,5 +1,6 @@
-from mikidown import *
 import re
+
+from PyQt4.QtGui import QSyntaxHighlighter, QColor, QFont, QTextCharFormat
 
 
 class MikiHighlighter(QSyntaxHighlighter):

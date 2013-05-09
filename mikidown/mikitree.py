@@ -1,9 +1,13 @@
+import os
 import datetime
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from whoosh.index import open_dir
 from whoosh.qparser import QueryParser
+
 from mikidown.whoosh import *
+from mikidown.config import Default
 
 
 class ItemDialog(QDialog):
@@ -51,8 +55,10 @@ class ItemDialog(QDialog):
 
 class MikiTree(QTreeWidget):
 
-    def __init__(self, parent=None):
+    def __init__(self, notebookPath, parent=None):
         super(MikiTree, self).__init__(parent)
+        self.notebookPath = notebookPath
+
         self.header().close()
         self.setAcceptDrops(True)
         self.setDragEnabled(True)
@@ -63,6 +69,8 @@ class MikiTree(QTreeWidget):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self.customContextMenuRequested.connect(self.treeMenu)
+        indexdir = os.path.join(self.notebookPath, Default.indexdir)
+        self.ix = open_dir(indexdir)
 
     def itemToPagePath(self, item):
         path = ''
@@ -157,15 +165,16 @@ class MikiTree(QTreeWidget):
         self.newPageCore(item)
 
     def newPageCore(self, item):
-        pagePath = self.itemToPagePath(item)
+        pagePath = os.path.join(self.notebookPath, self.itemToPagePath(item))
         dialog = ItemDialog(self)
         dialog.setPath(pagePath)
         if dialog.exec_():
             newPageName = dialog.editor.text()
             if hasattr(item, 'text'):
-                pagePath = pagePath + '/'
+                pagePath = os.path.join(self.notebookPath, 
+                                        pagePath + '/')
             if not QDir(pagePath).exists():
-                QDir.current().mkdir(pagePath)
+                QDir(self.notebookPath).mkdir(pagePath)
             fileName = pagePath + newPageName + '.markdown'
             fh = QFile(fileName)
             fh.open(QIODevice.WriteOnly)
@@ -175,19 +184,19 @@ class MikiTree(QTreeWidget):
             fh.close()
             QTreeWidgetItem(item, [newPageName])
             newItem = self.pagePathToItem(pagePath + newPageName)
+            self.sortItems(0, Qt.AscendingOrder)
+            self.setCurrentItem(newItem)
+            if hasattr(item, 'text'):
+                self.expandItem(item)
+
             # TODO improvement needed, can be reused somehow
             fileobj = open(fileName, 'r')
             content = fileobj.read()
             fileobj.close()
-            self.ix = open_dir(indexdir)
             writer = self.ix.writer()
             writer.add_document(path=pagePath+newPageName, content=content)
             writer.commit()
 
-            self.sortItems(0, Qt.AscendingOrder)
-            self.setCurrentItem(newItem)
-            if pagePath != '':
-                self.expandItem(item)
 
     def dropEvent(self, event):
         sourceItem = self.currentItem()
@@ -208,17 +217,19 @@ class MikiTree(QTreeWidget):
             return
 
         # if not QDir(newName).exists():
-        QDir.current().mkpath(targetPath)
-        QDir.current().rename(oldName, newName)
+        QDir(self.notebookPath).mkpath(targetPath)
+        QDir(self.notebookPath).rename(oldName, newName)
         if sourceItem.childCount() != 0:
-            QDir.current().rename(oldDir, newDir)
+            QDir(self.notebookPath).rename(oldDir, newDir)
         if sourceItem.parent() is not None:
             parentItem = sourceItem.parent()
             parentPath = self.itemToPagePath(parentItem)
             if parentItem.childCount() == 1:
-                QDir.current().rmdir(parentPath)
+                QDir(self.notebookPath).rmdir(parentPath)
         QTreeWidget.dropEvent(self, event)
         self.sortItems(0, Qt.AscendingOrder)
+        if hasattr(targetItem, 'text'):
+            self.expandItem(targetItem)
 
     def renamePageWrapper(self):
         item = self.currentItem()
@@ -238,11 +249,11 @@ class MikiTree(QTreeWidget):
                 parentPath = parentPath + '/'
             oldName = parentPath + item.text(0) + '.markdown'
             newName = parentPath + newPageName + '.markdown'
-            QDir.current().rename(oldName, newName)
+            QDir(self.notebookPath).rename(oldName, newName)
             if item.childCount() != 0:
                 oldDir = parentPath + item.text(0)
                 newDir = parentPath + newPageName
-                QDir.current().rename(oldDir, newDir)
+                QDir(self.notebookPath).rename(oldDir, newDir)
             item.setText(0, newPageName)
             self.sortItems(0, Qt.AscendingOrder)
 
@@ -255,8 +266,6 @@ class MikiTree(QTreeWidget):
         self.delPage(item)
 
     def delPage(self, item):
-        self.ix = open_dir(indexdir)
-        writer = self.ix.writer()
 
         index = item.childCount()
         while index > 0:
@@ -267,22 +276,23 @@ class MikiTree(QTreeWidget):
         pagePath = self.itemToPagePath(item)
         print(pagePath)
         query = QueryParser('path', self.ix.schema).parse(pagePath)
+        writer = self.ix.writer()
         n = writer.delete_by_query(query)
         # n = writer.delete_by_term('path', pagePath)
         print(n)
         writer.commit()
-        QDir.current().remove(pagePath + '.markdown')
+        QDir(self.notebookPath).remove(pagePath + '.markdown')
         parent = item.parent()
         parentPath = self.itemToPagePath(parent)
         if parent is not None:
             index = parent.indexOfChild(item)
             parent.takeChild(index)
             if parent.childCount() == 0:  # if no child, dir not needed
-                QDir.current().rmdir(parentPath)
+                QDir(self.notebookPath).rmdir(parentPath)
         else:
             index = self.indexOfTopLevelItem(item)
             self.takeTopLevelItem(index)
-        QDir.current().rmdir(pagePath)
+        QDir(self.notebookPath).rmdir(pagePath)
 
     def recurseCollapse(self, item):
         for i in range(item.childCount()):

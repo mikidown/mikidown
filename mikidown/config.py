@@ -7,6 +7,8 @@ class Default():
     ''' ~/.config/mikidown/mikidown.conf
         Apply to all notebooks created by one user.
     '''
+    __appname__ = 'mikidown'
+    __version__ = '0.1.6'
     global_settings = QSettings('mikidown', 'mikidown')
 
     # Default enabled python-markdown extensions.

@@ -1,7 +1,14 @@
-# Notebook management module.
+"""
+Notebook management module.
+"""
+
+import os
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+
+import mikidown
+from mikidown.config import *
 
 
 class ListDelegate(QAbstractItemDelegate):
@@ -78,7 +85,8 @@ class NotebookListDialog(QDialog):
 
     def initList(self):
         self.notebookList.clear()
-        notebooks = readListFromSettings(settings, 'notebookList')
+        notebooks = readListFromSettings(
+                    Default.global_settings, 'notebookList')
         for nb in notebooks:
             item = QListWidgetItem()
             item.setData(Qt.DisplayRole, nb[0])
@@ -97,7 +105,7 @@ class NotebookListDialog(QDialog):
         self.moveDown.setEnabled(flag)
 
     def actionAdd(self):
-        NotebookList.create(settings)
+        NotebookList.create(Default.global_settings)
         self.initList()
         count = self.notebookList.count()
         self.notebookList.setCurrentRow(count-1)
@@ -107,9 +115,10 @@ class NotebookListDialog(QDialog):
         row = self.notebookList.currentRow()
         name = item.data(Qt.DisplayRole)
         path = item.data(Qt.UserRole)
-        notebooks = readListFromSettings(settings, 'notebookList')
+        notebooks = readListFromSettings(Default.global_settings, 
+                                         'notebookList')
         notebooks.remove([name, path])
-        writeListToSettings(settings, 'notebookList', notebooks)
+        writeListToSettings(Default.global_settings, 'notebookList', notebooks)
         # self.notebookList.removeItemWidget(item)
         self.notebookList.takeItem(row)
         # self.initList()
@@ -146,7 +155,7 @@ class NotebookListDialog(QDialog):
             name = self.notebookList.item(i).data(Qt.DisplayRole)
             path = self.notebookList.item(i).data(Qt.UserRole)
             notebooks.append([name, path])
-            writeListToSettings(settings, 'notebookList', notebooks)
+            writeListToSettings(Default.global_settings, 'notebookList', notebooks)
 
         QDialog.accept(self)
 

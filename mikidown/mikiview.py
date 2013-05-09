@@ -5,10 +5,10 @@ import markdown
 
 class MikiView(QWebView):
 
-    def __init__(self, parent=None):
+    def __init__(self, settings, parent=None):
         super(MikiView, self).__init__(parent)
         self.settings().clearMemoryCaches()
-        notebookPath = QDir.currentPath()
+        notebookPath = settings.value("notebookPath")
         self.settings().setUserStyleSheetUrl(
             QUrl.fromLocalFile(notebookPath + '/notes.css'))
         self.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)

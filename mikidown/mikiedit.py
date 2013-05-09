@@ -1,3 +1,4 @@
+import os
 from multiprocessing import Process
 from PyQt4.QtCore import QDir, QFile, QFileInfo, QTextStream, QIODevice
 from PyQt4.QtGui import QTextEdit, QFileDialog
@@ -14,7 +15,9 @@ class MikiEdit(QTextEdit):
         self.setFontPointSize(12)
         self.setTabStopWidth(4)
         self.setVisible(False)
-        self.ix = open_dir(Default.indexdir)
+        indexdir = os.path.join(settings.value("notebookPath"), 
+                                Default.indexdir)
+        self.ix = open_dir(indexdir)
 
         # Enabled extensions of python-markdown
         self.extensions = readListFromSettings(settings, 'extensions')
