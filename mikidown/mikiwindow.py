@@ -74,7 +74,8 @@ class MikiWindow(QMainWindow):
         self.mainSplitter = QSplitter(Qt.Horizontal)
         self.mainSplitter.addWidget(self.tabWidget)
         self.mainSplitter.addWidget(self.rightSplitter)
-        self.setCentralWidget(self.mainSplitter)
+        #self.setCentralWidget(self.mainSplitter)
+        self.setCentralWidget(self.rightSplitter)
         self.mainSplitter.setStretchFactor(0, 1)
         self.mainSplitter.setStretchFactor(1, 5)
 
@@ -88,11 +89,25 @@ class MikiWindow(QMainWindow):
         self.searchTab.setLayout(searchLayout)
         self.tocTree = QTreeWidget()
         self.tocTree.header().close()
+        dockIndex = QDockWidget("Index")
+        dockIndex.setObjectName("Index")
+        dockSearch = QDockWidget("Search")
+        dockSearch.setObjectName("Search")
+        dockToc = QDockWidget("TOC")
+        dockToc.setObjectName("TOC")
+        dockIndex.setWidget(self.notesTree)
+        dockSearch.setWidget(self.searchTab)
+        dockToc.setWidget(self.tocTree)
+        self.addDockWidget(Qt.LeftDockWidgetArea, dockIndex)
+        self.addDockWidget(Qt.LeftDockWidgetArea, dockSearch)
+        self.addDockWidget(Qt.LeftDockWidgetArea, dockToc)
+        self.tabifyDockWidget(dockIndex, dockSearch)
+        self.tabifyDockWidget(dockSearch, dockToc)
         # left pane
-        self.tabWidget.addTab(self.notesTree, 'Index')
-        self.tabWidget.addTab(self.searchTab, 'Search')
-        self.tabWidget.addTab(self.tocTree, 'TOC')
-        self.tabWidget.setMinimumWidth(200)
+        #self.tabWidget.addTab(self.notesTree, 'Index')
+        #self.tabWidget.addTab(self.searchTab, 'Search')
+        #self.tabWidget.addTab(self.tocTree, 'TOC')
+        #self.tabWidget.setMinimumWidth(200)
         # self.rightSplitter.setSizes([600,20,600,580])
         self.rightSplitter.setStretchFactor(0, 0)
 
@@ -211,7 +226,8 @@ class MikiWindow(QMainWindow):
         # menuHelp
         self.menuHelp.addAction(self.actionReadme)
 
-        self.toolBar = QToolBar(self.tr('toolbar'), self)
+        self.toolBar = QToolBar(self.tr("toolbar"), self)
+        self.toolBar.setObjectName("toolbar")
         self.addToolBar(Qt.TopToolBarArea, self.toolBar)
         self.toolBar.addAction(self.actionEdit)
         self.toolBar.addAction(self.actionLiveView)
@@ -251,6 +267,10 @@ class MikiWindow(QMainWindow):
         if len(files) != 0:
             item = self.notesTree.pagePathToItem(files[0])
             self.notesTree.setCurrentItem(item)
+
+        # Restore saved geometry and state
+        self.restoreGeometry(self.notebookSettings.value("geometry"))
+        self.restoreState(self.notebookSettings.value("windowstate"))
 
     def initTree(self, notebookPath, parent):
         if not QDir(notebookPath).exists():
@@ -697,16 +717,13 @@ class MikiWindow(QMainWindow):
         self.importPageCore(readmeFile)
 
     def closeEvent(self, event):
+        """
+            saveGeometry: Saves the current geometry and state for 
+                          top-level widgets
+            saveState: Restores the state of this mainwindow's toolbars 
+                       and dockwidgets 
+        """
         self.saveCurrentNote()
+        self.notebookSettings.setValue("geometry", self.saveGeometry())
+        self.notebookSettings.setValue("windowstate", self.saveState())
         event.accept()
-        '''
-        reply = QMessageBox.question(self, 'Message',
-                'Are you sure to quit?',
-                QMessageBox.Yes|QMessageBox.No,
-                QMessageBox.No)
-        if reply == QMessageBox.Yes:
-            self.saveCurrentNote()
-            event.accept()
-        else:
-            event.ignore()
-        '''
