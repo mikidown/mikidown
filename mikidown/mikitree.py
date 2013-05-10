@@ -70,7 +70,6 @@ class MikiTree(QTreeWidget):
 
         self.customContextMenuRequested.connect(self.treeMenu)
         indexdir = os.path.join(self.notebookPath, Default.indexdir)
-        self.ix = open_dir(indexdir)
 
     def itemToPagePath(self, item):
         path = ''
@@ -193,6 +192,7 @@ class MikiTree(QTreeWidget):
             fileobj = open(fileName, 'r')
             content = fileobj.read()
             fileobj.close()
+            self.ix = open_dir(indexdir)
             writer = self.ix.writer()
             writer.add_document(path=pagePath+newPageName, content=content)
             writer.commit()
@@ -275,6 +275,7 @@ class MikiTree(QTreeWidget):
 
         pagePath = self.itemToPagePath(item)
         print(pagePath)
+        self.ix = open_dir(indexdir)
         query = QueryParser('path', self.ix.schema).parse(pagePath)
         writer = self.ix.writer()
         n = writer.delete_by_query(query)

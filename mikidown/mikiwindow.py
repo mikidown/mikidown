@@ -38,6 +38,7 @@ class MikiWindow(QMainWindow):
         self.notebookSettings.setValue("notebookPath", notebookPath)
         self.scrollPosition = QPoint(0, 0)
 
+        # notesTree must be initilised after whoosh index folder exists
         self.notesTree = MikiTree(self.notebookPath)
         self.initTree(notebookPath, self.notesTree)
 
@@ -52,7 +53,7 @@ class MikiWindow(QMainWindow):
             p.start()
         else:
             self.ix = open_dir(indexdir)
-
+        
         self.tabWidget = QTabWidget()
         self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
         self.viewedList.setFixedHeight(25)
