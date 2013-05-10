@@ -69,7 +69,7 @@ class MikiTree(QTreeWidget):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self.customContextMenuRequested.connect(self.treeMenu)
-        indexdir = os.path.join(self.notebookPath, Default.indexdir)
+        self.indexdir = os.path.join(self.notebookPath, Default.indexdir)
 
     def itemToPagePath(self, item):
         path = ''
@@ -149,26 +149,28 @@ class MikiTree(QTreeWidget):
         menu.addAction("Delete Page", self.delCallback)
         menu.exec_(QCursor.pos())
 
-    def newPage(self):
+    def newPage(self, name=None):
         if self.currentItem() is None:
-            self.newPageCore(self)
+            self.newPageCore(self, name)
         else:
             parent = self.currentItem().parent()
             if parent is not None:
-                self.newPageCore(parent)
+                self.newPageCore(parent, name)
             else:
-                self.newPageCore(self)
+                self.newPageCore(self, name)
 
-    def newSubpage(self):
+    def newSubpage(self, name=None):
         item = self.currentItem()
-        self.newPageCore(item)
+        self.newPageCore(item, name)
 
-    def newPageCore(self, item):
+    def newPageCore(self, item, newPageName):
         pagePath = os.path.join(self.notebookPath, self.itemToPagePath(item))
-        dialog = ItemDialog(self)
-        dialog.setPath(pagePath)
-        if dialog.exec_():
-            newPageName = dialog.editor.text()
+        if not newPageName:
+            dialog = ItemDialog(self)
+            dialog.setPath(pagePath)
+            if dialog.exec_():
+                newPageName = dialog.editor.text()
+        if newPageName:
             if hasattr(item, 'text'):
                 pagePath = os.path.join(self.notebookPath, 
                                         pagePath + '/')
@@ -192,11 +194,10 @@ class MikiTree(QTreeWidget):
             fileobj = open(fileName, 'r')
             content = fileobj.read()
             fileobj.close()
-            self.ix = open_dir(indexdir)
+            self.ix = open_dir(self.indexdir)
             writer = self.ix.writer()
             writer.add_document(path=pagePath+newPageName, content=content)
             writer.commit()
-
 
     def dropEvent(self, event):
         sourceItem = self.currentItem()
@@ -274,15 +275,13 @@ class MikiTree(QTreeWidget):
             self.delPage(item.child(index))
 
         pagePath = self.itemToPagePath(item)
-        print(pagePath)
-        self.ix = open_dir(indexdir)
+        self.ix = open_dir(self.indexdir)
         query = QueryParser('path', self.ix.schema).parse(pagePath)
         writer = self.ix.writer()
         n = writer.delete_by_query(query)
         # n = writer.delete_by_term('path', pagePath)
-        print(n)
         writer.commit()
-        QDir(self.notebookPath).remove(pagePath + '.markdown')
+        b = QDir(self.notebookPath).remove(pagePath + '.markdown')
         parent = item.parent()
         parentPath = self.itemToPagePath(parent)
         if parent is not None:

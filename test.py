@@ -9,24 +9,50 @@ from PyQt4.QtGui import QApplication, QIcon
 import mikidown
 from mikidown.mikiwindow import MikiWindow
 
-def init():
-    app = QApplication(sys.argv)
-    window = MikiWindow(notebookPath="test_notebook",
-                        name="test")
-    window.show()
-    sys.exit(app.exec_())
+app = QApplication(sys.argv)
+path = os.path.join(os.getcwd(),
+                    "test_notebook")
+if not os.path.isdir(path):
+    os.makedirs(path)
+window = MikiWindow(notebookPath=path,
+                    name="test")
+window.show()
+# app.exec_()
 
-class InitTests(unittest.TestCase):
 
-    def testInit(self):
-        self.assertTrue(init)
+class Monolithic(unittest.TestCase):
 
-    def tearDown(self):
+    def step1(self):
+        """ test newPage """
+        window.notesTree.newPage('1')
+
+    def step2(self):
+        """ test delPage """
+        item = window.notesTree.pagePathToItem('1')
+        window.notesTree.delPage(item)
+
+    def step3(self):
+        """ clean up """
         for i in glob.glob("test_notebook/.indexdir/*"):
             os.remove(i)
         os.rmdir("test_notebook/.indexdir")
-        os.remove("test_notebook/notebook.conf")
+        # os.remove("test_notebook/notebook.conf")
         os.rmdir("test_notebook")
+
+    def steps(self):
+        for name in sorted(dir(self)):
+            if name.startswith("step"):
+                yield name, getattr(self, name)
+
+    def test_steps(self):
+        for name, step in self.steps():
+            try:
+                step()
+            except Exception as e:
+                self.fail("{} failed ({}: {})".format(step, type(e), e))
+
+    def btestQuit(self):
+        self.assertTrue(window.close())
 
 
 def main():

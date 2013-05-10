@@ -38,7 +38,6 @@ class MikiWindow(QMainWindow):
         self.notebookSettings.setValue("notebookPath", notebookPath)
         self.scrollPosition = QPoint(0, 0)
 
-        # notesTree must be initilised after whoosh index folder exists
         self.notesTree = MikiTree(self.notebookPath)
         self.initTree(notebookPath, self.notesTree)
 
@@ -659,7 +658,9 @@ class MikiWindow(QMainWindow):
         while it.value():
             treeItem = it.value()
             name = self.notesTree.itemToPagePath(treeItem)
-            fileobj = open(name+'.markdown', 'r')
+            path = os.path.join(self.notebookPath, name + ".markdown")
+            print(path)
+            fileobj = open(path, 'r')
             content = fileobj.read()
             fileobj.close()
             writer.add_document(path=name, content=content)
@@ -723,7 +724,7 @@ class MikiWindow(QMainWindow):
 
     def toggleSearch(self, visible):
         self.actionToggleSearch.setChecked(visible)
-        self.toggleTab(self.docSearch, visible)
+        self.toggleTab(self.dockSearch, visible)
 
     def toggleToc(self, visible):
         self.actionToggleToc.setChecked(visible)
