@@ -28,6 +28,7 @@ def main():
     window = MikiWindow(notebookPath=notebooks[0][1],
                         name=notebooks[0][0])
     window.show()
+    window.restore()        # Restore after window show.
     tray = MikiTray(icon, window)
     tray.show()
     sys.exit(app.exec_())

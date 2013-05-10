@@ -89,22 +89,22 @@ class MikiWindow(QMainWindow):
         self.searchTab.setLayout(searchLayout)
         self.tocTree = QTreeWidget()
         self.tocTree.header().close()
-        dockIndex = QDockWidget("Index")
-        dockIndex.setObjectName("Index")
-        dockSearch = QDockWidget("Search")
-        dockSearch.setObjectName("Search")
-        dockToc = QDockWidget("TOC")
-        dockToc.setObjectName("TOC")
-        dockIndex.setWidget(self.notesTree)
-        dockSearch.setWidget(self.searchTab)
-        dockToc.setWidget(self.tocTree)
-        self.addDockWidget(Qt.LeftDockWidgetArea, dockIndex)
-        self.addDockWidget(Qt.LeftDockWidgetArea, dockSearch)
-        self.addDockWidget(Qt.LeftDockWidgetArea, dockToc)
-        self.tabifyDockWidget(dockIndex, dockSearch)
-        self.tabifyDockWidget(dockSearch, dockToc)
+        self.dockIndex = QDockWidget("Index")
+        self.dockIndex.setObjectName("Index")
+        self.dockSearch = QDockWidget("Search")
+        self.dockSearch.setObjectName("Search")
+        self.dockToc = QDockWidget("TOC")
+        self.dockToc.setObjectName("TOC")
+        self.dockIndex.setWidget(self.notesTree)
+        self.dockSearch.setWidget(self.searchTab)
+        self.dockToc.setWidget(self.tocTree)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.dockIndex)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.dockSearch)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.dockToc)
+        self.tabifyDockWidget(self.dockIndex, self.dockSearch)
+        self.tabifyDockWidget(self.dockSearch, self.dockToc)
         self.setTabPosition(Qt.LeftDockWidgetArea, QTabWidget.North)
-        dockIndex.raise_()      # Put dockIndex on top of the tab stack
+        self.dockIndex.raise_()      # Put dockIndex on top of the tab stack
         # left pane
         #self.tabWidget.addTab(self.notesTree, 'Index')
         #self.tabWidget.addTab(self.searchTab, 'Search')
@@ -184,6 +184,12 @@ class MikiWindow(QMainWindow):
             self.tr('Split into Left and Right'), trig=self.leftAndRight)
         self.actionUpAndDown = self.act(
             self.tr('Split into Up and Down'), trig=self.upAndDown)
+        self.actionToggleIndex = self.act(
+            self.tr('Index tab'), trigbool=self.toggleIndex)
+        self.actionToggleSearch = self.act(
+            self.tr('Search tab'), trigbool=self.toggleSearch)
+        self.actionToggleToc = self.act(
+            self.tr('TOC tab'), trigbool=self.toggleToc)
         # self.actionLeftAndRight.setEnabled(False)
         # self.actionUpAndDown.setEnabled(False)
         # actions in menuHelp
@@ -225,6 +231,10 @@ class MikiWindow(QMainWindow):
         self.menuMode = self.menuView.addMenu(self.tr('Mode'))
         self.menuMode.addAction(self.actionLeftAndRight)
         self.menuMode.addAction(self.actionUpAndDown)
+        self.menuPanel = self.menuView.addMenu(self.tr('Side Panel'))
+        self.menuPanel.addAction(self.actionToggleIndex)
+        self.menuPanel.addAction(self.actionToggleSearch)
+        self.menuPanel.addAction(self.actionToggleToc)
         # menuHelp
         self.menuHelp.addAction(self.actionReadme)
 
@@ -270,11 +280,20 @@ class MikiWindow(QMainWindow):
             item = self.notesTree.pagePathToItem(files[0])
             self.notesTree.setCurrentItem(item)
 
-        # Restore saved geometry and state
+    def restore(self):
+        """ Restore saved geometry and state.
+            Set the status of side panels in View Menu correspondently.
+        """
         if self.notebookSettings.value("geometry"):
             self.restoreGeometry(self.notebookSettings.value("geometry"))
         if self.notebookSettings.value("windowstate"):
             self.restoreState(self.notebookSettings.value("windowstate"))
+        self.actionToggleIndex.setChecked(
+            self.dockIndex.isVisible())
+        self.actionToggleSearch.setChecked(
+            self.dockSearch.isVisible())
+        self.actionToggleToc.setChecked(
+            self.dockToc.isVisible())
 
     def initTree(self, notebookPath, parent):
         if not QDir(notebookPath).exists():
@@ -696,6 +715,24 @@ class MikiWindow(QMainWindow):
     def openFunction(self, name):
         item = self.notesTree.pagePathToItem(name)
         return lambda: self.notesTree.setCurrentItem(item)
+
+    def toggleIndex(self, visible):
+        self.actionToggleIndex.setChecked(visible)
+        self.toggleTab(self.dockIndex, visible)
+
+    def toggleSearch(self, visible):
+        self.actionToggleSearch.setChecked(visible)
+        self.toggleTab(self.docSearch, visible)
+
+    def toggleToc(self, visible):
+        self.actionToggleToc.setChecked(visible)
+        self.toggleTab(self.dockToc, visible)
+
+    def toggleTab(self, tab, visible):
+        if tab.isVisible():
+            tab.hide()
+        else:
+            tab.show()
 
     def flipEditAndView(self):
         index = self.noteSplitter.indexOf(self.notesEdit)
