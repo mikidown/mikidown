@@ -393,7 +393,8 @@ class MikiWindow(QMainWindow):
         else:
             return
         pageName = item.text(0)
-        filePath = self.notesTree.itemToPagePath(item) + '.markdown'
+        filePath = os.path.join(self.notebookPath,
+                                self.notesTree.itemToPagePath(item) + '.markdown')
         self.notesEdit.save(pageName, filePath)
 
     def saveNoteAs(self):

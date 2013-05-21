@@ -1,7 +1,7 @@
 import os
 from multiprocessing import Process
 from PyQt4.QtCore import QDir, QFile, QFileInfo, QTextStream, QIODevice
-from PyQt4.QtGui import QTextEdit, QFileDialog
+from PyQt4.QtGui import QTextEdit, QFileDialog, QMessageBox
 import markdown
 from whoosh.index import open_dir
 
