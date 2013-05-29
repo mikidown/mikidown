@@ -259,7 +259,8 @@ class MikiTree(QTreeWidget):
             self.sortItems(0, Qt.AscendingOrder)
 
     def exists(self, item):
-        notePath = self.itemToPagePath(item) + '.markdown'
+        notePath = os.path.join(self.notebookPath, 
+                                self.itemToPagePath(item) + '.markdown')
         return QFile.exists(notePath)
 
     def delPageWrapper(self):

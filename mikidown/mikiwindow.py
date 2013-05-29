@@ -491,6 +491,7 @@ class MikiWindow(QMainWindow):
         self.actionInsertImage.setEnabled(viewmode)
         self.actionLeftAndRight.setEnabled(True)
         self.actionUpAndDown.setEnabled(True)
+        self.updateView()
 
     def liveView(self, viewmode):
         self.actionLiveView.setChecked(viewmode)
