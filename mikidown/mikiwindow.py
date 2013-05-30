@@ -487,10 +487,21 @@ class MikiWindow(QMainWindow):
             self.actionLiveView.setChecked(False)
         self.notesView.setVisible(not viewmode)
         self.notesEdit.setVisible(viewmode)
+        
+        # Gives the keyboard input focus to notesEdit/notesView.
+        # Without this, keyboard input may change note text even when
+        # notesEdit is invisible. 
+        if viewmode:
+            self.notesEdit.setFocus()
+        else:
+            self.notesView.setFocus()
+        
         self.saveCurrentNote()
         self.actionInsertImage.setEnabled(viewmode)
         self.actionLeftAndRight.setEnabled(True)
         self.actionUpAndDown.setEnabled(True)
+
+        # Render the note text as it is.
         self.updateView()
 
     def liveView(self, viewmode):
@@ -503,6 +514,13 @@ class MikiWindow(QMainWindow):
         else:
             self.notesEdit.setVisible(viewmode)
             splitSize = [sizes[1]*0.45, sizes[1]*0.55]
+        
+        # setFocus for the same reason as in edit(self, viewmode)
+        if viewmode:
+            self.notesEdit.setFocus()
+        else:
+            self.notesView.setFocus()
+        
         self.actionFlipEditAndView.setEnabled(viewmode)
         self.actionUpAndDown.setEnabled(viewmode)
         self.actionInsertImage.setEnabled(viewmode)
