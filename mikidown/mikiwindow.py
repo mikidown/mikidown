@@ -483,6 +483,8 @@ class MikiWindow(QMainWindow):
         return action
 
     def edit(self, viewmode):
+        """ Switch between EDIT and VIEW mode. """
+
         if self.actionLiveView.isChecked():
             self.actionLiveView.setChecked(False)
         self.notesView.setVisible(not viewmode)
@@ -505,6 +507,8 @@ class MikiWindow(QMainWindow):
         self.updateView()
 
     def liveView(self, viewmode):
+        """ Switch between VIEW and LIVE VIEW mode. """
+
         self.actionLiveView.setChecked(viewmode)
         sizes = self.noteSplitter.sizes()
         if self.actionEdit.isChecked():
@@ -526,6 +530,9 @@ class MikiWindow(QMainWindow):
         self.actionInsertImage.setEnabled(viewmode)
         self.noteSplitter.setSizes(splitSize)
         self.saveCurrentNote()
+
+        # Render the note text as it is.
+        self.updateView()
 
     def updateView(self):
         # url_notebook = 'file://' + os.path.join(self.notebookPath, '/')
