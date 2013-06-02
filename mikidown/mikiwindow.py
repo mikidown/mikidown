@@ -13,7 +13,6 @@ from mikidown.mikibook import NotebookList, NotebookListDialog
 from mikidown.mikitree import *
 from mikidown.mikiedit import *
 from mikidown.mikiview import *
-from mikidown.whoosh import *
 from mikidown.highlighter import MikiHighlighter
 from mikidown.utils import *
 
@@ -46,7 +45,7 @@ class MikiWindow(QMainWindow):
         indexdir = os.path.join(self.notebookPath, Default.indexdir)
         if not QDir(indexdir).exists():
             QDir().mkdir(indexdir)
-            self.ix = create_in(indexdir, schema)
+            self.ix = create_in(indexdir, Default.schema)
             # Fork a process to update index, which benefit responsiveness.
             p = Process(target=self.whoosh_index, args=())
             p.start()
@@ -668,7 +667,7 @@ class MikiWindow(QMainWindow):
             query = queryp.parse('r"' + pattern + '"')
                                  # r"pattern" is the desired regex term format
             results = searcher.search(
-                query, limit=None)  # default limit is 10!
+                query, limit=None, sortedby="path")  # default limit is 10!
             for r in results:
                 listItem = QListWidgetItem()
                 text = r['path']

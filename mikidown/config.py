@@ -1,4 +1,5 @@
 from PyQt4.QtCore import QSettings
+from whoosh.fields import Schema, ID, TEXT
 
 
 class Default():
@@ -22,6 +23,9 @@ class Default():
                      , 'footnotes'
                      ]
     # Index directory of whoosh, located in notebookPath.
+    schema = Schema(path = ID(stored=True, unique=True, spelling=True), 
+                    #title = KEYWORD(stored=True, scorable=True,spelling=True, sortable=True),
+                    content = TEXT)
     indexdir = ".indexdir"
 
 

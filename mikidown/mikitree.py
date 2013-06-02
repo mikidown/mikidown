@@ -6,7 +6,6 @@ from PyQt4.QtGui import *
 from whoosh.index import open_dir
 from whoosh.qparser import QueryParser
 
-from mikidown.whoosh import *
 from mikidown.config import Default
 
 
