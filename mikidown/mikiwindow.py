@@ -5,6 +5,7 @@ import markdown
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtWebKit import QWebView, QWebPage
+from whoosh import sorting
 from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser, RegexPlugin
 
@@ -666,8 +667,10 @@ class MikiWindow(QMainWindow):
             queryp.add_plugin(RegexPlugin())
             query = queryp.parse('r"' + pattern + '"')
                                  # r"pattern" is the desired regex term format
+            pathFacet = sorting.FieldFacet("path")
+            scores = sorting.ScoreFacet()
             results = searcher.search(
-                query, limit=None, sortedby="path")  # default limit is 10!
+                query, limit=None, sortedby=[pathFacet, scores])  # default limit is 10!
             for r in results:
                 listItem = QListWidgetItem()
                 text = r['path']
