@@ -55,6 +55,10 @@ class NotebookListDialog(QDialog):
 
     def __init__(self, parent=None):
         super(NotebookListDialog, self).__init__(parent)
+        
+        # TODO: To be removed!
+        self.global_settings = QSettings('mikidown', 'mikidown')
+        
         self.notebookList = QListWidget()
         self.moveUp = QPushButton('<<')
         self.moveDown = QPushButton('>>')
@@ -85,8 +89,7 @@ class NotebookListDialog(QDialog):
 
     def initList(self):
         self.notebookList.clear()
-        notebooks = readListFromSettings(
-                    Default.global_settings, 'notebookList')
+        notebooks = readListFromSettings(self.global_settings, 'notebookList')
         for nb in notebooks:
             item = QListWidgetItem()
             item.setData(Qt.DisplayRole, nb[0])
@@ -105,7 +108,7 @@ class NotebookListDialog(QDialog):
         self.moveDown.setEnabled(flag)
 
     def actionAdd(self):
-        NotebookList.create(Default.global_settings)
+        NotebookList.create(self.global_settings)
         self.initList()
         count = self.notebookList.count()
         self.notebookList.setCurrentRow(count-1)
@@ -148,7 +151,7 @@ class NotebookListDialog(QDialog):
             name = self.notebookList.item(i).data(Qt.DisplayRole)
             path = self.notebookList.item(i).data(Qt.UserRole)
             notebooks.append([name, path])
-            writeListToSettings(Default.global_settings, 'notebookList', notebooks)
+            writeListToSettings(self.global_settings, 'notebookList', notebooks)
 
         QDialog.accept(self)
 
@@ -242,7 +245,11 @@ class NotebookList():
             writeListToSettings(settings, 'notebookList', notebookList)
 
     def remove(name, path):
-        notebooks = readListFromSettings(Default.global_settings, 
+
+        # TODO: To be removed!
+        global_settings = QSettings('mikidown', 'mikidown')
+
+        notebooks = readListFromSettings(global_settings, 
                                          'notebookList')
         notebooks.remove([name, path])
-        writeListToSettings(Default.global_settings, 'notebookList', notebooks)
+        writeListToSettings(global_settings, 'notebookList', notebooks)

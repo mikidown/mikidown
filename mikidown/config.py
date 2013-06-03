@@ -1,33 +1,56 @@
+import os
+
 from PyQt4.QtCore import QSettings
 from whoosh.fields import Schema, ID, TEXT
 
 
-class Default():
-    """ Several default settings """
+class Setting():
 
-    ''' ~/.config/mikidown/mikidown.conf
-        Apply to all notebooks created by one user.
-    '''
-    __appname__ = 'mikidown'
-    __version__ = '0.1.6'
-    global_settings = QSettings('mikidown', 'mikidown')
+    def __init__(self, notebookPath, notebookName):
+        self.__appname__ = 'mikidown'
+        self.__version__ = '0.1.6'
 
-    # Default enabled python-markdown extensions.
-    # http://pythonhosted.org/Markdown/extensions/index.html
-    extensionList = ['nl2br'           # newline to break
-                     , 'strkundr'        # bold-italics-underline-delete style
-                     , 'codehilite'      # code syntax highlight
-                     , 'fenced_code'     # code block
-                     , 'headerid'        # add id to headers
-                     , 'headerlink'      # add anchor to headers
-                     , 'footnotes'
-                     ]
-    # Index directory of whoosh, located in notebookPath.
-    schema = Schema(path = ID(stored=True, unique=True, spelling=True), 
-                    #title = KEYWORD(stored=True, scorable=True,spelling=True, sortable=True),
-                    content = TEXT)
-    indexdir = ".indexdir"
+        # Index directory of whoosh, located in notebookPath.
+        self.schema = Schema(
+            path = ID(stored=True, unique=True, spelling=True), 
+            # title = KEYWORD(stored=True, scorable=True,spelling=True, sortable=True),
+            content = TEXT)
+        
+        self.notebookPath = notebookPath
+        self.notebookName = notebookName
+        self.indexdir = ".indexdir"
+        self.configfile = os.path.join(notebookPath, "notebook.conf")
+        
+        self.qsettings = QSettings(self.configfile, QSettings.NativeFormat)
+        self.geometry = self.qsettings.value("geometry")
+        self.windowstate = self.qsettings.value("windowstate")
 
+        if os.path.exists(self.configfile):
+            self.extensions = readListFromSettings(self.qsettings,
+                                                      "extensions")
+        else:
+            # Default enabled python-markdown extensions.
+            # http://pythonhosted.org/Markdown/extensions/index.html
+            self.extensions = [
+                   'nl2br'           # newline to break
+                 , 'strkundr'        # bold-italics-underline-delete style
+                 , 'codehilite'      # code syntax highlight
+                 , 'fenced_code'     # code block
+                 , 'headerid'        # add id to headers
+                 , 'headerlink'      # add anchor to headers
+                 , 'footnotes'
+                 ]
+    def saveGeometry(self, geometry):
+        self.qsettings.setValue("geometry", geometry)
+
+    def saveWindowState(self, state):
+        self.qsettings.setValue("windowstate", state)
+
+    def recentViewedNotes(self):
+        return readListFromSettings(self.qsettings, "recentViewedNoteList")
+
+    def updateRecentViewedNotes(self, notesList):
+        writeListToSettings(self.qsettings, "recentViewedNoteList", notesList)
 
 def readListFromSettings(settings, key):
     if not settings.contains(key):

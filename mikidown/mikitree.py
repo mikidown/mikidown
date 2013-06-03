@@ -6,7 +6,7 @@ from PyQt4.QtGui import *
 from whoosh.index import open_dir
 from whoosh.qparser import QueryParser
 
-from mikidown.config import Default
+from mikidown.config import Setting
 
 
 class ItemDialog(QDialog):
@@ -54,9 +54,10 @@ class ItemDialog(QDialog):
 
 class MikiTree(QTreeWidget):
 
-    def __init__(self, notebookPath, parent=None):
+    def __init__(self, parent=None):
         super(MikiTree, self).__init__(parent)
-        self.notebookPath = notebookPath
+        self.settings = parent.settings
+        self.notebookPath = self.settings.notebookPath
 
         self.header().close()
         self.setAcceptDrops(True)
@@ -68,7 +69,7 @@ class MikiTree(QTreeWidget):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self.customContextMenuRequested.connect(self.treeMenu)
-        self.indexdir = os.path.join(self.notebookPath, Default.indexdir)
+        self.indexdir = os.path.join(self.notebookPath, self.settings.indexdir)
 
     def itemToPagePath(self, item):
         path = ''

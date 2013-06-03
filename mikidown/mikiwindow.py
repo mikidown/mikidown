@@ -19,34 +19,30 @@ from mikidown.utils import *
 
 
 class MikiWindow(QMainWindow):
-    def __init__(self, notebookPath=None, name=None, parent=None):
+    def __init__(self, settings, parent=None):
         super(MikiWindow, self).__init__(parent)
+        self.settings = settings
+        self.notebookPath = settings.notebookPath
+
         self.resize(800, 600)
         screen = QDesktopWidget().screenGeometry()
         size = self.geometry()
         self.move((
             screen.width()-size.width())/2, (screen.height()-size.height())/2)
-        if name:
-            self.setWindowTitle('{} - {}'.format(name, Default.__appname__))
-        else:
-            self.setWindowsTitle(Default.__appname__)
-        self.notebookPath = notebookPath
-        # Settings specific to one notebook.
-        self.notebookSettings = QSettings(
-            os.path.join(notebookPath, 'notebook.conf'),
-            QSettings.NativeFormat)
-        self.notebookSettings.setValue("notebookPath", notebookPath)
+        self.setWindowTitle(
+            '{} - {}'.format(settings.notebookName, settings.__appname__))
+
         self.scrollPosition = QPoint(0, 0)
 
-        self.notesTree = MikiTree(self.notebookPath)
-        self.initTree(notebookPath, self.notesTree)
+        self.notesTree = MikiTree(self)
+        self.initTree(self.notebookPath, self.notesTree)
 
         # Initialize whoosh index, make sure notebookPath/.indexdir exists
         self.ix = None
-        indexdir = os.path.join(self.notebookPath, Default.indexdir)
+        indexdir = os.path.join(self.notebookPath, settings.indexdir)
         if not QDir(indexdir).exists():
             QDir().mkdir(indexdir)
-            self.ix = create_in(indexdir, Default.schema)
+            self.ix = create_in(indexdir, settings.schema)
             # Fork a process to update index, which benefit responsiveness.
             p = Process(target=self.whoosh_index, args=())
             p.start()
@@ -57,10 +53,10 @@ class MikiWindow(QMainWindow):
         self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
         self.viewedList.setFixedHeight(25)
         # self.notesEdit = QTextEdit()
-        self.notesEdit = MikiEdit(self.notebookSettings)
+        self.notesEdit = MikiEdit(self)
         MikiHighlighter(self.notesEdit)
         # self.notesView = QWebView()
-        self.notesView = MikiView(self.notebookSettings)
+        self.notesView = MikiView(self)
         self.findBar = QToolBar(self.tr('Find'), self)
         self.findBar.setFixedHeight(30)
         self.noteSplitter = QSplitter(Qt.Horizontal)
@@ -274,8 +270,9 @@ class MikiWindow(QMainWindow):
         ).contentsSizeChanged.connect(self.contentsSizeChanged)
 
         self.updateRecentViewedNotes()
-        files = readListFromSettings(
-            self.notebookSettings, 'recentViewedNoteList')
+        files= self.settings.recentViewedNotes()
+        #files = readListFromSettings(
+        #    self.settings.qsettings, 'recentViewedNoteList')
         if len(files) != 0:
             item = self.notesTree.pagePathToItem(files[0])
             self.notesTree.setCurrentItem(item)
@@ -284,10 +281,10 @@ class MikiWindow(QMainWindow):
         """ Restore saved geometry and state.
             Set the status of side panels in View Menu correspondently.
         """
-        if self.notebookSettings.value("geometry"):
-            self.restoreGeometry(self.notebookSettings.value("geometry"))
-        if self.notebookSettings.value("windowstate"):
-            self.restoreState(self.notebookSettings.value("windowstate"))
+        if self.settings.geometry:
+            self.restoreGeometry(self.settings.geometry)
+        if self.settings.windowstate:
+            self.restoreState(self.settings.windowstate)
         self.actionToggleIndex.setChecked(
             self.dockIndex.isVisible())
         self.actionToggleSearch.setChecked(
@@ -707,8 +704,7 @@ class MikiWindow(QMainWindow):
         noteItem = self.notesTree.currentItem()
         # name = self.notesTree.currentItemName()
         name = self.notesTree.itemToPagePath(noteItem)
-        files = readListFromSettings(
-            self.notebookSettings, 'recentViewedNoteList')
+        files= self.settings.recentViewedNotes()
         for f in files:
             if f == name:
                 files.remove(f)
@@ -716,15 +712,12 @@ class MikiWindow(QMainWindow):
         # TODO: move this NUM to configuration
         if len(files) > 20:
             del files[20:]
-        writeListToSettings(
-            self.notebookSettings, 'recentViewedNoteList', files)
-        # self.updateRecentViewedNotes()
+        self.settings.updateRecentViewedNotes(files)
 
     def updateRecentViewedNotes(self):
         self.viewedList.clear()
         self.viewedListActions = []
-        filesOld = readListFromSettings(
-            self.notebookSettings, 'recentViewedNoteList')
+        filesOld = self.settings.recentViewedNotes()
         files = []
         for f in reversed(filesOld):
             if self.existsNote(f):
@@ -733,8 +726,7 @@ class MikiWindow(QMainWindow):
                 splitName = f.split('/')
                 self.viewedListActions.append(
                     self.act(splitName[-1], trigbool=self.openFunction(f)))
-        writeListToSettings(
-            self.notebookSettings, 'recentViewedNoteList', files)
+        self.settings.updateRecentViewedNotes(files)
         for action in self.viewedListActions:
             self.viewedList.addAction(action)
 
@@ -796,6 +788,8 @@ class MikiWindow(QMainWindow):
                        and dockwidgets 
         """
         self.saveCurrentNote()
-        self.notebookSettings.setValue("geometry", self.saveGeometry())
-        self.notebookSettings.setValue("windowstate", self.saveState())
+        self.settings.saveGeometry(self.saveGeometry())
+        self.settings.saveWindowState(self.saveState())
+        #self.settings.setValue("geometry", self.saveGeometry())
+        #self.settings.setValue("windowstate", self.saveState())
         event.accept()

@@ -10,23 +10,15 @@ from mikidown.config import *
 
 class MikiEdit(QTextEdit):
 
-    def __init__(self, settings, parent=None):
+    def __init__(self, parent=None):
         super(MikiEdit, self).__init__(parent)
+        self.settings = parent.settings
         self.setFontPointSize(12)
         self.setTabStopWidth(4)
         self.setVisible(False)
-        self.notebookPath = settings.value("notebookPath")
-        indexdir = os.path.join(self.notebookPath, 
-                                Default.indexdir)
+        indexdir = os.path.join(self.settings.notebookPath, 
+                                self.settings.indexdir)
         self.ix = open_dir(indexdir)
-
-        # Enabled extensions of python-markdown
-        self.extensions = readListFromSettings(settings, 'extensions')
-        if not self.extensions:
-            self.extensions = Default.extensionList
-            writeListToSettings(settings, 'extensions', self.extensions)
-        # This is needed if a GUI to select extensions is provided later.
-        settings.setValue('extensions', self.extensions)
 
     def updateIndex(self, path, content):
             ''' Update whoosh index, which cost much computing resource '''
@@ -58,7 +50,7 @@ class MikiEdit(QTextEdit):
             Previously `convert` was used, but it doens't work with fenced_code
         '''
         htmltext = self.toPlainText()
-        return markdown.markdown(htmltext, self.extensions)
+        return markdown.markdown(htmltext, self.settings.extensions)
         # md = markdown.Markdown(extensions)
         # return md.convert(htmltext)
 
@@ -74,7 +66,7 @@ class MikiEdit(QTextEdit):
         html = QFile(fileName)
         html.open(QIODevice.WriteOnly)
         savestream = QTextStream(html)
-        css = QFile(self.notebookPath + '/notes.css')
+        css = QFile(self.settings.notebookPath + '/notes.css')
         css.open(QIODevice.ReadOnly)
         # Use a html lib may be a better idea?
         savestream << "<html><head><meta charset='utf-8'></head>"
