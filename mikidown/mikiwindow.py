@@ -10,7 +10,7 @@ from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser, RegexPlugin
 
 from mikidown.config import *
-from mikidown.mikibook import NotebookList, NotebookListDialog
+from mikidown.mikibook import NotebookListDialog
 from mikidown.mikitree import *
 from mikidown.mikiedit import *
 from mikidown.mikiview import *

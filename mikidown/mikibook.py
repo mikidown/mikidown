@@ -115,16 +115,9 @@ class NotebookListDialog(QDialog):
         row = self.notebookList.currentRow()
         name = item.data(Qt.DisplayRole)
         path = item.data(Qt.UserRole)
-        notebooks = readListFromSettings(Default.global_settings, 
-                                         'notebookList')
-        notebooks.remove([name, path])
-        writeListToSettings(Default.global_settings, 'notebookList', notebooks)
-        # self.notebookList.removeItemWidget(item)
         self.notebookList.takeItem(row)
-        # self.initList()
-        # for nb in notebooks:
-        #   if nb == notebookPath:
-        #       notebooks.remove(nb)
+
+        NotebookList.remove(name, path)
 
     def moveItemUp(self):
         item = self.notebookList.currentItem()
@@ -217,48 +210,39 @@ class NotebookInfo(object):
 
 
 class NotebookList():
-    """ Need some clean up """
-
-    def __init__(self, file, default=None):
-        self._file = file
-        self._defaultfile = default
-        self.default = None
-
-        self.read()
-
-    def read(self):
-        if self._file.exists():
-            file = self._file
-        else:
-            return
-        lines = file.readlines()
-        if len(lines) > 0:
-            if lines[0].startswith('[NotebookList]'):
-                self.parse(lines)
-
-    def parse(self, text):
-        assert text[0].strip() == '[NotebookList]'
-        text.pop(0)
-
-    def write(self):
-        None
-
-    @staticmethod
-    def create(settings):
+    settings = None
+    def create(settings=None):
+        NotebookList.settings = settings
+        """
+        If settings==None, initialize notebook dir without writing to 
+        configuration file.
+        """
         newNotebook = NewNotebookDlg()
         if newNotebook.exec_():
             notebookName = newNotebook.nameEditor.text()
             notebookPath = newNotebook.pathEditor.text()
-            if not os.path.isdir(notebookPath):
-                os.makedirs(notebookPath)
-            cssFile = os.path.join(notebookPath, 'notes.css')
-            if os.path.exists('/usr/share/mikidown/notes.css'):
-                cssTemplate = '/usr/share/mikidown/notes.css'
-            else:
-                cssTemplate = os.path.join(
-                    os.path.dirname(__file__), 'notes.css')
-            QFile.copy(cssTemplate, cssFile)
+            NotebookList.add(notebookName, notebookPath)
+
+    def add(notebookName, notebookPath):
+        settings = NotebookList.settings
+        if not os.path.isdir(notebookPath):
+            os.makedirs(notebookPath)
+        cssFile = os.path.join(notebookPath, 'notes.css')
+        if os.path.exists('/usr/share/mikidown/notes.css'):
+            cssTemplate = '/usr/share/mikidown/notes.css'
+        else:
+            cssTemplate = os.path.join(
+                os.path.dirname(__file__), 'notes.css')
+        # If //cssFile// already exists, copy() returns false!
+        QFile.copy(cssTemplate, cssFile)
+        if settings:
             notebookList = readListFromSettings(settings, 'notebookList')
             notebookList.append([notebookName, notebookPath])
             # TODO: make mikidown.conf become plain text
             writeListToSettings(settings, 'notebookList', notebookList)
+
+    def remove(name, path):
+        notebooks = readListFromSettings(Default.global_settings, 
+                                         'notebookList')
+        notebooks.remove([name, path])
+        writeListToSettings(Default.global_settings, 'notebookList', notebooks)

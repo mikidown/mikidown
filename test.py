@@ -5,37 +5,42 @@ import os
 import sys
 import unittest
 from PyQt4.QtGui import QApplication, QIcon
+from PyQt4.QtCore import QSettings
 
 import mikidown
 from mikidown.mikiwindow import MikiWindow
+from mikidown.mikibook import NotebookList
 
 app = QApplication(sys.argv)
-path = os.path.join(os.getcwd(),
-                    "test_notebook")
-if not os.path.isdir(path):
-    os.makedirs(path)
-window = MikiWindow(notebookPath=path,
-                    name="test")
-window.show()
 # app.exec_()
 
 
 class Monolithic(unittest.TestCase):
+    window = None
+    def step0(self):
+        print("\nStep 0: create notebook")
+        gconf = os.path.join(os.getcwd(), "test.conf")
+        gsettings = QSettings(gconf, QSettings.NativeFormat)
+        path = os.path.join(os.getcwd(), "test_notebook")
+        NotebookList.add("test", path)
+        Monolithic.window = MikiWindow(notebookPath=path, name="test")
+        Monolithic.window.show()
 
     def step1(self):
-        """ test newPage """
-        window.notesTree.newPage('1')
+        print("\nStep 1: newPage")
+        Monolithic.window.notesTree.newPage('1')
 
     def step2(self):
-        """ test delPage """
-        item = window.notesTree.pagePathToItem('1')
-        window.notesTree.delPage(item)
+        print("\nStep 2: delPage")
+        item = Monolithic.window.notesTree.pagePathToItem('1')
+        Monolithic.window.notesTree.delPage(item)
 
     def step3(self):
-        """ clean up """
+        print("\nLast step: clean up")
         for i in glob.glob("test_notebook/.indexdir/*"):
             os.remove(i)
         os.rmdir("test_notebook/.indexdir")
+        os.remove("test_notebook/notes.css")
         # os.remove("test_notebook/notebook.conf")
         os.rmdir("test_notebook")
 
@@ -50,9 +55,6 @@ class Monolithic(unittest.TestCase):
                 step()
             except Exception as e:
                 self.fail("{} failed ({}: {})".format(step, type(e), e))
-
-    def btestQuit(self):
-        self.assertTrue(window.close())
 
 
 def main():
