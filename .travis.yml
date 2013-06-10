@@ -3,9 +3,10 @@ python:
   - "3.3"
 virtualenv:
       system_site_packages: true
-before_install:
-     - sudo apt-get update -qq
-     - sudo apt-get install -qq python3-pyqt4
+before_install: ./ci/before_install.sh
 install:
   - "pip install markdown whoosh"
-script: python3 test.py
+before_script:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+script: python test.py
