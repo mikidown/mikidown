@@ -9,7 +9,7 @@ from PyQt4.QtGui import QApplication, QIcon
 
 import mikidown
 from mikidown.mikiwindow import MikiWindow
-from mikidown.mikibook import NotebookList
+from mikidown.mikibook import Mikibook
 from mikidown.config import Setting
 
 app = QApplication(sys.argv)
@@ -23,8 +23,8 @@ class Monolithic(unittest.TestCase):
         gconf = os.path.join(os.getcwd(), "test.conf")
         gsettings = QSettings(gconf, QSettings.NativeFormat)
         path = os.path.join(os.getcwd(), "test_notebook")
-        NotebookList.add("test", path)
-        settings = Setting(notebookPath = path, notebookName = "test")
+        Mikibook.add("test", path)
+        settings = Setting([["test", path]])
         Monolithic.window = MikiWindow(settings)
         Monolithic.window.show()
 

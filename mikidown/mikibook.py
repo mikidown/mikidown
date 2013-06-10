@@ -56,9 +56,6 @@ class NotebookListDialog(QDialog):
     def __init__(self, parent=None):
         super(NotebookListDialog, self).__init__(parent)
         
-        # TODO: To be removed!
-        self.global_settings = QSettings('mikidown', 'mikidown')
-        
         self.notebookList = QListWidget()
         self.moveUp = QPushButton('<<')
         self.moveDown = QPushButton('>>')
@@ -89,7 +86,7 @@ class NotebookListDialog(QDialog):
 
     def initList(self):
         self.notebookList.clear()
-        notebooks = readListFromSettings(self.global_settings, 'notebookList')
+        notebooks = Mikibook.read()
         for nb in notebooks:
             item = QListWidgetItem()
             item.setData(Qt.DisplayRole, nb[0])
@@ -108,7 +105,7 @@ class NotebookListDialog(QDialog):
         self.moveDown.setEnabled(flag)
 
     def actionAdd(self):
-        NotebookList.create(self.global_settings)
+        Mikibook.create()
         self.initList()
         count = self.notebookList.count()
         self.notebookList.setCurrentRow(count-1)
@@ -120,7 +117,7 @@ class NotebookListDialog(QDialog):
         path = item.data(Qt.UserRole)
         self.notebookList.takeItem(row)
 
-        NotebookList.remove(name, path)
+        Mikibook.remove(name, path)
 
     def moveItemUp(self):
         item = self.notebookList.currentItem()
@@ -151,7 +148,7 @@ class NotebookListDialog(QDialog):
             name = self.notebookList.item(i).data(Qt.DisplayRole)
             path = self.notebookList.item(i).data(Qt.UserRole)
             notebooks.append([name, path])
-            writeListToSettings(self.global_settings, 'notebookList', notebooks)
+            Mikibook.write(notebooks)
 
         QDialog.accept(self)
 
@@ -205,29 +202,33 @@ class NewNotebookDlg(QDialog):
         event.accept()
 
 
-class NotebookInfo(object):
-    def __init__(self, uri, name=None):
-        f = File(uri)
-        self.uri = f.uri
-        self.name = name or f.basename
+class Mikibook():
 
+    # ~/.config/mikidown/mikidown.conf
+    settings = QSettings('mikidown', 'mikidown')
 
-class NotebookList():
-    settings = None
-    def create(settings=None):
-        NotebookList.settings = settings
-        """
-        If settings==None, initialize notebook dir without writing to 
-        configuration file.
-        """
+    def read():
+        """ Read notebook list from config file """
+        return readListFromSettings(Mikibook.settings, 'notebookList')
+
+    def write(notebooks):
+        """ Write notebook list to config file """
+        return writeListToSettings(
+            Mikibook.settings, 'notebookList', notebooks)
+
+    def create():
+        """ Display a dialog to set notebookName and notebookPath """
         newNotebook = NewNotebookDlg()
         if newNotebook.exec_():
             notebookName = newNotebook.nameEditor.text()
             notebookPath = newNotebook.pathEditor.text()
-            NotebookList.add(notebookName, notebookPath)
+            Mikibook.add(notebookName, notebookPath)
 
     def add(notebookName, notebookPath):
-        settings = NotebookList.settings
+        """ Called by create()
+            Initialise the notebook directory.
+        """
+        # Make sure there is notes.css in notebookPath
         if not os.path.isdir(notebookPath):
             os.makedirs(notebookPath)
         cssFile = os.path.join(notebookPath, 'notes.css')
@@ -238,18 +239,16 @@ class NotebookList():
                 os.path.dirname(__file__), 'notes.css')
         # If //cssFile// already exists, copy() returns false!
         QFile.copy(cssTemplate, cssFile)
-        if settings:
-            notebookList = readListFromSettings(settings, 'notebookList')
-            notebookList.append([notebookName, notebookPath])
+
+        # If settings==None, initialize notebook dir without writing to 
+        # configuration file.
+        if Mikibook.settings:
+            notebooks = Mikibook.read() 
+            notebooks.append([notebookName, notebookPath])
             # TODO: make mikidown.conf become plain text
-            writeListToSettings(settings, 'notebookList', notebookList)
+            Mikibook.write(notebooks)
 
     def remove(name, path):
-
-        # TODO: To be removed!
-        global_settings = QSettings('mikidown', 'mikidown')
-
-        notebooks = readListFromSettings(global_settings, 
-                                         'notebookList')
+        notebooks = Mikibook.read()
         notebooks.remove([name, path])
-        writeListToSettings(global_settings, 'notebookList', notebooks)
+        Mikibook.write(notebookList)

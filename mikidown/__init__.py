@@ -8,7 +8,7 @@ from PyQt4.QtGui import QApplication, QIcon
 from mikidown.config import *
 from mikidown.mikitray import MikiTray
 from mikidown.mikiwindow import MikiWindow
-from mikidown.mikibook import NotebookList
+from mikidown.mikibook import Mikibook
 
 sys.path.append(os.path.dirname(__file__))
 
@@ -16,20 +16,16 @@ sys.path.append(os.path.dirname(__file__))
 def main():
 
     # Instantiate a QApplication first.
-    # Otherwise, NotebookList.create() won't function.
+    # Otherwise, Mikibook.create() won't function.
     app = QApplication(sys.argv)
 
-    # ~/.config/mikidown/mikidown.conf
-    global_settings = QSettings('mikidown', 'mikidown')
-    
     # Read notebookList, open the first notebook.
-    notebooks = readListFromSettings(global_settings, 'notebookList')
+    notebooks = Mikibook.read()
     if len(notebooks) == 0:
-        NotebookList.create(global_settings)
-        notebooks = readListFromSettings(global_settings, 'notebookList')
+        Mikibook.create()
+        notebooks = Mikibook.read()
 
-    settings = Setting(notebookPath = notebooks[0][1],
-                       notebookName = notebooks[0][0])
+    settings = Setting(notebooks)
     # Initialize application and main window.
     icon = QIcon("/usr/share/icons/hicolor/scalable/apps/mikidown.svg")
     app.setWindowIcon(icon)

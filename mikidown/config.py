@@ -6,7 +6,7 @@ from whoosh.fields import Schema, ID, TEXT
 
 class Setting():
 
-    def __init__(self, notebookPath, notebookName):
+    def __init__(self, notebooks):
         self.__appname__ = 'mikidown'
         self.__version__ = '0.1.6'
 
@@ -15,11 +15,11 @@ class Setting():
             path = ID(stored=True, unique=True, spelling=True), 
             # title = KEYWORD(stored=True, scorable=True,spelling=True, sortable=True),
             content = TEXT)
-        
-        self.notebookPath = notebookPath
-        self.notebookName = notebookName
         self.indexdir = ".indexdir"
-        self.configfile = os.path.join(notebookPath, "notebook.conf")
+
+        self.notebookName = notebooks[0][0]
+        self.notebookPath = notebooks[0][1]
+        self.configfile = os.path.join(self.notebookPath, "notebook.conf")
         
         self.qsettings = QSettings(self.configfile, QSettings.NativeFormat)
         self.geometry = self.qsettings.value("geometry")
