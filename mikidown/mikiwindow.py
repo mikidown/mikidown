@@ -117,6 +117,36 @@ class MikiWindow(QMainWindow):
                                 # lambda:self.tabWidget.setCurrentWidget(self.searchTab)
         self.addAction(actTabIndex)
         self.addAction(actTabSearch)
+        
+        # Shortcuts to switch notes.
+        actNote1 = self.act(self.tr(""), QKeySequence("Ctrl+1"),
+                            lambda: self.switchNote(1))
+        actNote2 = self.act(self.tr(""), QKeySequence("Ctrl+2"),
+                            lambda: self.switchNote(2))
+        actNote3 = self.act(self.tr(""), QKeySequence("Ctrl+3"),
+                            lambda: self.switchNote(3))
+        actNote4 = self.act(self.tr(""), QKeySequence("Ctrl+4"),
+                            lambda: self.switchNote(4))
+        actNote5 = self.act(self.tr(""), QKeySequence("Ctrl+5"),
+                            lambda: self.switchNote(5))
+        actNote6 = self.act(self.tr(""), QKeySequence("Ctrl+6"),
+                            lambda: self.switchNote(6))
+        actNote7 = self.act(self.tr(""), QKeySequence("Ctrl+7"),
+                            lambda: self.switchNote(7))
+        actNote8 = self.act(self.tr(""), QKeySequence("Ctrl+8"),
+                            lambda: self.switchNote(8))
+        actNote9 = self.act(self.tr(""), QKeySequence("Ctrl+9"),
+                            lambda: self.switchNote(9))
+        self.addAction(actNote1)
+        self.addAction(actNote2)
+        self.addAction(actNote3)
+        self.addAction(actNote4)
+        self.addAction(actNote5)
+        self.addAction(actNote6)
+        self.addAction(actNote7)
+        self.addAction(actNote8)
+        self.addAction(actNote9)
+
         # actions in menuFile
         self.actionNewPage = self.act(
             self.tr('&New Page...'), shct=QKeySequence.New, trig=self.notesTree.newPage)
@@ -263,11 +293,9 @@ class MikiWindow(QMainWindow):
         ).modificationChanged.connect(self.modificationChanged)
 
         self.updateRecentViewedNotes()
-        files= self.settings.recentViewedNotes()
-        #files = readListFromSettings(
-        #    self.settings.qsettings, 'recentViewedNoteList')
-        if len(files) != 0:
-            item = self.notesTree.pagePathToItem(files[0])
+        notes = self.settings.recentViewedNotes()
+        if len(notes) != 0:
+            item = self.notesTree.pagePathToItem(notes[0])
             self.notesTree.setCurrentItem(item)
 
     def restore(self):
@@ -339,9 +367,9 @@ class MikiWindow(QMainWindow):
                 # self.actionSave.setEnabled(False)
                 self.notesEdit.document().setModified(False)
                 self.notesView.updateView()
-                self.setCurrentFile()
+                self.setCurrentNote()
                 self.updateRecentViewedNotes()
-                self.viewedListActions[-1].setChecked(True)
+                self.viewedListActions[0].setChecked(True)
                 self.statusLabel.setText(noteFullName)
 
     def currentTabChanged(self, index):
@@ -372,6 +400,10 @@ class MikiWindow(QMainWindow):
         cur.setPosition(pos, QTextCursor.MoveAnchor)
         self.notesEdit.setTextCursor(cur)
         self.notesView.load(QUrl(link))
+
+    def switchNote(self, num):
+        self.viewedListActions[num].trigger()
+
 
     def saveCurrentNote(self):
         item = self.notesTree.currentItem()
@@ -639,33 +671,42 @@ class MikiWindow(QMainWindow):
             flags = QWebPage.HighlightAllOccurrences
             self.notesView.findText(self.searchEdit.text(), flags)
 
-    def setCurrentFile(self):
-        noteItem = self.notesTree.currentItem()
-        # name = self.notesTree.currentItemName()
-        name = self.notesTree.itemToPagePath(noteItem)
-        files= self.settings.recentViewedNotes()
-        for f in files:
+    def setCurrentNote(self):
+        item = self.notesTree.currentItem()
+        name = self.notesTree.itemToPagePath(item)
+
+        # Current note is inserted to head of list.
+        notes = self.settings.recentViewedNotes()
+        for f in notes:
             if f == name:
-                files.remove(f)
-        files.insert(0, name)
+                notes.remove(f)
+        notes.insert(0, name)
+
         # TODO: move this NUM to configuration
-        if len(files) > 20:
-            del files[20:]
-        self.settings.updateRecentViewedNotes(files)
+        if len(notes) > 20:
+            del notes[20:]
+        self.settings.updateRecentViewedNotes(notes)
 
     def updateRecentViewedNotes(self):
+        """ Switching notes will triger this. """
+
         self.viewedList.clear()
         self.viewedListActions = []
-        filesOld = self.settings.recentViewedNotes()
-        files = []
-        for f in reversed(filesOld):
+
+        # Check notes exists.
+        viewedNotes = self.settings.recentViewedNotes()
+        existedNotes = []
+        # i = 0
+        for f in viewedNotes:
             if self.existsNote(f):
-                files.insert(0, f)
-                # files.append(f)
+                existedNotes.append(f)
                 splitName = f.split('/')
                 self.viewedListActions.append(
                     self.act(splitName[-1], trigbool=self.openFunction(f)))
-        self.settings.updateRecentViewedNotes(files)
+                    #self.act(str(i) + '.' + splitName[-1], trigbool=self.openFunction(f)))
+                # i += 1
+                
+        self.settings.updateRecentViewedNotes(existedNotes)
         for action in self.viewedListActions:
             self.viewedList.addAction(action)
 
