@@ -13,15 +13,30 @@ class MikiSearch(QWebView):
 
     def __init__(self, parent=None):
         super(MikiSearch, self).__init__(parent)
+        self.parent = parent
+
         self.settings().clearMemoryCaches()
         self.flag = False
         self.link = None
         self.setMouseTracking(True)
         self.page().linkHovered.connect(self.linkHovered)
         self.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
-        #self.notesView.page().linkClicked.connect(self.linkClicked)
+        self.page().linkClicked.connect(self.linkClicked)
+
+    def linkClicked(self, qurl):
+        """ Overload function.
+            Click link to open the note.
+        """
+        path = qurl.toString()
+        item = self.parent.notesTree.pagePathToItem(path)
+        if item:
+            self.parent.notesTree.setCurrentItem(item)
 
     def linkHovered(self, link, title, textContent):
+        """ Overload function.
+            Show tooltip when hovered.
+        # ToFix: tooltip disappear too soon.
+        """
         #self.setToolTip(link)
         if link:
             self.flag = True
@@ -31,7 +46,6 @@ class MikiSearch(QWebView):
             self.flag = False
 
     def mouseMoveEvent(self, event):
-        # ToFix: Tooltip disappear too soon.
         if self.flag:
             QToolTip.showText(QCursor.pos(), self.link)
         else:

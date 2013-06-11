@@ -78,7 +78,7 @@ class MikiWindow(QMainWindow):
 
         self.searchEdit = QLineEdit()
         self.searchEdit.returnPressed.connect(self.searchNote)
-        self.searchView = MikiSearch()
+        self.searchView = MikiSearch(self)
         self.searchTab = QWidget()
         searchLayout = QVBoxLayout()
         searchLayout.addWidget(self.searchEdit)
