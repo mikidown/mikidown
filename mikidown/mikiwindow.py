@@ -603,9 +603,16 @@ class MikiWindow(QMainWindow):
                 text = r['path']
                 term = r.highlights("content")
                 qres.append([title, text, term])
-            html = ""
+            html = """
+                    <style>
+                        body { font-size: 14px; }
+                        .path { font-size: 12px; color: #009933; }
+                    </style>
+                   """
             for ti, te, hi in qres:
-                html += "<p><a href='" + te + "'>" + ti + "</a> " + hi + "</p>"
+                html += ("<p><a href='" + te + "'>" + ti + 
+                         "</a><br/><span class='path'>" + 
+                        te + "</span><br/>" + hi + "</p>")
             self.searchView.setHtml(html)
 
     def whoosh_index(self):
