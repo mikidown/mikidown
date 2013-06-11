@@ -17,33 +17,83 @@ app = QApplication(sys.argv)
 
 
 class Monolithic(unittest.TestCase):
-    window = None
+
     def step0(self):
         print("\nStep 0: create notebook")
+
         gconf = os.path.join(os.getcwd(), "test.conf")
         gsettings = QSettings(gconf, QSettings.NativeFormat)
         path = os.path.join(os.getcwd(), "test_notebook")
         Mikibook.add("test", path)
         settings = Setting([["test", path]])
-        Monolithic.window = MikiWindow(settings)
-        Monolithic.window.show()
+        self.window = MikiWindow(settings)
+        self.window.show()
 
     def step1(self):
         print("\nStep 1: newPage")
-        Monolithic.window.notesTree.newPage('1')
+
+        self.window.notesTree.newPage('pageOne')
+        self.window.notesTree.newSubpage('subpageOne')
+        
+        itemOne = self.window.notesTree.pagePathToItem('pageOne')
+        self.window.notesTree.setCurrentItem(itemOne)
+        self.window.notesTree.newPage('pageTwo')
 
     def step2(self):
-        print("\nStep 2: delPage")
-        item = Monolithic.window.notesTree.pagePathToItem('1')
-        Monolithic.window.notesTree.delPage(item)
+        print("\nStep 2: setText")
+        
+        self.window.liveView(True)
+        self.window.notesEdit.setText("# head1\n\n"
+                                      "## head2\n"
+                                      "[subpageOne](pageOne/subpageOne)")
+        self.window.saveCurrentNote()
+        self.window.notesView.updateView()
+
+        #self.window.notesView.setVisible(True)
+        elemCol = self.window.notesView.page(
+        ).mainFrame().findAllElements("a")
+        element = elemCol.at(2)
+        print(self.window.notesView.page().mainFrame().toHtml())
+        print(element.attribute("href"))
+        element.evaluateJavaScript("this.click()")
+
+        noteName = self.window.notesTree.currentItem().text(0)
+        self.assertEqual(noteName, "subpageOne")
 
     def step3(self):
+        print("\nStep 3: page link")
+        
+        self.window.notesEdit.setText("[head2](pageTwo#head2)")
+        self.window.saveCurrentNote()
+        self.window.notesView.updateView()
+
+        element = self.window.notesView.page(
+        ).mainFrame().findFirstElement("a")
+        element.evaluateJavaScript("this.click()")
+
+        noteName = self.window.notesTree.currentItem().text(0)
+        self.assertEqual(noteName, "pageTwo")
+
+    def step4(self):
+        print("\nStep 4: delPage")
+
+        # This will delete both pageOne and subpageOne
+        item = self.window.notesTree.pagePathToItem('pageOne')
+        self.window.notesTree.delPage(item)
+
+        item = self.window.notesTree.pagePathToItem('pageTwo')
+        self.window.notesTree.delPage(item)
+
+    def step5(self):
         print("\nLast step: clean up")
+
         for i in glob.glob("test_notebook/.indexdir/*"):
             os.remove(i)
         os.rmdir("test_notebook/.indexdir")
-        os.remove("test_notebook/notes.css")
-        # os.remove("test_notebook/notebook.conf")
+        #os.remove("test_notebook/notes.css")
+        #os.remove("test_notebook/notebook.conf")
+        for i in glob.glob("test_notebook/*"):
+            os.remove(i)
         os.rmdir("test_notebook")
 
     def steps(self):

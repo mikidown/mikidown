@@ -25,10 +25,11 @@ class Setting():
         self.geometry = self.qsettings.value("geometry")
         self.windowstate = self.qsettings.value("windowstate")
 
+        self.extensions = []
         if os.path.exists(self.configfile):
             self.extensions = readListFromSettings(self.qsettings,
                                                       "extensions")
-        else:
+        if not self.extensions:
             # Default enabled python-markdown extensions.
             # http://pythonhosted.org/Markdown/extensions/index.html
             self.extensions = [
@@ -40,6 +41,8 @@ class Setting():
                  , 'headerlink'      # add anchor to headers
                  , 'footnotes'
                  ]
+            writeListToSettings(self.qsettings, "extensions", self.extensions)
+
     def saveGeometry(self, geometry):
         self.qsettings.setValue("geometry", geometry)
 

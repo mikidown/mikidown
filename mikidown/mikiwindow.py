@@ -33,7 +33,6 @@ class MikiWindow(QMainWindow):
         self.setWindowTitle(
             '{} - {}'.format(settings.notebookName, settings.__appname__))
 
-        self.scrollPosition = QPoint(0, 0)
 
         self.notesTree = MikiTree(self)
         self.initTree(self.notebookPath, self.notesTree)
@@ -53,10 +52,8 @@ class MikiWindow(QMainWindow):
         self.tabWidget = QTabWidget()
         self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
         self.viewedList.setFixedHeight(25)
-        # self.notesEdit = QTextEdit()
         self.notesEdit = MikiEdit(self)
         MikiHighlighter(self.notesEdit)
-        # self.notesView = QWebView()
         self.notesView = MikiView(self)
         self.findBar = QToolBar(self.tr('Find'), self)
         self.findBar.setFixedHeight(30)
@@ -264,10 +261,6 @@ class MikiWindow(QMainWindow):
 
         self.notesEdit.document(
         ).modificationChanged.connect(self.modificationChanged)
-        self.notesView.page().linkClicked.connect(self.linkClicked)
-        self.notesView.page().linkHovered.connect(self.linkHovered)
-        self.notesView.page().mainFrame(
-        ).contentsSizeChanged.connect(self.contentsSizeChanged)
 
         self.updateRecentViewedNotes()
         files= self.settings.recentViewedNotes()
@@ -342,10 +335,10 @@ class MikiWindow(QMainWindow):
                 noteBody = QTextStream(fh).readAll()
                 fh.close()
                 self.notesEdit.setPlainText(noteBody)
-                self.scrollPosition = QPoint(0, 0)
+                self.notesView.scrollPosition = QPoint(0, 0)
                 # self.actionSave.setEnabled(False)
                 self.notesEdit.document().setModified(False)
-                self.updateView()
+                self.notesView.updateView()
                 self.setCurrentFile()
                 self.updateRecentViewedNotes()
                 self.viewedListActions[-1].setChecked(True)
@@ -419,7 +412,7 @@ class MikiWindow(QMainWindow):
     def noteEditted(self):
         """ Continuously get fired while editing"""
         self.updateToc()
-        self.updateLiveView()
+        self.notesView.updateLiveView()
 
     def modificationChanged(self, changed):
         """ Fired one time: modified or not """
@@ -501,7 +494,7 @@ class MikiWindow(QMainWindow):
         self.actionUpAndDown.setEnabled(True)
 
         # Render the note text as it is.
-        self.updateView()
+        self.notesView.updateView()
 
     def liveView(self, viewmode):
         """ Switch between VIEW and LIVE VIEW mode. """
@@ -529,71 +522,7 @@ class MikiWindow(QMainWindow):
         self.saveCurrentNote()
 
         # Render the note text as it is.
-        self.updateView()
-
-    def updateView(self):
-        # url_notebook = 'file://' + os.path.join(self.notebookPath, '/')
-        viewFrame = self.notesView.page().mainFrame()
-        # Store scrollPosition before update notesView
-        self.scrollPosition = viewFrame.scrollPosition()
-        self.contentsSize = viewFrame.contentsSize()
-        url_notebook = 'file://' + self.notebookPath + '/'
-        self.notesView.setHtml(self.notesEdit.toHtml(), QUrl(url_notebook))
-        # Restore previous scrollPosition
-        viewFrame.setScrollPosition(self.scrollPosition)
-
-    def updateLiveView(self):
-        if self.actionLiveView.isChecked():
-            QTimer.singleShot(1000, self.updateView)
-
-    def contentsSizeChanged(self, newSize):
-        '''scroll notesView while editing (adding new lines)
-           Whithout this, every `updateView` will result in scroll to top.
-        '''
-        if self.scrollPosition == QPoint(0, 0):
-            return
-        viewFrame = self.notesView.page().mainFrame()
-        newY = self.scrollPosition.y(
-        ) + newSize.height() - self.contentsSize.height()
-        self.scrollPosition.setY(newY)
-        viewFrame.setScrollPosition(self.scrollPosition)
-
-    def linkClicked(self, qlink):
-        '''three kinds of link:
-            external uri: http/https
-            page ref link:
-            toc anchor link: #
-        '''
-        name = qlink.toString()
-        http = re.compile('https?://')
-        if http.match(name):                        # external uri
-            QDesktopServices.openUrl(qlink)
-            return
-        if self.notebookPath in name:               # toc anchor link
-            self.notesView.load(qlink)
-        else:                                       # page ref link
-            name = name.replace('file://', '')
-            name = name.replace(self.notebookPath, '').split('#')
-            item = self.notesTree.pagePathToItem(name[0])
-            if item:
-                self.notesTree.setCurrentItem(item)
-                link = "file://" + self.notebookPath + "/#" + name[1]
-                self.notesView.load(QUrl(link))
-                viewFrame = self.notesView.page().mainFrame()
-                self.scrollPosition = viewFrame.scrollPosition()
-
-    def linkHovered(self, link, title, textContent):
-        '''show link in status bar
-            ref link shown as: /parent/child/pageName
-            toc link shown as: /parent/child/pageName#anchor (ToFix)
-        '''
-        # TODO: link to page by: /parent/child/pageName#anchor
-        if link == '':                              # not hovered
-            self.statusBar.showMessage(self.notesTree.currentItemName())
-        else:                                       # beautify link
-            link = link.replace('file://', '')
-            link = link.replace(self.notebookPath, '')
-            self.statusBar.showMessage(link)
+        self.notesView.updateView()
 
     def findBarVisibilityChanged(self, visible):
         self.actionFindText.setChecked(visible)
