@@ -1,7 +1,7 @@
 import os
 
 from PyQt4.QtCore import QSettings
-from whoosh.fields import Schema, ID, TEXT
+from whoosh import fields
 
 
 class Setting():
@@ -11,10 +11,10 @@ class Setting():
         self.__version__ = '0.1.6'
 
         # Index directory of whoosh, located in notebookPath.
-        self.schema = Schema(
-            path = ID(stored=True, unique=True, spelling=True), 
-            # title = KEYWORD(stored=True, scorable=True,spelling=True, sortable=True),
-            content = TEXT)
+        self.schema = fields.Schema(
+            path = fields.ID(stored=True, unique=True, spelling=True), 
+            title = fields.KEYWORD(stored=True, scorable=True),
+            content = fields.TEXT(stored=True))
         self.indexdir = ".indexdir"
 
         self.notebookName = notebooks[0][0]

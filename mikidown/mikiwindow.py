@@ -14,6 +14,7 @@ from mikidown.mikibook import NotebookListDialog
 from mikidown.mikitree import *
 from mikidown.mikiedit import *
 from mikidown.mikiview import *
+from mikidown.mikisearch import MikiSearch
 from mikidown.highlighter import MikiHighlighter
 from mikidown.utils import *
 
@@ -77,11 +78,11 @@ class MikiWindow(QMainWindow):
 
         self.searchEdit = QLineEdit()
         self.searchEdit.returnPressed.connect(self.searchNote)
-        self.searchList = QListWidget()
+        self.searchView = MikiSearch()
         self.searchTab = QWidget()
         searchLayout = QVBoxLayout()
         searchLayout.addWidget(self.searchEdit)
-        searchLayout.addWidget(self.searchList)
+        searchLayout.addWidget(self.searchView)
         self.searchTab.setLayout(searchLayout)
         self.tocTree = QTreeWidget()
         self.tocTree.header().close()
@@ -259,7 +260,6 @@ class MikiWindow(QMainWindow):
         self.notesTree.currentItemChanged.connect(
             self.currentItemChangedWrapper)
         self.tocTree.currentItemChanged.connect(self.tocNavigate)
-        self.searchList.currentRowChanged.connect(self.listItemChanged)
         self.connect(self.notesEdit, SIGNAL('textChanged()'), self.noteEditted)
 
         self.notesEdit.document(
@@ -657,8 +657,8 @@ class MikiWindow(QMainWindow):
         # QWidget.focusInEvent(self,f)
 
     def searchNote(self):
-        self.searchList.clear()
         pattern = self.searchEdit.text()
+        qres = []
         with self.ix.searcher() as searcher:
             queryp = QueryParser("content", self.ix.schema)
             queryp.add_plugin(RegexPlugin())
@@ -670,12 +670,14 @@ class MikiWindow(QMainWindow):
                 query, limit=None, sortedby=[pathFacet, scores])  # default limit is 10!
             for r in results:
                 listItem = QListWidgetItem()
+                title = r['title']
                 text = r['path']
-                print(text)
-                treeItem = self.notesTree.pagePathToItem(text)
-                listItem.setData(Qt.DisplayRole, treeItem.text(0))
-                listItem.setData(Qt.UserRole, treeItem)
-                self.searchList.addItem(listItem)
+                term = r.highlights("content")
+                qres.append([title, text, term])
+            html = ""
+            for ti, te, hi in qres:
+                html += "<p><a href='" + te + "'>" + ti + "</a> " + hi + "</p>"
+            self.searchView.setHtml(html)
 
     def whoosh_index(self):
         it = QTreeWidgetItemIterator(
@@ -689,7 +691,8 @@ class MikiWindow(QMainWindow):
             fileobj = open(path, 'r')
             content = fileobj.read()
             fileobj.close()
-            writer.add_document(path=name, content=content)
+            writer.add_document(
+                path=name, title=parseTitle(content, name), content=content)
             it += 1
         writer.commit()
 

@@ -19,3 +19,12 @@ def parseHeaders(source):
         anchor = unique(slugify(hdr, '-'), used_ids)
         hdrs.append((hdrLevel, hdr, pos, anchor))
     return hdrs
+
+def parseTitle(source, fallback):
+    """ Quite basic title parser, the first header1 is taken as title """
+    title_re = re.compile(r'^#([^#].+)')
+    title = title_re.search(source)
+    if title:
+        return title.group(1).strip()
+    else:
+        return fallback

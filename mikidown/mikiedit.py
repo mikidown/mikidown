@@ -23,7 +23,8 @@ class MikiEdit(QTextEdit):
     def updateIndex(self, path, content):
             ''' Update whoosh index, which cost much computing resource '''
             writer = self.ix.writer()
-            writer.update_document(path=path, content=content)
+            writer.update_document(
+                path=path, title=parseTitle(content, path), content=content)
             writer.commit()
 
     def save(self, pageName, filePath):
