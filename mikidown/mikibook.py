@@ -139,8 +139,9 @@ class NotebookListDialog(QDialog):
 
     def accept(self):
         notebookPath = self.notebookList.currentItem().data(Qt.UserRole)
-        name = self.notebookList.currentItem().data(Qt.DisplayRole)
-        window = mikidown.MikiWindow(notebookPath, name)
+        notebookName = self.notebookList.currentItem().data(Qt.DisplayRole)
+        settings = Setting([[notebookName, notebookPath]])
+        window = mikidown.MikiWindow(settings)
         window.show()
         count = self.notebookList.count()
         notebooks = []
