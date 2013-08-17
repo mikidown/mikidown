@@ -435,7 +435,7 @@ class MikiWindow(QMainWindow):
 
     def printNote(self):
         printer = QPrinter(QPrinter.HighResolution)
-        printer.setCreator(__appname__ + ' ' + __version__)
+        printer.setCreator(self.settings.__appname__ + ' ' + self.settings.__version__)
         printer.setDocName(self.notesTree.currentItem().text(0))
         printdialog = QPrintDialog(printer, self)
         if printdialog.exec() == QDialog.Accepted:
