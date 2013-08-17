@@ -26,7 +26,7 @@ class miki_install_scripts(install_scripts):
 
 setup(
     name='mikidown',
-    version='0.2.0',
+    version='0.2.1',
     license = 'MIT',
     description = 'A note taking application, featuring markdown syntax',
     author = 'rnons',

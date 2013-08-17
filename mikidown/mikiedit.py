@@ -6,6 +6,7 @@ import markdown
 from whoosh.index import open_dir
 
 from mikidown.config import *
+from mikidown.utils import parseTitle
 
 
 class MikiEdit(QTextEdit):

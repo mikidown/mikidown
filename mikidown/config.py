@@ -8,7 +8,7 @@ class Setting():
 
     def __init__(self, notebooks):
         self.__appname__ = 'mikidown'
-        self.__version__ = '0.2.0'
+        self.__version__ = '0.2.1'
 
         # Index directory of whoosh, located in notebookPath.
         self.schema = fields.Schema(

@@ -470,7 +470,9 @@ class MikiWindow(QMainWindow):
         fileBody = QTextStream(fh).readAll()
         fh.close()
         note = QFileInfo(filename)
-        fh = QFile(note.completeBaseName()+'.markdown')
+        path = os.path.join(self.notebookPath, 
+                            note.completeBaseName() + ".markdown")
+        fh = QFile(path)
         if fh.exists():
             QMessageBox.warning(self, 'Import Error',
                                 'Page already exists: %s' % note.completeBaseName())

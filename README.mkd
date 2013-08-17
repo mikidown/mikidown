@@ -1,17 +1,26 @@
 # Mikidown
 
-Mikidown is note taking application with markdown support.
+Mikidown is a note taking application with markdown support.
 
 > Mikidown was inspired by [Zim] and based on [ReText].
 
+Install mikidown with
+ 
+    python3-pip install mikidown
+
+Run mikidown without installing
+
+    git clone https://github.com/rnons/mikidown.git
+    cd mikidown
+    ./mikidown.py
+
 ## Features 
 
-- Take and organize notes in markdown
+- Edit markdown with live preview
+- Switch between Edit/View/LiveEdit mode
+- All notes in one place, with multiple notebooks support
 - Page cross-link
-- Live preview
-- Import and save as plain text files
-- Export to HTML, PDF
-- Support multiple notebooks 
+- Import from plain text files, export to HTML, PDF
 - Customise your note style (by editing CSS file)
 
 ## Dependencies
@@ -21,36 +30,22 @@ Mikidown is note taking application with markdown support.
 - python-markdown
 - python-whoosh
 
-## How-To
+## Beautiful notes powered by markdown
 
-    git clone git@github.com:rnons/mikidown.git
-    cd mikidown
+In case you are unfamiliar with markdown, you can use this file ( **Help->README** ) as a simple reference to basic markdown syntax. However, I suggest you take a look at the complete [Markdown Syntax].
 
-You should be able to **run** mikidown with <code>./mikidown.py</code>. 
+### Markdown extension
 
-To install
- 
-    python setup.py install
-    mikidown
+All python-markdown [extensions] are supported. To enable/disable extension, edit the `notebook.conf` file in your notebook folder.
 
-## Use Mikidown to visualize you notes
-
-In case you are unfamiliar with markdown, you can use this file (**Help->README**) as a simple reference to basic markdown syntax. However, I suggest you take a look at the complete [Markdown Syntax].
-
-### [Footnote Syntax]
-
-    Footnotes[^1] have a label and a definition.
-
-    [^1]: This is a footnote
+    # notebook_folder/notebook.conf
+    extensions=nl2br, strkundr, codehilite, fenced_code, headerid, headerlink, footnotes
 
 ### Mikidown Specific Syntax
 
 1.  page cross link, all of the three will do 
 
     `[text](/parentNode/childNode/pageName)`
-
-*Feature to come*:
-
     `[text](/parentNode/childNode/pageName#anchor)`
 
 
@@ -59,14 +54,14 @@ In case you are unfamiliar with markdown, you can use this file (**Help->README*
     `![text](file:///home/user/pic.png)` 
     `![text](pic.png)`     # path relative to notebook folder
 
-`Ctrl + I` or **Edit -> Insert Image** will bring up an *insert image* dialog.
+    `Ctrl + I` or **Edit -> Insert Image** will bring up an **insert image** dialog.
 
 3.  ins/del/bold/italics (better view in mikidown)
 
-- `~~delete~~`  will yield ~~delete~~
-- `__insert__` will yield __insert__
-- `**strong**` will yield **strong**
-- `//emphasis//` will yield //emphasis//
+    - `~~delete~~`  will yield ~~delete~~
+    - `__insert__` will yield __insert__
+    - `**strong**` will yield **strong**
+    - `//emphasis//` will yield //emphasis//
 
 ## Contributor
 
@@ -79,4 +74,4 @@ In case you are unfamiliar with markdown, you can use this file (**Help->README*
 [Markdown Syntax]: http://daringfireball.net/projects/markdown/syntax
 [Fork and help]: https://github.com/rnons/mikidown
 [ShadowKyogre]: https://github.com/ShadowKyogre
-[Footnote Syntax]: http://pythonhosted.org/Markdown/extensions/footnotes.html
+[extensions]: http://pythonhosted.org/Markdown/extensions/index.html
