@@ -25,10 +25,15 @@ class Setting():
         self.geometry = self.qsettings.value("geometry")
         self.windowstate = self.qsettings.value("windowstate")
 
-        self.extensions = []
         if os.path.exists(self.configfile):
             self.extensions = readListFromSettings(self.qsettings,
                                                       "extensions")
+            self.fileExt = self.qsettings.value("fileExt")
+        else:
+            self.extensions = []
+            self.fileExt = ".md"
+            self.qsettings.setValue("fileExt", self.fileExt)
+
         if not self.extensions:
             # Default enabled python-markdown extensions.
             # http://pythonhosted.org/Markdown/extensions/index.html

@@ -45,7 +45,7 @@ class ItemDialog(QDialog):
         else:
             notePath = self.path + '/' + self.editor.text()
 
-        if QFile.exists(notePath+'.markdown'):
+        if QFile.exists(notePath+'.md') or QFile.exists(notePath+'.mkd') or QFile.exists(notePath+'.markdown'):
             QMessageBox.warning(self, 'Error',
                                 'Page already exists: %s' % notePath)
         else:
@@ -117,6 +117,22 @@ class MikiTree(QTreeWidget):
                         parent = parent.parent()
             '''
 
+    def noteFullPath(self, noteFullName):
+        ''' FullPath = notebookPath + noteFullName + fileExt
+        fileExt is stored in notebook.conf 
+        '''
+        extName = ['.md', '.mkd', '.markdown']
+        defExt = self.settings.fileExt
+        extName.remove(defExt)
+        extName.insert(0, defExt)
+        for ext in extName:
+            filename = os.path.join(self.notebookPath,
+                                    noteFullName + ext)
+            if QFile.exists(filename):
+                return filename
+
+        return ""
+
     def currentItemName(self):
         item = self.currentItem()
         return self.itemToPagePath(item)
@@ -176,7 +192,7 @@ class MikiTree(QTreeWidget):
                                         pagePath + '/')
             if not QDir(pagePath).exists():
                 QDir(self.notebookPath).mkdir(pagePath)
-            fileName = pagePath + newPageName + '.markdown'
+            fileName = pagePath + newPageName + self.settings.fileExt
             fh = QFile(fileName)
             fh.open(QIODevice.WriteOnly)
             savestream = QTextStream(fh)
@@ -206,8 +222,8 @@ class MikiTree(QTreeWidget):
         targetPath = self.itemToPagePath(targetItem)
         if targetPath != '':
             targetPath = targetPath + '/'
-        oldName = sourcePath + '.markdown'
-        newName = targetPath + sourceItem.text(0) + '.markdown'
+        oldName = self.noteFullPath(sourceItem.text(0))
+        newName = targetPath + sourceItem.text(0) + self.settings.fileExt
         oldDir = sourcePath
         newDir = targetPath + sourceItem.text(0)
         print(newName)
@@ -248,8 +264,8 @@ class MikiTree(QTreeWidget):
             # if hasattr(item, 'text'):       # if item is not QTreeWidget
             if parentPath != '':
                 parentPath = parentPath + '/'
-            oldName = parentPath + item.text(0) + '.markdown'
-            newName = parentPath + newPageName + '.markdown'
+            oldName = self.noteFullPath(item.text(0))
+            newName = parentPath + newPageName + self.settings.fileExt
             QDir(self.notebookPath).rename(oldName, newName)
             if item.childCount() != 0:
                 oldDir = parentPath + item.text(0)
@@ -258,10 +274,11 @@ class MikiTree(QTreeWidget):
             item.setText(0, newPageName)
             self.sortItems(0, Qt.AscendingOrder)
 
-    def exists(self, item):
-        notePath = os.path.join(self.notebookPath, 
-                                self.itemToPagePath(item) + '.markdown')
-        return QFile.exists(notePath)
+    def exists(self, noteFullName):
+        if self.noteFullPath(noteFullName) != "" :
+            return True
+        else:
+            return False
 
     def delPageWrapper(self):
         item = self.currentItem()
@@ -282,7 +299,7 @@ class MikiTree(QTreeWidget):
         n = writer.delete_by_query(query)
         # n = writer.delete_by_term('path', pagePath)
         writer.commit()
-        b = QDir(self.notebookPath).remove(pagePath + '.markdown')
+        b = QDir(self.notebookPath).remove(self.noteFullPath(pagePath))
         parent = item.parent()
         parentPath = self.itemToPagePath(parent)
         if parent is not None:

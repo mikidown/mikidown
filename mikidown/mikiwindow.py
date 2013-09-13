@@ -314,15 +314,21 @@ class MikiWindow(QMainWindow):
             self.dockToc.isVisible())
 
     def initTree(self, notebookPath, parent):
+        ''' When there exist foo.md, foo.mkd, foo.markdown, 
+            only one item will be shown in notesTree.
+        '''
         if not QDir(notebookPath).exists():
             return
         notebookDir = QDir(notebookPath)
-        self.notesList = notebookDir.entryInfoList(['*.markdown'],
+        notesList = notebookDir.entryInfoList(['*.md', '*.mkd', '*.markdown'],
                                                QDir.NoFilter,
                                                QDir.Name|QDir.IgnoreCase)
-        for note in self.notesList:
-            item = QTreeWidgetItem(parent, [note.completeBaseName()])
-            path = notebookPath + '/' + note.completeBaseName()
+        nl = [note.completeBaseName() for note in notesList]
+        noduplicate = list(set(nl))
+        noduplicate.sort()
+        for name in noduplicate:
+            item = QTreeWidgetItem(parent, [name])
+            path = notebookPath + '/' + name 
             self.initTree(path, item)
 
     def updateToc(self):
@@ -348,8 +354,7 @@ class MikiWindow(QMainWindow):
         self.tocTree.expandAll()
 
     def openNote(self, noteFullName):
-        filename = os.path.join(self.notebookPath,
-                                noteFullName + '.markdown')
+        filename = self.notesTree.noteFullPath(noteFullName)
         print(filename)
         fh = QFile(filename)
         try:
@@ -381,7 +386,8 @@ class MikiWindow(QMainWindow):
     def currentItemChangedWrapper(self, current, previous):
         if current is None:
             return
-        if self.notesTree.exists(previous):
+        #if previous != None and self.notesTree.exists(previous):
+        if self.notesTree.exists(self.notesTree.itemToPagePath(previous)):
             self.saveNote(previous)
         name = self.notesTree.itemToPagePath(current)
         self.openNote(name)
@@ -416,17 +422,17 @@ class MikiWindow(QMainWindow):
             return
         pageName = item.text(0)
         filePath = os.path.join(self.notebookPath,
-                                self.notesTree.itemToPagePath(item) + '.markdown')
+                                self.notesTree.itemToPagePath(item) + self.settings.fileExt)
         self.notesEdit.save(pageName, filePath)
 
     def saveNoteAs(self):
         self.saveCurrentNote()
         fileName = QFileDialog.getSaveFileName(self, self.tr('Save as'), '',
-                                               '(*.markdown *.mkd *.md);;'+self.tr('All files(*)'))
+                                               '(*.md *.mkd *.markdown);;'+self.tr('All files(*)'))
         if fileName == '':
             return
         if not QFileInfo(fileName).suffix():
-            fileName += '.markdown'
+            fileName += '.md'
         fh = QFile(fileName)
         fh.open(QIODevice.WriteOnly)
         savestream = QTextStream(fh)
@@ -459,7 +465,7 @@ class MikiWindow(QMainWindow):
     def importPage(self):
         filename = QFileDialog.getOpenFileName(
             self, self.tr('Import file'), '',
-            '(*.markdown *.mkd *.md *.txt);;'+self.tr('All files(*)'))
+            '(*.md *.mkd *.markdown *.txt);;'+self.tr('All files(*)'))
         if filename == '':
             return
         self.importPageCore(filename)
@@ -471,7 +477,7 @@ class MikiWindow(QMainWindow):
         fh.close()
         note = QFileInfo(filename)
         path = os.path.join(self.notebookPath, 
-                            note.completeBaseName() + ".markdown")
+                            note.completeBaseName() + self.settings.fileExt)
         fh = QFile(path)
         if fh.exists():
             QMessageBox.warning(self, 'Import Error',
@@ -656,7 +662,7 @@ class MikiWindow(QMainWindow):
         while it.value():
             treeItem = it.value()
             name = self.notesTree.itemToPagePath(treeItem)
-            path = os.path.join(self.notebookPath, name + ".markdown")
+            path = os.path.join(self.notesTree.noteFullPath(name))
             print(path)
             fileobj = open(path, 'r')
             content = fileobj.read()
@@ -700,7 +706,8 @@ class MikiWindow(QMainWindow):
         existedNotes = []
         # i = 0
         for f in viewedNotes:
-            if self.existsNote(f):
+            #if self.existsNote(f):
+            if self.notesTree.exists(f):
                 existedNotes.append(f)
                 splitName = f.split('/')
                 self.viewedListActions.append(
@@ -711,11 +718,6 @@ class MikiWindow(QMainWindow):
         self.settings.updateRecentViewedNotes(existedNotes)
         for action in self.viewedListActions:
             self.viewedList.addAction(action)
-
-    def existsNote(self, noteFullname):
-        filename = os.path.join(self.notebookPath, noteFullname + '.markdown')
-        fh = QFile(filename)
-        return fh.exists()
 
     def openFunction(self, name):
         item = self.notesTree.pagePathToItem(name)
