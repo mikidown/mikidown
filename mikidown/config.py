@@ -4,11 +4,12 @@ from PyQt4.QtCore import QSettings
 from whoosh import fields
 
 
+__appname__ = 'mikidown'
+__version__ = '0.2.2'
+
 class Setting():
 
     def __init__(self, notebooks):
-        self.__appname__ = 'mikidown'
-        self.__version__ = '0.2.1'
 
         # Index directory of whoosh, located in notebookPath.
         self.schema = fields.Schema(

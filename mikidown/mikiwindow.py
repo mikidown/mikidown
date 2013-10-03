@@ -10,7 +10,7 @@ from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser, RegexPlugin
 
 import mikidown.mikidown_rc
-from mikidown.config import *
+from mikidown.config import __appname__, __version__
 from mikidown.mikibook import NotebookListDialog
 from mikidown.mikitree import *
 from mikidown.mikiedit import *
@@ -32,11 +32,12 @@ class MikiWindow(QMainWindow):
         self.move((
             screen.width()-size.width())/2, (screen.height()-size.height())/2)
         self.setWindowTitle(
-            '{} - {}'.format(settings.notebookName, settings.__appname__))
+            '{} - {}'.format(settings.notebookName, __appname__))
 
 
         self.notesTree = MikiTree(self)
         self.initTree(self.notebookPath, self.notesTree)
+        self.notesTree.sortItems(0, Qt.AscendingOrder)
 
         # Initialize whoosh index, make sure notebookPath/.indexdir exists
         self.ix = None
@@ -170,9 +171,6 @@ class MikiWindow(QMainWindow):
             '&Rename Page...'), QKeySequence('F2'), trig=self.notesTree.renamePageWrapper)
         self.actionDelPage = self.act(self.tr(
             '&Delete Page'), QKeySequence('Delete'), trig=self.notesTree.delPageWrapper)
-        #self.actionQuit = self.act(self.tr('&Quit'), QKeySequence.Quit)
-        #self.connect(
-        #    self.actionQuit, SIGNAL('triggered()'), self, SLOT('close()'))
         self.actionQuit = self.act(self.tr('&Quit'), QKeySequence.Quit, SLOT('close()'))
         self.actionQuit.setMenuRole(QAction.QuitRole)
         # actions in menuEdit
@@ -328,7 +326,6 @@ class MikiWindow(QMainWindow):
                                                QDir.Name|QDir.IgnoreCase)
         nl = [note.completeBaseName() for note in notesList]
         noduplicate = list(set(nl))
-        noduplicate.sort()
         for name in noduplicate:
             item = QTreeWidgetItem(parent, [name])
             path = notebookPath + '/' + name 
@@ -444,7 +441,7 @@ class MikiWindow(QMainWindow):
 
     def printNote(self):
         printer = QPrinter(QPrinter.HighResolution)
-        printer.setCreator(self.settings.__appname__ + ' ' + self.settings.__version__)
+        printer.setCreator(__appname__ + ' ' + __version__)
         printer.setDocName(self.notesTree.currentItem().text(0))
         printdialog = QPrintDialog(printer, self)
         if printdialog.exec() == QDialog.Accepted:

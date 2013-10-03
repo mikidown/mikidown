@@ -5,6 +5,8 @@ from distutils.command.install_scripts import install_scripts
 import glob
 import sys
 
+from mikidown.config import __version__
+
 class miki_build(build):
     def run(self):
         # Check the python version
@@ -26,7 +28,7 @@ class miki_install_scripts(install_scripts):
 
 setup(
     name='mikidown',
-    version='0.2.1',
+    version=__version__,
     license = 'MIT',
     description = 'A note taking application, featuring markdown syntax',
     author = 'rnons',
