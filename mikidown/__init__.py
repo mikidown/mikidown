@@ -5,6 +5,7 @@ import sys
 from PyQt4.QtCore import QSettings
 from PyQt4.QtGui import QApplication, QIcon
 
+import mikidown.mikidown_rc
 from mikidown.config import *
 from mikidown.mikitray import MikiTray
 from mikidown.mikiwindow import MikiWindow
@@ -27,7 +28,7 @@ def main():
 
     settings = Setting(notebooks)
     # Initialize application and main window.
-    icon = QIcon("/usr/share/icons/hicolor/scalable/apps/mikidown.svg")
+    icon = QIcon(":/icons/mikidown.svg")
     app.setWindowIcon(icon)
     window = MikiWindow(settings)
     window.show()

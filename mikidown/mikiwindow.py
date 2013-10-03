@@ -9,6 +9,7 @@ from whoosh import sorting
 from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser, RegexPlugin
 
+import mikidown.mikidown_rc
 from mikidown.config import *
 from mikidown.mikibook import NotebookListDialog
 from mikidown.mikitree import *
@@ -149,58 +150,58 @@ class MikiWindow(QMainWindow):
 
         # actions in menuFile
         self.actionNewPage = self.act(
-            self.tr('&New Page...'), shct=QKeySequence.New, trig=self.notesTree.newPage)
-        self.actionNewSubpage = self.act(self.tr('New Sub&page...'), shct=QKeySequence(
+            self.tr('&New Page...'), QKeySequence.New, trig=self.notesTree.newPage)
+        self.actionNewSubpage = self.act(self.tr('New Sub&page...'), QKeySequence(
             'Ctrl+Shift+N'), trig=self.notesTree.newSubpage)
         self.actionImportPage = self.act(
             self.tr('&Import Page...'), trig=self.importPage)
         self.actionOpenNotebook = self.act(
-            self.tr('&Open Notebook...'), shct=QKeySequence.Open, trig=self.openNotebook)
+            self.tr('&Open Notebook...'), QKeySequence.Open, trig=self.openNotebook)
         self.actionSave = self.act(self.tr(
-            '&Save'), shct=QKeySequence.Save, trig=self.saveCurrentNote)
+            '&Save'), QKeySequence.Save, trig=self.saveCurrentNote)
         self.actionSave.setEnabled(False)
-        self.actionSaveAs = self.act(self.tr('Save &As...'), shct=QKeySequence(
+        self.actionSaveAs = self.act(self.tr('Save &As...'), QKeySequence(
             'Ctrl+Shift+S'), trig=self.saveNoteAs)
         self.actionHtml = self.act(
             self.tr('to &HTML'), trig=self.notesEdit.saveAsHtml)
         self.actionPrint = self.act(self.tr(
-            '&Print'), shct=QKeySequence('Ctrl+P'), trig=self.printNote)
+            '&Print'), QKeySequence('Ctrl+P'), trig=self.printNote)
         self.actionRenamePage = self.act(self.tr(
-            '&Rename Page...'), shct=QKeySequence('F2'), trig=self.notesTree.renamePageWrapper)
+            '&Rename Page...'), QKeySequence('F2'), trig=self.notesTree.renamePageWrapper)
         self.actionDelPage = self.act(self.tr(
-            '&Delete Page'), shct=QKeySequence('Delete'), trig=self.notesTree.delPageWrapper)
-        self.actionQuit = self.act(self.tr('&Quit'), shct=QKeySequence.Quit)
-        self.connect(
-            self.actionQuit, SIGNAL('triggered()'), self, SLOT('close()'))
+            '&Delete Page'), QKeySequence('Delete'), trig=self.notesTree.delPageWrapper)
+        #self.actionQuit = self.act(self.tr('&Quit'), QKeySequence.Quit)
+        #self.connect(
+        #    self.actionQuit, SIGNAL('triggered()'), self, SLOT('close()'))
+        self.actionQuit = self.act(self.tr('&Quit'), QKeySequence.Quit, SLOT('close()'))
         self.actionQuit.setMenuRole(QAction.QuitRole)
         # actions in menuEdit
-        self.actionUndo = self.act(self.tr('&Undo'), shct=QKeySequence.Undo,
+        self.actionUndo = self.act(self.tr('&Undo'), QKeySequence.Undo,
                                    trig=lambda: self.notesEdit.undo())
         self.actionUndo.setEnabled(False)
         self.notesEdit.undoAvailable.connect(self.actionUndo.setEnabled)
-        self.actionRedo = self.act(self.tr('&Redo'), shct=QKeySequence.Redo,
+        self.actionRedo = self.act(self.tr('&Redo'), QKeySequence.Redo,
                                    trig=lambda: self.notesEdit.redo())
         self.actionRedo.setEnabled(False)
         self.notesEdit.redoAvailable.connect(self.actionRedo.setEnabled)
-        self.actionFindText = self.act(
-            self.tr('&Find Text'), shct=QKeySequence.Find)
-        self.actionFindText.setCheckable(True)
-        self.actionFindText.triggered.connect(self.findBar.setVisible)
+        self.actionFindText = self.act(self.tr('&Find Text'), QKeySequence.Find,
+            self.findBar.setVisible, True)
         self.actionFind = self.act(
-            self.tr('Next'), shct=QKeySequence.FindNext, trig=self.findText)
+            self.tr('Next'), QKeySequence.FindNext, trig=self.findText)
         self.actionFindPrev = self.act(
-            self.tr('Previous'), shct=QKeySequence.FindPrevious,
+            self.tr('Previous'), QKeySequence.FindPrevious,
             trig=lambda: self.findText(back=True))
         self.actionSortLines = self.act(
             self.tr('&Sort Lines'), trig=self.sortLines)
         self.actionInsertImage = self.act(
-            self.tr('&Insert Image'), shct=QKeySequence('Ctrl+I'), trig=self.insertImage)
+            self.tr('&Insert Image'), QKeySequence('Ctrl+I'), trig=self.insertImage)
         self.actionInsertImage.setEnabled(False)
+
         # actions in menuView
-        self.actionEdit = self.act(
-            self.tr('Edit'), shct=QKeySequence('Ctrl+E'), trigbool=self.edit)
-        self.actionLiveView = self.act(self.tr(
-            'Live Edit'), shct=QKeySequence('Ctrl+R'), trigbool=self.liveView)
+        self.actionEdit = self.act(self.tr('Edit'), QKeySequence('Ctrl+E'),
+            self.edit, True, ":/icons/edit.svg", "Edit mode (Ctrl+E)")
+        self.actionSplit = self.act(self.tr('Split'), QKeySequence('Ctrl+R'),
+            self.liveView, True, ":/icons/split.svg", "Split mode (Ctrl+R)")
         self.actionFlipEditAndView = self.act(
             self.tr('Flip Edit and View'), trig=self.flipEditAndView)
         self.actionFlipEditAndView.setEnabled(False)
@@ -209,11 +210,11 @@ class MikiWindow(QMainWindow):
         self.actionUpAndDown = self.act(
             self.tr('Split into Up and Down'), trig=self.upAndDown)
         self.actionToggleIndex = self.act(
-            self.tr('Index tab'), trigbool=self.toggleIndex)
+            self.tr('Index tab'), None, self.toggleIndex, True)
         self.actionToggleSearch = self.act(
-            self.tr('Search tab'), trigbool=self.toggleSearch)
+            self.tr('Search tab'), None, self.toggleSearch, True)
         self.actionToggleToc = self.act(
-            self.tr('TOC tab'), trigbool=self.toggleToc)
+            self.tr('TOC tab'), None, self.toggleToc, True)
         # self.actionLeftAndRight.setEnabled(False)
         # self.actionUpAndDown.setEnabled(False)
         # actions in menuHelp
@@ -250,7 +251,7 @@ class MikiWindow(QMainWindow):
         self.menuEdit.addAction(self.actionInsertImage)
         # menuView
         self.menuView.addAction(self.actionEdit)
-        self.menuView.addAction(self.actionLiveView)
+        self.menuView.addAction(self.actionSplit)
         self.menuView.addAction(self.actionFlipEditAndView)
         self.menuMode = self.menuView.addMenu(self.tr('Mode'))
         self.menuMode.addAction(self.actionLeftAndRight)
@@ -263,10 +264,12 @@ class MikiWindow(QMainWindow):
         self.menuHelp.addAction(self.actionReadme)
 
         self.toolBar = QToolBar(self.tr("toolbar"), self)
-        self.toolBar.setObjectName("toolbar")
+        self.toolBar.setObjectName("toolbar")       # needed in saveState()
+        self.toolBar.setIconSize(QSize(16, 16))
+        self.toolBar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self.addToolBar(Qt.TopToolBarArea, self.toolBar)
         self.toolBar.addAction(self.actionEdit)
-        self.toolBar.addAction(self.actionLiveView)
+        self.toolBar.addAction(self.actionSplit)
         self.findEdit = QLineEdit(self.findBar)
         self.findEdit.returnPressed.connect(self.findText)
         self.checkBox = QCheckBox(self.tr('Match case'), self.findBar)
@@ -497,26 +500,26 @@ class MikiWindow(QMainWindow):
         if dialog.exec_():
             pass
 
-    # def act(self, name, icon=None, trig=None, trigbool=None, shct=None):
-    def act(self, name, shct=None, trig=None, trigbool=None, icon=None):
+    def act(self, name, shortcut=None, trig=None, checkable=False, 
+            icon=None, tooltip=None):
+        """ A wrapper to several QAction methods """
         if icon:
-            action = QAction(self.actIcon(icon), name, self)
+            action = QAction(QIcon(icon), name, self)
         else:
             action = QAction(name, self)
-        if trig:
-            self.connect(action, SIGNAL('triggered()'), trig)
-        elif trigbool:
-            action.setCheckable(True)
-            self.connect(action, SIGNAL('triggered(bool)'), trigbool)
-        if shct:
-            action.setShortcut(shct)
+        if shortcut:
+            action.setShortcut(shortcut)
+        action.setCheckable(checkable)
+        if tooltip:
+            action.setToolTip(tooltip)
+        self.connect(action, SIGNAL('triggered(bool)'), trig)
         return action
 
     def edit(self, viewmode):
         """ Switch between EDIT and VIEW mode. """
 
-        if self.actionLiveView.isChecked():
-            self.actionLiveView.setChecked(False)
+        if self.actionSplit.isChecked():
+            self.actionSplit.setChecked(False)
         self.notesView.setVisible(not viewmode)
         self.notesEdit.setVisible(viewmode)
         
@@ -539,7 +542,7 @@ class MikiWindow(QMainWindow):
     def liveView(self, viewmode):
         """ Switch between VIEW and LIVE VIEW mode. """
 
-        self.actionLiveView.setChecked(viewmode)
+        self.actionSplit.setChecked(viewmode)
         sizes = self.noteSplitter.sizes()
         if self.actionEdit.isChecked():
             self.actionEdit.setChecked(False)
@@ -704,16 +707,12 @@ class MikiWindow(QMainWindow):
         # Check notes exists.
         viewedNotes = self.settings.recentViewedNotes()
         existedNotes = []
-        # i = 0
         for f in viewedNotes:
-            #if self.existsNote(f):
             if self.notesTree.exists(f):
                 existedNotes.append(f)
                 splitName = f.split('/')
                 self.viewedListActions.append(
-                    self.act(splitName[-1], trigbool=self.openFunction(f)))
-                    #self.act(str(i) + '.' + splitName[-1], trigbool=self.openFunction(f)))
-                # i += 1
+                    self.act(splitName[-1], None, self.openFunction(f), True))
                 
         self.settings.updateRecentViewedNotes(existedNotes)
         for action in self.viewedListActions:

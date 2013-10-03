@@ -1,0 +1,8 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+<qresource>
+    <file>icons/mikidown.svg</file>
+    <file>icons/edit.svg</file>
+    <file>icons/split.svg</file>
+</qresource>
+</RCC>

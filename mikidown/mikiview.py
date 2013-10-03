@@ -88,6 +88,6 @@ class MikiView(QWebView):
         viewFrame.setScrollPosition(self.scrollPosition)
 
     def updateLiveView(self):
-        if self.parent.actionLiveView.isChecked():
+        if self.parent.actionSplit.isChecked():
             QTimer.singleShot(1000, self.updateView)
 
