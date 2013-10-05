@@ -40,7 +40,7 @@ class MikiView(QWebView):
         self.load(qurl)
         name = name.replace('file://', '')
         name = name.replace(self.notebookPath, '').split('#')
-        item = self.parent.notesTree.pagePathToItem(name[0])
+        item = self.parent.notesTree.pageToItem(name[0])
         if not item or item == self.parent.notesTree.currentItem():
             return
         else:
@@ -58,7 +58,7 @@ class MikiView(QWebView):
         '''
         # TODO: link to page by: /parent/child/pageName#anchor
         if link == '':                              # not hovered
-            self.parent.statusBar.showMessage(self.parent.notesTree.currentItemName())
+            self.parent.statusBar.showMessage(self.parent.notesTree.currentPage())
         else:                                       # beautify link
             link = link.replace('file://', '')
             link = link.replace(self.notebookPath, '')

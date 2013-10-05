@@ -299,7 +299,7 @@ class MikiWindow(QMainWindow):
         self.updateRecentViewedNotes()
         notes = self.settings.recentViewedNotes()
         if len(notes) != 0:
-            item = self.notesTree.pagePathToItem(notes[0])
+            item = self.notesTree.pageToItem(notes[0])
             self.notesTree.setCurrentItem(item)
 
     def restore(self):
@@ -338,7 +338,7 @@ class MikiWindow(QMainWindow):
         ''' TOC is updated in `updateView`
             tocTree fields: [hdrText, hdrPosition, hdrAnchor]
         '''
-        root = self.notesTree.currentItemName()
+        root = self.notesTree.currentPage()
         self.tocTree.clear()
         item = QTreeWidgetItem(self.tocTree, [root, '0'])
         curLevel = 0
@@ -355,10 +355,6 @@ class MikiWindow(QMainWindow):
                 item = QTreeWidgetItem(item, val)
                 curLevel = ac
         self.tocTree.expandAll()
-
-    def openNote(self, noteFullName):
-        filename = self.notesTree.noteFullPath(noteFullName)
-        self.openFile(filename)
 
     def openFile(self, filename):
         fh = QFile(filename)
@@ -396,15 +392,15 @@ class MikiWindow(QMainWindow):
     def currentItemChangedWrapper(self, current, previous):
         if current is None:
             return
-        #if previous != None and self.notesTree.exists(previous):
-        prev = self.notesTree.itemToPagePath(previous)
-        if self.notesTree.exists(prev):
+        #if previous != None and self.notesTree.pageExists(previous):
+        prev = self.notesTree.itemToPage(previous)
+        if self.notesTree.pageExists(prev):
             self.saveNote(previous)
-            self.watcher.removePath(self.notesTree.noteFullPath(prev))
-        name = self.notesTree.itemToPagePath(current)
-        self.watcher.addPath(self.notesTree.noteFullPath(name))
-        self.openNote(name)
-        # name = self.notesTree.currentItemName()
+            self.watcher.removePath(self.notesTree.pageToFile(prev))
+
+        currentFile = self.notesTree.itemToFile(current)
+        self.watcher.addPath(currentFile)
+        self.openFile(currentFile)
 
     def tocNavigate(self, current, previous):
         ''' works for notesEdit now '''
@@ -435,7 +431,7 @@ class MikiWindow(QMainWindow):
             return
         pageName = item.text(0)
         filePath = os.path.join(self.notebookPath,
-                                self.notesTree.itemToPagePath(item) + self.settings.fileExt)
+                                self.notesTree.itemToPage(item) + self.settings.fileExt)
         self.notesEdit.save(pageName, filePath)
 
     def saveNoteAs(self):
@@ -468,7 +464,7 @@ class MikiWindow(QMainWindow):
     def modificationChanged(self, changed):
         """ Fired one time: modified or not """
         self.actionSave.setEnabled(changed)
-        name = self.notesTree.currentItemName()
+        name = self.notesTree.currentPage()
         self.statusBar.clearMessage()
         if changed:
             self.statusLabel.setText(name + '*')
@@ -502,7 +498,7 @@ class MikiWindow(QMainWindow):
         fh.close()
         QTreeWidgetItem(self.notesTree, [note.completeBaseName()])
         self.notesTree.sortItems(0, Qt.AscendingOrder)
-        item = self.notesTree.pagePathToItem(note.completeBaseName())
+        item = self.notesTree.pageToItem(note.completeBaseName())
         self.notesTree.setCurrentItem(item)
 
     def openNotebook(self):
@@ -673,8 +669,8 @@ class MikiWindow(QMainWindow):
         writer = self.ix.writer()
         while it.value():
             treeItem = it.value()
-            name = self.notesTree.itemToPagePath(treeItem)
-            path = os.path.join(self.notesTree.noteFullPath(name))
+            name = self.notesTree.itemToPage(treeItem)
+            path = os.path.join(self.notesTree.pageToFile(name))
             print(path)
             fileobj = open(path, 'r')
             content = fileobj.read()
@@ -693,7 +689,7 @@ class MikiWindow(QMainWindow):
 
     def setCurrentNote(self):
         item = self.notesTree.currentItem()
-        name = self.notesTree.itemToPagePath(item)
+        name = self.notesTree.itemToPage(item)
 
         # Current note is inserted to head of list.
         notes = self.settings.recentViewedNotes()
@@ -717,7 +713,7 @@ class MikiWindow(QMainWindow):
         viewedNotes = self.settings.recentViewedNotes()
         existedNotes = []
         for f in viewedNotes:
-            if self.notesTree.exists(f):
+            if self.notesTree.pageExists(f):
                 existedNotes.append(f)
                 splitName = f.split('/')
                 self.viewedListActions.append(
@@ -728,7 +724,7 @@ class MikiWindow(QMainWindow):
             self.viewedList.addAction(action)
 
     def openFunction(self, name):
-        item = self.notesTree.pagePathToItem(name)
+        item = self.notesTree.pageToItem(name)
         return lambda: self.notesTree.setCurrentItem(item)
 
     def toggleIndex(self, visible):

@@ -1,3 +1,10 @@
+"""
+
+Naming convention:
+    * item - the visual element in MikiTree
+    * page - denoted by item hierarchy e.g. `foo/bar` is a subpage of `foo`
+    * file - the actual file on disk
+"""
 import os
 import datetime
 
@@ -68,86 +75,68 @@ class MikiTree(QTreeWidget):
         # self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
 
-        self.customContextMenuRequested.connect(self.treeMenu)
+        self.customContextMenuRequested.connect(self.contextMenu)
         self.indexdir = os.path.join(self.notebookPath, self.settings.indexdir)
 
-    def itemToPagePath(self, item):
-        path = ''
+    def itemToPage(self, item):
+        """ get item hierarchy from item """
+
+        page = ''
         if not hasattr(item, 'text'):
-            return path
-        path = item.text(0)
+            return page
+        page = item.text(0)
         parent = item.parent()
         while parent is not None:
-            path = parent.text(0) + '/' + path
+            page = parent.text(0) + '/' + page
             parent = parent.parent()
-        return path
+        return page
 
-    def pagePathToItem(self, name):
-        if name[0] == '/':
-            name = name[1:len(name)]
-        if name[-1] == '/':
-            name = name[0:-1]
-        splitPath = name.split('/')
-        depth = len(splitPath)
-        # print(depth)
+    def pageToItem(self, page):
+        """ get item from item hierarchy """
+
+        # strip the beginning and ending '/' character
+        if page[0] == '/':
+            page = page[1:len(page)]
+        if page[-1] == '/':
+            page = page[0:-1]
+
+        # find all items named pieces[-1], then match the page name.
+        pieces = page.split('/')
         itemList = self.findItems(
-            splitPath[depth-1], Qt.MatchExactly|Qt.MatchRecursive)
+            pieces[-1], Qt.MatchExactly|Qt.MatchRecursive)
         if len(itemList) == 1:
-            # print(itemList[0].text(0))
             return itemList[0]
         for item in itemList:
-            path = self.itemToPagePath(item)
-            if name == path:
+            if page == self.itemToPage(item):
                 return item
-            '''
-            parent = item.parent()
-            for i in range(depth):
-                print(i)
-                if parent == None:
-                    if i == depth-1:
-                        return item
-                    else:
-                        continue
-                if depth-i-2 < 0:
-                    break
-                if parent.text(0) == splitPath[depth-i-2]:
-                    if depth-i-2 == 0:
-                        return item
-                    else:
-                        parent = parent.parent()
-            '''
 
-    def noteFullPath(self, noteFullName):
-        ''' FullPath = notebookPath + noteFullName + fileExt
-        fileExt is stored in notebook.conf 
-        '''
+    def itemToFile(self, item):
+        return self.pageToFile(self.itemToPage(item))
+
+    def pageToFile(self, page):
+        """ get filepath from page 
+            filepath = notebookPath + page + fileExt
+            fileExt is stored in notebook.conf 
+        """
+
+        # When exists foo.md, foo.mkd, foo.markdown, 
+        # the one with defExt will be returned
         extName = ['.md', '.mkd', '.markdown']
         defExt = self.settings.fileExt
         extName.remove(defExt)
         extName.insert(0, defExt)
         for ext in extName:
-            filename = os.path.join(self.notebookPath,
-                                    noteFullName + ext)
-            if QFile.exists(filename):
-                return filename
-
+            filepath = os.path.join(self.notebookPath, page + ext)
+            if QFile.exists(filepath):
+                return filepath
         return ""
 
-    def currentItemName(self):
-        item = self.currentItem()
-        return self.itemToPagePath(item)
+    def currentPage(self):
+        return self.itemToPage(self.currentItem())
 
-    def getPath(self, item):
-        path = ''
-        if not hasattr(item, 'text'):
-            return path
-        item = item.parent()
-        while item is not None:
-            path = item.text(0) + '/' + path
-            item = item.parent()
-        return path
+    def contextMenu(self):
+        """ contextMenu shown when right click the mouse """
 
-    def treeMenu(self):
         menu = QMenu()
         menu.addAction("New Page...", self.newPage)
         menu.addAction("New Subpage...", self.newSubpage)
@@ -180,7 +169,7 @@ class MikiTree(QTreeWidget):
         self.newPageCore(item, name)
 
     def newPageCore(self, item, newPageName):
-        pagePath = os.path.join(self.notebookPath, self.itemToPagePath(item))
+        pagePath = os.path.join(self.notebookPath, self.itemToPage(item))
         if not newPageName:
             dialog = ItemDialog(self)
             dialog.setPath(pagePath)
@@ -200,7 +189,7 @@ class MikiTree(QTreeWidget):
             savestream << 'Created ' + str(datetime.date.today()) + '\n\n'
             fh.close()
             QTreeWidgetItem(item, [newPageName])
-            newItem = self.pagePathToItem(pagePath + newPageName)
+            newItem = self.pageToItem(pagePath + newPageName)
             self.sortItems(0, Qt.AscendingOrder)
             self.setCurrentItem(newItem)
             if hasattr(item, 'text'):
@@ -217,12 +206,12 @@ class MikiTree(QTreeWidget):
 
     def dropEvent(self, event):
         sourceItem = self.currentItem()
-        sourcePath = self.itemToPagePath(sourceItem)
+        sourcePath = self.itemToPage(sourceItem)
         targetItem = self.itemAt(event.pos())
-        targetPath = self.itemToPagePath(targetItem)
+        targetPath = self.itemToPage(targetItem)
         if targetPath != '':
             targetPath = targetPath + '/'
-        oldName = self.noteFullPath(sourceItem.text(0))
+        oldName = self.pageToFile(sourceItem.text(0))
         newName = targetPath + sourceItem.text(0) + self.settings.fileExt
         oldDir = sourcePath
         newDir = targetPath + sourceItem.text(0)
@@ -240,7 +229,7 @@ class MikiTree(QTreeWidget):
             QDir(self.notebookPath).rename(oldDir, newDir)
         if sourceItem.parent() is not None:
             parentItem = sourceItem.parent()
-            parentPath = self.itemToPagePath(parentItem)
+            parentPath = self.itemToPage(parentItem)
             if parentItem.childCount() == 1:
                 QDir(self.notebookPath).rmdir(parentPath)
         QTreeWidget.dropEvent(self, event)
@@ -254,17 +243,16 @@ class MikiTree(QTreeWidget):
 
     def renamePage(self, item):
         parent = item.parent()
-        parentPath = self.itemToPagePath(parent)
+        parentPath = self.itemToPage(parent)
         dialog = ItemDialog(self)
         dialog.setPath(parentPath)
         dialog.setText(item.text(0))
         if dialog.exec_():
             newPageName = dialog.editor.text()
-            # pagePath = self.getPath(item)
             # if hasattr(item, 'text'):       # if item is not QTreeWidget
             if parentPath != '':
                 parentPath = parentPath + '/'
-            oldName = self.noteFullPath(item.text(0))
+            oldName = self.pageToFile(item.text(0))
             newName = parentPath + newPageName + self.settings.fileExt
             QDir(self.notebookPath).rename(oldName, newName)
             if item.childCount() != 0:
@@ -274,11 +262,8 @@ class MikiTree(QTreeWidget):
             item.setText(0, newPageName)
             self.sortItems(0, Qt.AscendingOrder)
 
-    def exists(self, noteFullName):
-        if self.noteFullPath(noteFullName) != "" :
-            return True
-        else:
-            return False
+    def pageExists(self, noteFullName):
+        return self.pageToFile(noteFullName) != ""
 
     def delPageWrapper(self):
         item = self.currentItem()
@@ -292,16 +277,16 @@ class MikiTree(QTreeWidget):
             self.dirname = item.child(index).text(0)
             self.delPage(item.child(index))
 
-        pagePath = self.itemToPagePath(item)
+        pagePath = self.itemToPage(item)
         self.ix = open_dir(self.indexdir)
         query = QueryParser('path', self.ix.schema).parse(pagePath)
         writer = self.ix.writer()
         n = writer.delete_by_query(query)
         # n = writer.delete_by_term('path', pagePath)
         writer.commit()
-        b = QDir(self.notebookPath).remove(self.noteFullPath(pagePath))
+        b = QDir(self.notebookPath).remove(self.pageToFile(pagePath))
         parent = item.parent()
-        parentPath = self.itemToPagePath(parent)
+        parentPath = self.itemToPage(parent)
         if parent is not None:
             index = parent.indexOfChild(item)
             parent.takeChild(index)

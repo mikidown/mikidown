@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import glob
 import os
@@ -21,8 +21,6 @@ class Monolithic(unittest.TestCase):
     def step0(self):
         print("\nStep 0: create notebook")
 
-        gconf = os.path.join(os.getcwd(), "test.conf")
-        gsettings = QSettings(gconf, QSettings.NativeFormat)
         path = os.path.join(os.getcwd(), "test_notebook")
         Mikibook.add("test", path)
         settings = Setting([["test", path]])
@@ -35,7 +33,7 @@ class Monolithic(unittest.TestCase):
         self.window.notesTree.newPage('pageOne')
         self.window.notesTree.newSubpage('subpageOne')
         
-        itemOne = self.window.notesTree.pagePathToItem('pageOne')
+        itemOne = self.window.notesTree.pageToItem('pageOne')
         self.window.notesTree.setCurrentItem(itemOne)
         self.window.notesTree.newPage('pageTwo')
 
@@ -78,10 +76,10 @@ class Monolithic(unittest.TestCase):
         print("\nStep 4: delPage")
 
         # This will delete both pageOne and subpageOne
-        item = self.window.notesTree.pagePathToItem('pageOne')
+        item = self.window.notesTree.pageToItem('pageOne')
         self.window.notesTree.delPage(item)
 
-        item = self.window.notesTree.pagePathToItem('pageTwo')
+        item = self.window.notesTree.pageToItem('pageTwo')
         self.window.notesTree.delPage(item)
 
     def step5(self):

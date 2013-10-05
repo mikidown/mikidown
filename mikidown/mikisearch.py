@@ -28,7 +28,7 @@ class MikiSearch(QWebView):
             Click link to open the note.
         """
         path = qurl.toString()
-        item = self.parent.notesTree.pagePathToItem(path)
+        item = self.parent.notesTree.pageToItem(path)
         if item:
             self.parent.notesTree.setCurrentItem(item)
 
