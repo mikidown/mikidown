@@ -26,6 +26,9 @@ class MikiWindow(QMainWindow):
         self.settings = settings
         self.notebookPath = settings.notebookPath
 
+        self.watcher = QFileSystemWatcher()
+        self.watcher.fileChanged.connect(self.refresh)
+
         self.resize(800, 600)
         screen = QDesktopWidget().screenGeometry()
         size = self.geometry()
@@ -355,7 +358,9 @@ class MikiWindow(QMainWindow):
 
     def openNote(self, noteFullName):
         filename = self.notesTree.noteFullPath(noteFullName)
-        print(filename)
+        self.openFile(filename)
+
+    def openFile(self, filename):
         fh = QFile(filename)
         try:
             if not fh.open(QIODevice.ReadOnly):
@@ -375,7 +380,12 @@ class MikiWindow(QMainWindow):
                 self.setCurrentNote()
                 self.updateRecentViewedNotes()
                 self.viewedListActions[0].setChecked(True)
-                self.statusLabel.setText(noteFullName)
+                #self.statusLabel.setText(noteFullName)
+                if not filename in self.watcher.files():
+                    self.watcher.addPath(filename)
+
+    def refresh(self, filepath):
+        QTimer.singleShot(500, lambda: self.openFile(filepath))
 
     def currentTabChanged(self, index):
         self.tabWidget.setCurrentIndex(index)
@@ -387,9 +397,12 @@ class MikiWindow(QMainWindow):
         if current is None:
             return
         #if previous != None and self.notesTree.exists(previous):
-        if self.notesTree.exists(self.notesTree.itemToPagePath(previous)):
+        prev = self.notesTree.itemToPagePath(previous)
+        if self.notesTree.exists(prev):
             self.saveNote(previous)
+            self.watcher.removePath(self.notesTree.noteFullPath(prev))
         name = self.notesTree.itemToPagePath(current)
+        self.watcher.addPath(self.notesTree.noteFullPath(name))
         self.openNote(name)
         # name = self.notesTree.currentItemName()
 
@@ -617,7 +630,6 @@ class MikiWindow(QMainWindow):
         self.notesEdit.insertPlainText(filename)
 
     def notesEditInFocus(self, e):
-        print('hello')
         if e.gotFocus:
             self.actionInsertImage.setEnabled(True)
         # if e.lostFocus:
