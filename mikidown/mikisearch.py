@@ -4,7 +4,7 @@ Search module
 Search results are displayed in a QWebView widget.
 """
 
-from PyQt4.QtCore import QUrl
+from PyQt4.QtCore import QSize, QUrl
 from PyQt4.QtGui import QCursor, QToolTip
 from PyQt4.QtWebKit import QWebView, QWebPage
 
@@ -52,3 +52,5 @@ class MikiSearch(QWebView):
             QToolTip.hideText()
         QWebView.mouseMoveEvent(self, event)
 
+    def sizeHint(self):
+        return QSize(200, 0)

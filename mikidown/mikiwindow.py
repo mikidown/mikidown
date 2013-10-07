@@ -79,7 +79,7 @@ class MikiWindow(QMainWindow):
         searchLayout.addWidget(self.searchEdit)
         searchLayout.addWidget(self.searchView)
         self.searchTab.setLayout(searchLayout)
-        self.tocTree = QTreeWidget()
+        self.tocTree = TocTree()
         self.tocTree.header().close()
         self.dockIndex = QDockWidget("Index")
         self.dockIndex.setObjectName("Index")

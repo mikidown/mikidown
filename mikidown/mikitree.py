@@ -301,6 +301,9 @@ class MikiTree(QTreeWidget):
             self.takeTopLevelItem(index)
         QDir(self.notebookPath).rmdir(pagePath)
 
+    def sizeHint(self):
+        return QSize(200, 0)
+
     def recurseCollapse(self, item):
         for i in range(item.childCount()):
             a_item = item.child(i)
@@ -312,3 +315,11 @@ class MikiTree(QTreeWidget):
         for i in range(item.childCount()):
             a_item = item.child(i)
             self.recurseExpand(a_item)
+
+class TocTree(QTreeWidget):
+
+    def __init__(self, parent=None):
+        super(TocTree, self).__init__(parent)
+
+    def sizeHint(self):
+        return QSize(200, 0)
