@@ -21,23 +21,23 @@ class Setting():
         self.notebookName = notebooks[0][0]
         self.notebookPath = notebooks[0][1]
         self.configfile = os.path.join(self.notebookPath, "notebook.conf")
-        
         self.qsettings = QSettings(self.configfile, QSettings.NativeFormat)
-        self.geometry = self.qsettings.value("geometry")
-        self.windowstate = self.qsettings.value("windowstate")
 
         if os.path.exists(self.configfile):
             self.extensions = readListFromSettings(self.qsettings,
-                                                      "extensions")
+                                                   "extensions")
             self.fileExt = self.qsettings.value("fileExt")
+            self.geometry = self.qsettings.value("geometry")
+            self.windowstate = self.qsettings.value("windowstate")
         else:
             self.extensions = []
-            self.fileExt = ".md"
-            self.qsettings.setValue("fileExt", self.fileExt)
+            self.fileExt = ""
+            self.geometry = None
+            self.windowstate = None
 
+        # Default enabled python-markdown extensions.
+        # http://pythonhosted.org/Markdown/extensions/index.html
         if not self.extensions:
-            # Default enabled python-markdown extensions.
-            # http://pythonhosted.org/Markdown/extensions/index.html
             self.extensions = [
                    'nl2br'           # newline to break
                  , 'strkundr'        # bold-italics-underline-delete style
@@ -48,6 +48,11 @@ class Setting():
                  , 'footnotes'
                  ]
             writeListToSettings(self.qsettings, "extensions", self.extensions)
+
+        # Default file extension name
+        if not self.fileExt:
+            self.fileExt = ".md"
+            self.qsettings.setValue("fileExt", self.fileExt)
 
     def saveGeometry(self, geometry):
         self.qsettings.setValue("geometry", geometry)

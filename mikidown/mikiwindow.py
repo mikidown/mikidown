@@ -306,6 +306,7 @@ class MikiWindow(QMainWindow):
         """ Restore saved geometry and state.
             Set the status of side panels in View Menu correspondently.
         """
+        #if hasattr(self.settings, "geometry"):
         if self.settings.geometry:
             self.restoreGeometry(self.settings.geometry)
         if self.settings.windowstate:
@@ -778,6 +779,4 @@ class MikiWindow(QMainWindow):
         self.saveCurrentNote()
         self.settings.saveGeometry(self.saveGeometry())
         self.settings.saveWindowState(self.saveState())
-        #self.settings.setValue("geometry", self.saveGeometry())
-        #self.settings.setValue("windowstate", self.saveState())
         event.accept()

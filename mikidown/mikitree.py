@@ -123,7 +123,11 @@ class MikiTree(QTreeWidget):
         # the one with defExt will be returned
         extName = ['.md', '.mkd', '.markdown']
         defExt = self.settings.fileExt
-        extName.remove(defExt)
+        if defExt in extName:
+            extName.remove(defExt)
+        else:
+            print("Warning: detected file extension name is", defExt)
+            print("    Your config file is located in", self.notebookPath + "/notebook.conf")
         extName.insert(0, defExt)
         for ext in extName:
             filepath = os.path.join(self.notebookPath, page + ext)
