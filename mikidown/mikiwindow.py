@@ -54,7 +54,6 @@ class MikiWindow(QMainWindow):
         else:
             self.ix = open_dir(indexdir)
         
-        self.tabWidget = QTabWidget()
         self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
         self.viewedList.setFixedHeight(25)
         self.notesEdit = MikiEdit(self)
@@ -65,18 +64,12 @@ class MikiWindow(QMainWindow):
         self.noteSplitter = QSplitter(Qt.Horizontal)
         self.noteSplitter.addWidget(self.notesEdit)
         self.noteSplitter.addWidget(self.notesView)
-        self.rightSplitter = QSplitter(Qt.Vertical)
-        self.rightSplitter.setChildrenCollapsible(False)
-        self.rightSplitter.addWidget(self.viewedList)
-        self.rightSplitter.addWidget(self.noteSplitter)
-        self.rightSplitter.addWidget(self.findBar)
-        self.mainSplitter = QSplitter(Qt.Horizontal)
-        self.mainSplitter.addWidget(self.tabWidget)
-        self.mainSplitter.addWidget(self.rightSplitter)
-        #self.setCentralWidget(self.mainSplitter)
-        self.setCentralWidget(self.rightSplitter)
-        self.mainSplitter.setStretchFactor(0, 1)
-        self.mainSplitter.setStretchFactor(1, 5)
+        self.mainSplitter = QSplitter(Qt.Vertical)
+        self.mainSplitter.setChildrenCollapsible(False)
+        self.mainSplitter.addWidget(self.viewedList)
+        self.mainSplitter.addWidget(self.noteSplitter)
+        self.mainSplitter.addWidget(self.findBar)
+        self.setCentralWidget(self.mainSplitter)
 
         self.searchEdit = QLineEdit()
         self.searchEdit.returnPressed.connect(self.searchNote)
@@ -97,6 +90,7 @@ class MikiWindow(QMainWindow):
         self.dockIndex.setWidget(self.notesTree)
         self.dockSearch.setWidget(self.searchTab)
         self.dockToc.setWidget(self.tocTree)
+        self.setDockOptions(QMainWindow.VerticalTabs)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.dockIndex)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.dockSearch)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.dockToc)
@@ -104,22 +98,16 @@ class MikiWindow(QMainWindow):
         self.tabifyDockWidget(self.dockSearch, self.dockToc)
         self.setTabPosition(Qt.LeftDockWidgetArea, QTabWidget.North)
         self.dockIndex.raise_()      # Put dockIndex on top of the tab stack
-        # left pane
-        #self.tabWidget.addTab(self.notesTree, 'Index')
-        #self.tabWidget.addTab(self.searchTab, 'Search')
-        #self.tabWidget.addTab(self.tocTree, 'TOC')
-        #self.tabWidget.setMinimumWidth(200)
-        # self.rightSplitter.setSizes([600,20,600,580])
-        self.rightSplitter.setStretchFactor(0, 0)
+        #self.mainSplitter.setSizes([600,20,600,580])
+        self.mainSplitter.setStretchFactor(0, 0)
 
         # Global Actions
         actTabIndex = self.act(self.tr('Switch to Index Tab'),
                                QKeySequence('Ctrl+Shift+I'),
-                               lambda: self.tabWidget.setCurrentWidget(self.notesTree))
+                               lambda: self.raiseDock(self.dockIndex))
         actTabSearch = self.act(self.tr('Switch to Search Tab'),
                                 QKeySequence('Ctrl+Shift+F'),
-                                lambda: self.currentTabChanged(1))
-                                # lambda:self.tabWidget.setCurrentWidget(self.searchTab)
+                               lambda: self.raiseDock(self.dockSearch))
         self.addAction(actTabIndex)
         self.addAction(actTabSearch)
         
@@ -210,12 +198,6 @@ class MikiWindow(QMainWindow):
             self.tr('Split into Left and Right'), trig=self.leftAndRight)
         self.actionUpAndDown = self.act(
             self.tr('Split into Up and Down'), trig=self.upAndDown)
-        self.actionToggleIndex = self.act(
-            self.tr('Index tab'), None, self.toggleIndex, True)
-        self.actionToggleSearch = self.act(
-            self.tr('Search tab'), None, self.toggleSearch, True)
-        self.actionToggleToc = self.act(
-            self.tr('TOC tab'), None, self.toggleToc, True)
         # self.actionLeftAndRight.setEnabled(False)
         # self.actionUpAndDown.setEnabled(False)
         # actions in menuHelp
@@ -257,10 +239,6 @@ class MikiWindow(QMainWindow):
         self.menuMode = self.menuView.addMenu(self.tr('Mode'))
         self.menuMode.addAction(self.actionLeftAndRight)
         self.menuMode.addAction(self.actionUpAndDown)
-        self.menuPanel = self.menuView.addMenu(self.tr('Side Panel'))
-        self.menuPanel.addAction(self.actionToggleIndex)
-        self.menuPanel.addAction(self.actionToggleSearch)
-        self.menuPanel.addAction(self.actionToggleToc)
         # menuHelp
         self.menuHelp.addAction(self.actionReadme)
 
@@ -286,8 +264,6 @@ class MikiWindow(QMainWindow):
         self.statusLabel = QLabel(self)
         self.statusBar.addWidget(self.statusLabel, 1)
 
-        self.tabWidget.currentChanged.connect(self.currentTabChanged)
-
         self.notesTree.currentItemChanged.connect(
             self.currentItemChangedWrapper)
         self.tocTree.currentItemChanged.connect(self.tocNavigate)
@@ -306,17 +282,10 @@ class MikiWindow(QMainWindow):
         """ Restore saved geometry and state.
             Set the status of side panels in View Menu correspondently.
         """
-        #if hasattr(self.settings, "geometry"):
         if self.settings.geometry:
             self.restoreGeometry(self.settings.geometry)
         if self.settings.windowstate:
             self.restoreState(self.settings.windowstate)
-        self.actionToggleIndex.setChecked(
-            self.dockIndex.isVisible())
-        self.actionToggleSearch.setChecked(
-            self.dockSearch.isVisible())
-        self.actionToggleToc.setChecked(
-            self.dockToc.isVisible())
 
     def initTree(self, notebookPath, parent):
         ''' When there exist foo.md, foo.mkd, foo.markdown, 
@@ -383,12 +352,6 @@ class MikiWindow(QMainWindow):
 
     def refresh(self, filepath):
         QTimer.singleShot(500, lambda: self.openFile(filepath))
-
-    def currentTabChanged(self, index):
-        self.tabWidget.setCurrentIndex(index)
-        if index == 1:
-            self.searchEdit.setFocus()
-            self.searchEdit.selectAll()
 
     def currentItemChangedWrapper(self, current, previous):
         if current is None:
@@ -728,23 +691,12 @@ class MikiWindow(QMainWindow):
         item = self.notesTree.pageToItem(name)
         return lambda: self.notesTree.setCurrentItem(item)
 
-    def toggleIndex(self, visible):
-        self.actionToggleIndex.setChecked(visible)
-        self.toggleTab(self.dockIndex, visible)
-
-    def toggleSearch(self, visible):
-        self.actionToggleSearch.setChecked(visible)
-        self.toggleTab(self.dockSearch, visible)
-
-    def toggleToc(self, visible):
-        self.actionToggleToc.setChecked(visible)
-        self.toggleTab(self.dockToc, visible)
-
-    def toggleTab(self, tab, visible):
-        if tab.isVisible():
-            tab.hide()
-        else:
-            tab.show()
+    def raiseDock(self, widget):
+        if not widget.isVisible():
+            widget.show()
+        if widget == self.dockSearch:
+            self.searchEdit.setFocus()
+        widget.raise_()
 
     def flipEditAndView(self):
         index = self.noteSplitter.indexOf(self.notesEdit)
