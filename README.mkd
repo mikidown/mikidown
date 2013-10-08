@@ -32,7 +32,7 @@ Run mikidown without installing
 
 ## Beautiful notes powered by markdown
 
-In case you are unfamiliar with markdown, you can use this file ( **Help->README** ) as a simple reference to basic markdown syntax. However, I suggest you take a look at the complete [Markdown Syntax].
+In case you are unfamiliar with markdown, you can use this file (**Help->README**) as a simple reference to basic markdown syntax. However, I suggest you take a look at the complete [Markdown Syntax].
 
 ### Markdown extension
 
@@ -43,25 +43,21 @@ All python-markdown [extensions] are supported. To enable/disable extension, edi
 
 ### Mikidown Specific Syntax
 
-1.  page cross link, all of the three will do 
+1.  page cross link
+    - `[text](/parentNode/childNode/pageName)`
+    - `[text](/parentNode/childNode/pageName#anchor)`
 
-    `[text](/parentNode/childNode/pageName)`
-    `[text](/parentNode/childNode/pageName#anchor)`
 
+2.  absolute and relative image path 
+    - `![text](file:///home/user/pic.png)` 
+    - `![text](pic.png)`     # path relative to notebook folder
+    - `Ctrl + I` or **Edit -> Insert Image** will bring up an **insert image** dialog.
 
-2.  mikidown support both absolute and relative image path 
-
-    `![text](file:///home/user/pic.png)` 
-    `![text](pic.png)`     # path relative to notebook folder
-
-    `Ctrl + I` or **Edit -> Insert Image** will bring up an **insert image** dialog.
-
-3.  ins/del/bold/italics (better view in mikidown)
-
-    - `~~delete~~`  will yield ~~delete~~
-    - `__insert__` will yield __insert__
-    - `**strong**` will yield **strong**
-    - `//emphasis//` will yield //emphasis//
+3.  ins/del/bold/italics
+    - `~~delete~~`  will yield <del>delete</del>
+    - `__insert__` will yield <ins>insert</ins>
+    - `**strong**` will yield <strong>strong</strong>
+    - `//emphasis//` will yield <em>emphasis</em>
 
 ## Contributor
 
