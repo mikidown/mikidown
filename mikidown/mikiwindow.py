@@ -312,18 +312,16 @@ class MikiWindow(QMainWindow):
         self.tocTree.clear()
         item = QTreeWidgetItem(self.tocTree, [root, '0'])
         curLevel = 0
-        for (l, h, p, a) in parseHeaders(self.notesEdit.toPlainText()):
-            ac = len(l)             # hdrLevel is the number of asterisk
-            # print("curLevel: %d, ac: %d" % (curLevel, ac))
+        for (level, h, p, a) in parseHeaders(self.notesEdit.toPlainText()):
             val = [h, str(p), a]
-            if ac == curLevel:
+            if level == curLevel:
                 item = QTreeWidgetItem(item.parent(), val)
-            elif ac < curLevel:
+            elif level < curLevel:
                 item = QTreeWidgetItem(item.parent().parent(), val)
-                curLevel = ac
+                curLevel = level
             else:
                 item = QTreeWidgetItem(item, val)
-                curLevel = ac
+                curLevel = level
         self.tocTree.expandAll()
 
     def openFile(self, filename):
