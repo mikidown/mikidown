@@ -13,8 +13,8 @@ class Setting():
 
         # Index directory of whoosh, located in notebookPath.
         self.schema = fields.Schema(
-            path = fields.ID(stored=True, unique=True, spelling=True), 
-            title = fields.KEYWORD(stored=True, scorable=True),
+            path = fields.TEXT(stored=True), 
+            title = fields.TEXT(stored=True),
             content = fields.TEXT(stored=True))
         self.indexdir = ".indexdir"
 

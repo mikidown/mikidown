@@ -5,7 +5,6 @@ import markdown
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtWebKit import QWebView, QWebPage
-from whoosh import sorting
 from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser, RegexPlugin
 
@@ -596,33 +595,43 @@ class MikiWindow(QMainWindow):
         # QWidget.focusInEvent(self,f)
 
     def searchNote(self):
+        """ Sorting criteria: "title > path > content"
+            Search matches are organized into html source.
+        """
+
         pattern = self.searchEdit.text()
-        qres = []
+        if not pattern:
+            return
+        results = []
+
         with self.ix.searcher() as searcher:
-            queryp = QueryParser("content", self.ix.schema)
-            queryp.add_plugin(RegexPlugin())
-            query = queryp.parse('r"' + pattern + '"')
-                                 # r"pattern" is the desired regex term format
-            pathFacet = sorting.FieldFacet("path")
-            scores = sorting.ScoreFacet()
-            results = searcher.search(
-                query, limit=None, sortedby=[pathFacet, scores])  # default limit is 10!
-            for r in results:
-                listItem = QListWidgetItem()
+            matches = []
+            for f in ["title", "path", "content"]:
+                queryp = QueryParser(f, self.ix.schema)
+                queryp.add_plugin(RegexPlugin())
+                # r"pattern" is the desired regex term format
+                query = queryp.parse('r"' + pattern + '"')
+                ms = searcher.search(query, limit=None) # default limit is 10!
+                for m in ms:
+                    if not m in matches:
+                        matches.append(m)
+
+            for r in matches:
                 title = r['title']
-                text = r['path']
+                path = r['path']
                 term = r.highlights("content")
-                qres.append([title, text, term])
+                results.append([title, path, term])
+
             html = """
                     <style>
                         body { font-size: 14px; }
                         .path { font-size: 12px; color: #009933; }
                     </style>
                    """
-            for ti, te, hi in qres:
-                html += ("<p><a href='" + te + "'>" + ti + 
+            for title, path, hi in results:
+                html += ("<p><a href='" + path + "'>" + title + 
                          "</a><br/><span class='path'>" + 
-                        te + "</span><br/>" + hi + "</p>")
+                         path + "</span><br/>" + hi + "</p>")
             self.searchView.setHtml(html)
 
     def whoosh_index(self):
