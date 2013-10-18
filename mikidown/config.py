@@ -5,7 +5,7 @@ from whoosh import fields
 
 
 __appname__ = 'mikidown'
-__version__ = '0.2.3'
+__version__ = '0.2.4'
 
 class Setting():
 
