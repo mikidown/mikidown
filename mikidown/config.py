@@ -33,7 +33,10 @@ class Setting():
             self.fileExt = self.qsettings.value("fileExt")
             self.geometry = self.qsettings.value("geometry")
             self.windowstate = self.qsettings.value("windowstate")
+            self.autoSaveHtml = self.qsettings.value("autoSaveHtml") in ["1", "true", "yes", "True", "Yes"]
         else:
+            self.autoSaveHtml = False
+            self.qsettings.setValue("autoSaveHtml", False)
             self.extensions = []
             self.fileExt = ""
             self.geometry = None
