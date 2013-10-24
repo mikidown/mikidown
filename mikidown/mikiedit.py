@@ -1,6 +1,6 @@
 import os
 from multiprocessing import Process
-from PyQt4.QtCore import QDir, QFile, QFileInfo, QTextStream, QIODevice
+from PyQt4.QtCore import QDir, QFile, QFileInfo, QTextStream, QIODevice, QMimeData
 from PyQt4.QtGui import QTextEdit, QFileDialog, QMessageBox
 import markdown
 from whoosh.index import open_dir
@@ -27,6 +27,39 @@ class MikiEdit(QTextEdit):
             writer.update_document(
                 path=path, title=parseTitle(content, path), content=content)
             writer.commit()
+
+    def insertFromMimeData(self, source):
+        if source.hasImage():
+            print ("We have an image ...")
+        elif source.hasUrls():
+            for qurl in source.urls():
+                if qurl.isLocalFile():
+                    fullPath = qurl.toLocalFile()
+                    filename, extension = os.path.splitext(fullPath)
+                    filename = os.path.basename(filename)
+                    # TODO: copy the refference file
+                    if extension.lower() in (".jpg", ".jpeg", ".png", ".gif"):
+                        toInsert = "![%s](%s)" % (filename, fullPath)
+                    else:
+                        toInsert = "[%s%s](%s)\n" % (filename, extension, fullPath)
+                    super(MikiEdit, self).insertFromMimeData(self._mimeFromText(toInsert))
+                else:
+                    super(MikiEdit, self).insertFromMimeData(
+                            self._mimeFromText(
+                                "[Broken Link](Remote content not yet supported)")
+                    )
+        elif source.hasHtml():
+            # QT will process this HTML and not add it verbatim to the editor 
+            html = source.html()
+            # TODO: can we do some reversing on the pasted html ?
+            super(MikiEdit, self).insertFromMimeData(self._mimeFromText(html))
+        else:
+            super(MikiEdit, self).insertFromMimeData(source)
+
+    def _mimeFromText(self, text):
+        mime =  QMimeData()
+        mime.setText(text)
+        return mime
 
     def save(self, pageName, filePath):
         fh = QFile(filePath)
