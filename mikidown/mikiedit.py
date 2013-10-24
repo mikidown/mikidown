@@ -36,6 +36,7 @@ class MikiEdit(QTextEdit):
         except IOError as e:
             QMessageBox.warning(self, 'Save Error',
                                 'Failed to save %s: %s' % (pageName, e))
+            raise
         finally:
             if fh is not None:
                 savestream = QTextStream(fh)
@@ -46,6 +47,14 @@ class MikiEdit(QTextEdit):
                 p = Process(target=self.updateIndex, args=(
                     pageName, self.toPlainText(),))
                 p.start()
+        if self.settings.autoSaveHtml:
+            try:
+                filename, ext = os.path.splitext(filePath)
+                self.saveAsHtml("%s.html" % filename)
+            except IOError as e:
+                QMessageBox.warning(self, 'Save Error',
+                        'Failed to save %s: %s' % (pageName, e))
+                raise
 
     def toHtml(self):
         '''markdown.Markdown.convert v.s. markdown.markdown
@@ -56,10 +65,11 @@ class MikiEdit(QTextEdit):
         # md = markdown.Markdown(extensions)
         # return md.convert(htmltext)
 
-    def saveAsHtml(self):
+    def saveAsHtml(self, fileName = None):
         """ Export current note as html file
         """
-        fileName = QFileDialog.getSaveFileName(self, self.tr('Export to HTML'),
+        if not fileName:
+            fileName = QFileDialog.getSaveFileName(self, self.tr('Export to HTML'),
                                                '', '(*.html *.htm);;'+self.tr('All files(*)'))
         if fileName == '':
             return
