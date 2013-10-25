@@ -134,6 +134,11 @@ class MikiTree(QTreeWidget):
             if QFile.exists(filepath):
                 return filepath
         return ""
+    
+    def itemToHtmlFile(self, item):
+        """ The corresponding html file path """
+        page = self.itemToPage(item)
+        return os.path.join(self.settings.htmlPath, page + ".html")
 
     def currentPage(self):
         return self.itemToPage(self.currentItem())

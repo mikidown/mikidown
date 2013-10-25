@@ -13,6 +13,7 @@ class MikiEdit(QTextEdit):
 
     def __init__(self, parent=None):
         super(MikiEdit, self).__init__(parent)
+        self.parent = parent
         self.settings = parent.settings
         self.setFontPointSize(12)
         self.setTabStopWidth(4)
@@ -28,7 +29,11 @@ class MikiEdit(QTextEdit):
                 path=path, title=parseTitle(content, path), content=content)
             writer.commit()
 
-    def save(self, pageName, filePath):
+    def save(self, item):
+        pageName = self.parent.notesTree.itemToPage(item)
+        filePath = self.parent.notesTree.itemToFile(item)
+        htmlFile = self.parent.notesTree.itemToHtmlFile(item)
+
         fh = QFile(filePath)
         try:
             if not fh.open(QIODevice.WriteOnly):
@@ -47,13 +52,13 @@ class MikiEdit(QTextEdit):
                 p = Process(target=self.updateIndex, args=(
                     pageName, self.toPlainText(),))
                 p.start()
+
         if self.settings.autoSaveHtml:
             try:
-                filename, ext = os.path.splitext(filePath)
-                self.saveAsHtml("%s.html" % filename)
+                self.saveAsHtml(htmlFile)
             except IOError as e:
                 QMessageBox.warning(self, 'Save Error',
-                        'Failed to save %s: %s' % (pageName, e))
+                        'Failed to saveHtml %s: %s' % (pageName, e))
                 raise
 
     def toHtml(self):
@@ -65,17 +70,20 @@ class MikiEdit(QTextEdit):
         # md = markdown.Markdown(extensions)
         # return md.convert(htmltext)
 
-    def saveAsHtml(self, fileName = None):
+    def saveAsHtml(self, htmlFile = None):
         """ Export current note as html file
         """
-        if not fileName:
-            fileName = QFileDialog.getSaveFileName(self, self.tr('Export to HTML'),
+        if not htmlFile:
+            htmlFile = QFileDialog.getSaveFileName(self, self.tr('Export to HTML'),
                                                '', '(*.html *.htm);;'+self.tr('All files(*)'))
-        if fileName == '':
+        if htmlFile == '':
             return
-        if not QFileInfo(fileName).suffix():
-            fileName += '.html'
-        html = QFile(fileName)
+        if not QFileInfo(htmlFile).suffix():
+            htmlFile += '.html'
+        fileDir = os.path.dirname(htmlFile)
+        QDir().mkpath(fileDir)
+
+        html = QFile(htmlFile)
         html.open(QIODevice.WriteOnly)
         savestream = QTextStream(html)
         css = QFile(self.settings.cssfile)

@@ -390,10 +390,7 @@ class MikiWindow(QMainWindow):
             self.notesEdit.document().setModified(False)
         else:
             return
-        pageName = item.text(0)
-        filePath = os.path.join(self.notePath,
-                                self.notesTree.itemToPage(item) + self.settings.fileExt)
-        self.notesEdit.save(pageName, filePath)
+        self.notesEdit.save(item)
 
     def saveNoteAs(self):
         self.saveCurrentNote()

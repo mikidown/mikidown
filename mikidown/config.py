@@ -21,7 +21,7 @@ class Setting():
         self.notebookPath = notebooks[0][1]
         self.indexdir = os.path.join(self.notebookPath, "whooshindex")
         self.notePath = os.path.join(self.notebookPath, "notes")
-        self.htmlPath = os.path.join(self.notebookPath, "html")
+        self.htmlPath = os.path.join(self.notebookPath, "html", "notes")
         self.attachmentPath = os.path.join(self.notebookPath, "attachments")
         self.configfile = os.path.join(self.notebookPath, "notebook.conf")
         self.cssfile = os.path.join(self.notebookPath, "notebook.css")
@@ -33,7 +33,10 @@ class Setting():
             self.fileExt = self.qsettings.value("fileExt")
             self.geometry = self.qsettings.value("geometry")
             self.windowstate = self.qsettings.value("windowstate")
-            self.autoSaveHtml = self.qsettings.value("autoSaveHtml") in ["1", "true", "yes", "True", "Yes"]
+            if self.qsettings.value("autoSaveHtml"):
+                self.autoSaveHtml = self.qsettings.value("autoSaveHtml").lower() in ["1", "true", "yes"]
+            else:
+                self.autoSaveHtml = False
         else:
             self.autoSaveHtml = False
             self.qsettings.setValue("autoSaveHtml", False)
@@ -60,6 +63,10 @@ class Setting():
         if not self.fileExt:
             self.fileExt = ".md"
             self.qsettings.setValue("fileExt", self.fileExt)
+
+        # Default autoSaveHtml to False
+        if not self.autoSaveHtml:
+            self.qsettings.setValue("autoSaveHtml", self.autoSaveHtml)
 
     def saveGeometry(self, geometry):
         self.qsettings.setValue("geometry", geometry)
