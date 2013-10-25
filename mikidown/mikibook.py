@@ -252,5 +252,4 @@ class Mikibook():
     def remove(name, path):
         notebooks = Mikibook.read()
         notebooks.remove([name, path])
-        # FIXME: causes exception
-        #Mikibook.write(notebookList)
+        Mikibook.write(notebooks)
