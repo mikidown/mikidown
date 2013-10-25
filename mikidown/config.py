@@ -29,7 +29,7 @@ class Setting():
             self.fileExt = self.qsettings.value("fileExt")
             self.geometry = self.qsettings.value("geometry")
             self.windowstate = self.qsettings.value("windowstate")
-            self.autoSaveHtml = self.qsettings.value("autoSaveHtml") in ["1", "true", "yes", "True", "Yes"]
+            self.autoSaveHtml = self.qsettings.value("autoSaveHtml").lower() in ["1", "true", "yes"]
         else:
             self.autoSaveHtml = False
             self.qsettings.setValue("autoSaveHtml", False)
@@ -56,6 +56,10 @@ class Setting():
         if not self.fileExt:
             self.fileExt = ".md"
             self.qsettings.setValue("fileExt", self.fileExt)
+
+        # Default autoSaveHtml to False
+        if not self.autoSaveHtml:
+            self.qsettings.setValue("autoSaveHtml", self.autoSaveHtml)
 
     def saveGeometry(self, geometry):
         self.qsettings.setValue("geometry", geometry)

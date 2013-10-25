@@ -80,10 +80,14 @@ class MikiEdit(QTextEdit):
                 p = Process(target=self.updateIndex, args=(
                     pageName, self.toPlainText(),))
                 p.start()
+
+        # If autoSaveHtml == True, current note will be autoSaved as 
+        # **preview.html** in notebook folder
         if self.settings.autoSaveHtml:
             try:
-                filename, ext = os.path.splitext(filePath)
-                self.saveAsHtml("%s.html" % filename)
+                filename = os.path.join(self.settings.notebookPath, 
+                                        "preview.html")
+                self.saveAsHtml(filename)
             except IOError as e:
                 QMessageBox.warning(self, 'Save Error',
                         'Failed to save %s: %s' % (pageName, e))
