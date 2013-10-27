@@ -29,37 +29,31 @@ class MikiEdit(QTextEdit):
             writer.commit()
 
     def insertFromMimeData(self, source):
-        if source.hasImage():
-            print ("We have an image ...")
-        elif source.hasUrls():
+        """ Intended behavior
+        If copy/drag something that hasUrls, then check the extension name:
+            if image then apply image pattern ![Alt text](/path/to/img.jpg)
+                     else apply link  pattern [text](http://example.net)
+        Else use the default insertFromMimeData implementation
+        """
+        
+        def mimeFromText(text):
+            mime = QMimeData()
+            mime.setText(text)
+            return mime
+        
+        if source.hasUrls():
             for qurl in source.urls():
-                if qurl.isLocalFile():
-                    fullPath = qurl.toLocalFile()
-                    filename, extension = os.path.splitext(fullPath)
-                    filename = os.path.basename(filename)
-                    # TODO: copy the refference file
-                    if extension.lower() in (".jpg", ".jpeg", ".png", ".gif"):
-                        toInsert = "![%s](%s)" % (filename, fullPath)
-                    else:
-                        toInsert = "[%s%s](%s)\n" % (filename, extension, fullPath)
-                    super(MikiEdit, self).insertFromMimeData(self._mimeFromText(toInsert))
+                url = qurl.toString()
+                filename, extension = os.path.splitext(url)
+                filename = os.path.basename(filename)
+                if extension.lower() in (".jpg", ".jpeg", ".png", ".gif", ".svg"):
+                    text = "![%s](%s)" % (filename, url)
                 else:
-                    super(MikiEdit, self).insertFromMimeData(
-                            self._mimeFromText(
-                                "[Broken Link](Remote content not yet supported)")
-                    )
-        elif source.hasHtml():
-            # QT will process this HTML and not add it verbatim to the editor 
-            html = source.html()
-            # TODO: can we do some reversing on the pasted html ?
-            super(MikiEdit, self).insertFromMimeData(self._mimeFromText(html))
+                    text = "[%s%s](%s)\n" % (filename, extension, url)
+                super(MikiEdit, self).insertFromMimeData(mimeFromText(text))
         else:
             super(MikiEdit, self).insertFromMimeData(source)
 
-    def _mimeFromText(self, text):
-        mime =  QMimeData()
-        mime.setText(text)
-        return mime
 
     def save(self, pageName, filePath):
         fh = QFile(filePath)
