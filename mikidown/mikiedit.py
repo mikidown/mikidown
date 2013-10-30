@@ -1,6 +1,6 @@
 import os
 from multiprocessing import Process
-from PyQt4.QtCore import QDir, QFile, QFileInfo, QTextStream, QIODevice
+from PyQt4.QtCore import QDir, QFile, QFileInfo, QTextStream, QIODevice, QMimeData
 from PyQt4.QtGui import QTextEdit, QFileDialog, QMessageBox
 import markdown
 from whoosh.index import open_dir
@@ -28,6 +28,33 @@ class MikiEdit(QTextEdit):
                 path=path, title=parseTitle(content, path), content=content)
             writer.commit()
 
+    def insertFromMimeData(self, source):
+        """ Intended behavior
+        If copy/drag something that hasUrls, then check the extension name:
+            if image then apply image pattern ![Alt text](/path/to/img.jpg)
+                     else apply link  pattern [text](http://example.net)
+        Else use the default insertFromMimeData implementation
+        """
+        
+        def mimeFromText(text):
+            mime = QMimeData()
+            mime.setText(text)
+            return mime
+        
+        if source.hasUrls():
+            for qurl in source.urls():
+                url = qurl.toString()
+                filename, extension = os.path.splitext(url)
+                filename = os.path.basename(filename)
+                if extension.lower() in (".jpg", ".jpeg", ".png", ".gif", ".svg"):
+                    text = "![%s](%s)" % (filename, url)
+                else:
+                    text = "[%s%s](%s)\n" % (filename, extension, url)
+                super(MikiEdit, self).insertFromMimeData(mimeFromText(text))
+        else:
+            super(MikiEdit, self).insertFromMimeData(source)
+
+
     def save(self, pageName, filePath):
         fh = QFile(filePath)
         try:
@@ -36,6 +63,7 @@ class MikiEdit(QTextEdit):
         except IOError as e:
             QMessageBox.warning(self, 'Save Error',
                                 'Failed to save %s: %s' % (pageName, e))
+            raise
         finally:
             if fh is not None:
                 savestream = QTextStream(fh)
@@ -47,6 +75,18 @@ class MikiEdit(QTextEdit):
                     pageName, self.toPlainText(),))
                 p.start()
 
+        # If autoSaveHtml == True, current note will be autoSaved as 
+        # **preview.html** in notebook folder
+        if self.settings.autoSaveHtml:
+            try:
+                filename = os.path.join(self.settings.notebookPath, 
+                                        "preview.html")
+                self.saveAsHtml(filename)
+            except IOError as e:
+                QMessageBox.warning(self, 'Save Error',
+                        'Failed to save %s: %s' % (pageName, e))
+                raise
+
     def toHtml(self):
         '''markdown.Markdown.convert v.s. markdown.markdown
             Previously `convert` was used, but it doens't work with fenced_code
@@ -56,10 +96,11 @@ class MikiEdit(QTextEdit):
         # md = markdown.Markdown(extensions)
         # return md.convert(htmltext)
 
-    def saveAsHtml(self):
+    def saveAsHtml(self, fileName = None):
         """ Export current note as html file
         """
-        fileName = QFileDialog.getSaveFileName(self, self.tr('Export to HTML'),
+        if not fileName:
+            fileName = QFileDialog.getSaveFileName(self, self.tr('Export to HTML'),
                                                '', '(*.html *.htm);;'+self.tr('All files(*)'))
         if fileName == '':
             return

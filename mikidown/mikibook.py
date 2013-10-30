@@ -252,4 +252,4 @@ class Mikibook():
     def remove(name, path):
         notebooks = Mikibook.read()
         notebooks.remove([name, path])
-        Mikibook.write(notebookList)
+        Mikibook.write(notebooks)
