@@ -12,9 +12,9 @@ class MikiView(QWebView):
         self.parent = parent
 
         self.settings().clearMemoryCaches()
-        self.notebookPath = parent.settings.notebookPath
+        self.notePath = parent.settings.notePath
         self.settings().setUserStyleSheetUrl(
-            QUrl.fromLocalFile(self.notebookPath + '/notes.css'))
+            QUrl.fromLocalFile(self.parent.settings.cssfile))
         self.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
 
         self.page().linkClicked.connect(self.linkClicked)
@@ -39,14 +39,14 @@ class MikiView(QWebView):
 
         self.load(qurl)
         name = name.replace('file://', '')
-        name = name.replace(self.notebookPath, '').split('#')
+        name = name.replace(self.notePath, '').split('#')
         item = self.parent.notesTree.pageToItem(name[0])
         if not item or item == self.parent.notesTree.currentItem():
             return
         else:
             self.parent.notesTree.setCurrentItem(item)
             if len(name) > 1:
-                link = "file://" + self.notebookPath + "/#" + name[1]
+                link = "file://" + self.notePath + "/#" + name[1]
                 self.load(QUrl(link))
             viewFrame = self.page().mainFrame()
             self.scrollPosition = viewFrame.scrollPosition()
@@ -61,7 +61,7 @@ class MikiView(QWebView):
             self.parent.statusBar.showMessage(self.parent.notesTree.currentPage())
         else:                                       # beautify link
             link = link.replace('file://', '')
-            link = link.replace(self.notebookPath, '')
+            link = link.replace(self.notePath, '')
             self.parent.statusBar.showMessage(link)
 
     def contentsSizeChanged(self, newSize):
@@ -77,12 +77,12 @@ class MikiView(QWebView):
         viewFrame.setScrollPosition(self.scrollPosition)
 
     def updateView(self):
-        # url_notebook = 'file://' + os.path.join(self.notebookPath, '/')
+        # url_notebook = 'file://' + os.path.join(self.notePath, '/')
         viewFrame = self.page().mainFrame()
         # Store scrollPosition before update notesView
         self.scrollPosition = viewFrame.scrollPosition()
         self.contentsSize = viewFrame.contentsSize()
-        url_notebook = 'file://' + self.notebookPath + '/'
+        url_notebook = 'file://' + self.notePath + '/'
         self.setHtml(self.parent.notesEdit.toHtml(), QUrl(url_notebook))
         # Restore previous scrollPosition
         viewFrame.setScrollPosition(self.scrollPosition)

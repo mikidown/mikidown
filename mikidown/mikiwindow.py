@@ -23,7 +23,7 @@ class MikiWindow(QMainWindow):
     def __init__(self, settings, parent=None):
         super(MikiWindow, self).__init__(parent)
         self.settings = settings
-        self.notebookPath = settings.notebookPath
+        self.notePath = settings.notePath
 
         self.watcher = QFileSystemWatcher()
         self.watcher.fileChanged.connect(self.refresh)
@@ -38,12 +38,12 @@ class MikiWindow(QMainWindow):
 
 
         self.notesTree = MikiTree(self)
-        self.initTree(self.notebookPath, self.notesTree)
+        self.initTree(self.notePath, self.notesTree)
         self.notesTree.sortItems(0, Qt.AscendingOrder)
 
-        # Initialize whoosh index, make sure notebookPath/.indexdir exists
+        # Initialize whoosh index, make sure notePath/.indexdir exists
         self.ix = None
-        indexdir = os.path.join(self.notebookPath, settings.indexdir)
+        indexdir = os.path.join(self.notePath, settings.indexdir)
         if not QDir(indexdir).exists():
             QDir().mkdir(indexdir)
             self.ix = create_in(indexdir, settings.schema)
@@ -286,13 +286,13 @@ class MikiWindow(QMainWindow):
         if self.settings.windowstate:
             self.restoreState(self.settings.windowstate)
 
-    def initTree(self, notebookPath, parent):
+    def initTree(self, notePath, parent):
         ''' When there exist foo.md, foo.mkd, foo.markdown, 
             only one item will be shown in notesTree.
         '''
-        if not QDir(notebookPath).exists():
+        if not QDir(notePath).exists():
             return
-        notebookDir = QDir(notebookPath)
+        notebookDir = QDir(notePath)
         notesList = notebookDir.entryInfoList(['*.md', '*.mkd', '*.markdown'],
                                                QDir.NoFilter,
                                                QDir.Name|QDir.IgnoreCase)
@@ -300,7 +300,7 @@ class MikiWindow(QMainWindow):
         noduplicate = list(set(nl))
         for name in noduplicate:
             item = QTreeWidgetItem(parent, [name])
-            path = notebookPath + '/' + name 
+            path = notePath + '/' + name 
             self.initTree(path, item)
 
     def updateToc(self):
@@ -368,7 +368,7 @@ class MikiWindow(QMainWindow):
         if current is None:
             return
         pos = int(current.text(1))
-        link = "file://" + self.notebookPath + "/#" + current.text(2)
+        link = "file://" + self.notePath + "/#" + current.text(2)
         # Move cursor to END first will ensure
         # header is positioned at the top of visual area.
         self.notesEdit.moveCursor(QTextCursor.End)
@@ -391,7 +391,7 @@ class MikiWindow(QMainWindow):
         else:
             return
         pageName = item.text(0)
-        filePath = os.path.join(self.notebookPath,
+        filePath = os.path.join(self.notePath,
                                 self.notesTree.itemToPage(item) + self.settings.fileExt)
         self.notesEdit.save(pageName, filePath)
 
@@ -446,7 +446,7 @@ class MikiWindow(QMainWindow):
         fileBody = QTextStream(fh).readAll()
         fh.close()
         note = QFileInfo(filename)
-        path = os.path.join(self.notebookPath, 
+        path = os.path.join(self.notePath, 
                             note.completeBaseName() + self.settings.fileExt)
         fh = QFile(path)
         if fh.exists():

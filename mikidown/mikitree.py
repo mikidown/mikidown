@@ -64,7 +64,7 @@ class MikiTree(QTreeWidget):
     def __init__(self, parent=None):
         super(MikiTree, self).__init__(parent)
         self.settings = parent.settings
-        self.notebookPath = self.settings.notebookPath
+        self.notePath = self.settings.notePath
 
         self.header().close()
         self.setAcceptDrops(True)
@@ -76,7 +76,7 @@ class MikiTree(QTreeWidget):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self.customContextMenuRequested.connect(self.contextMenu)
-        self.indexdir = os.path.join(self.notebookPath, self.settings.indexdir)
+        self.indexdir = os.path.join(self.notePath, self.settings.indexdir)
 
     def itemToPage(self, item):
         """ get item hierarchy from item """
@@ -115,7 +115,7 @@ class MikiTree(QTreeWidget):
 
     def pageToFile(self, page):
         """ get filepath from page 
-            filepath = notebookPath + page + fileExt
+            filepath = notePath + page + fileExt
             fileExt is stored in notebook.conf 
         """
 
@@ -127,10 +127,10 @@ class MikiTree(QTreeWidget):
             extName.remove(defExt)
         else:
             print("Warning: detected file extension name is", defExt)
-            print("    Your config file is located in", self.notebookPath + "/notebook.conf")
+            print("    Your config file is located in", self.notePath + "/notebook.conf")
         extName.insert(0, defExt)
         for ext in extName:
-            filepath = os.path.join(self.notebookPath, page + ext)
+            filepath = os.path.join(self.notePath, page + ext)
             if QFile.exists(filepath):
                 return filepath
         return ""
@@ -173,7 +173,7 @@ class MikiTree(QTreeWidget):
         self.newPageCore(item, name)
 
     def newPageCore(self, item, newPageName):
-        pagePath = os.path.join(self.notebookPath, self.itemToPage(item))
+        pagePath = os.path.join(self.notePath, self.itemToPage(item))
         if not newPageName:
             dialog = ItemDialog(self)
             dialog.setPath(pagePath)
@@ -181,10 +181,10 @@ class MikiTree(QTreeWidget):
                 newPageName = dialog.editor.text()
         if newPageName:
             if hasattr(item, 'text'):
-                pagePath = os.path.join(self.notebookPath, 
+                pagePath = os.path.join(self.notePath, 
                                         pagePath + '/')
             if not QDir(pagePath).exists():
-                QDir(self.notebookPath).mkdir(pagePath)
+                QDir(self.notePath).mkdir(pagePath)
             fileName = pagePath + newPageName + self.settings.fileExt
             fh = QFile(fileName)
             fh.open(QIODevice.WriteOnly)
@@ -227,15 +227,15 @@ class MikiTree(QTreeWidget):
             return
 
         # if not QDir(newName).exists():
-        QDir(self.notebookPath).mkpath(targetPath)
-        QDir(self.notebookPath).rename(oldName, newName)
+        QDir(self.notePath).mkpath(targetPath)
+        QDir(self.notePath).rename(oldName, newName)
         if sourceItem.childCount() != 0:
-            QDir(self.notebookPath).rename(oldDir, newDir)
+            QDir(self.notePath).rename(oldDir, newDir)
         if sourceItem.parent() is not None:
             parentItem = sourceItem.parent()
             parentPath = self.itemToPage(parentItem)
             if parentItem.childCount() == 1:
-                QDir(self.notebookPath).rmdir(parentPath)
+                QDir(self.notePath).rmdir(parentPath)
         QTreeWidget.dropEvent(self, event)
         self.sortItems(0, Qt.AscendingOrder)
         if hasattr(targetItem, 'text'):
@@ -258,11 +258,11 @@ class MikiTree(QTreeWidget):
                 parentPath = parentPath + '/'
             oldName = self.pageToFile(item.text(0))
             newName = parentPath + newPageName + self.settings.fileExt
-            QDir(self.notebookPath).rename(oldName, newName)
+            QDir(self.notePath).rename(oldName, newName)
             if item.childCount() != 0:
                 oldDir = parentPath + item.text(0)
                 newDir = parentPath + newPageName
-                QDir(self.notebookPath).rename(oldDir, newDir)
+                QDir(self.notePath).rename(oldDir, newDir)
             item.setText(0, newPageName)
             self.sortItems(0, Qt.AscendingOrder)
 
@@ -288,18 +288,18 @@ class MikiTree(QTreeWidget):
         n = writer.delete_by_query(query)
         # n = writer.delete_by_term('path', pagePath)
         writer.commit()
-        b = QDir(self.notebookPath).remove(self.pageToFile(pagePath))
+        b = QDir(self.notePath).remove(self.pageToFile(pagePath))
         parent = item.parent()
         parentPath = self.itemToPage(parent)
         if parent is not None:
             index = parent.indexOfChild(item)
             parent.takeChild(index)
             if parent.childCount() == 0:  # if no child, dir not needed
-                QDir(self.notebookPath).rmdir(parentPath)
+                QDir(self.notePath).rmdir(parentPath)
         else:
             index = self.indexOfTopLevelItem(item)
             self.takeTopLevelItem(index)
-        QDir(self.notebookPath).rmdir(pagePath)
+        QDir(self.notePath).rmdir(pagePath)
 
     def sizeHint(self):
         return QSize(200, 0)

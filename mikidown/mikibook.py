@@ -229,15 +229,15 @@ class Mikibook():
         """ Called by create()
             Initialise the notebook directory.
         """
-        # Make sure there is notes.css in notebookPath
+        # Make sure there is notebook.css in notebookPath
         if not os.path.isdir(notebookPath):
             os.makedirs(notebookPath)
-        cssFile = os.path.join(notebookPath, 'notes.css')
-        if os.path.exists('/usr/share/mikidown/notes.css'):
-            cssTemplate = '/usr/share/mikidown/notes.css'
+        cssFile = os.path.join(notebookPath, 'notebook.css')
+        if os.path.exists('/usr/share/mikidown/notebook.css'):
+            cssTemplate = '/usr/share/mikidown/notebook.css'
         else:
             cssTemplate = os.path.join(
-                os.path.dirname(__file__), 'notes.css')
+                os.path.dirname(__file__), 'notebook.css')
         # If //cssFile// already exists, copy() returns false!
         QFile.copy(cssTemplate, cssFile)
 

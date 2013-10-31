@@ -85,9 +85,9 @@ class Monolithic(unittest.TestCase):
     def step5(self):
         print("\nLast step: clean up")
 
-        for i in glob.glob("test_notebook/.indexdir/*"):
+        for i in glob.glob("test_notebook/whooshindex/*"):
             os.remove(i)
-        os.rmdir("test_notebook/.indexdir")
+        os.rmdir("test_notebook/whooshindex")
         #os.remove("test_notebook/notes.css")
         #os.remove("test_notebook/notebook.conf")
         for i in glob.glob("test_notebook/*"):

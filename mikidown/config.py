@@ -5,7 +5,7 @@ from whoosh import fields
 
 
 __appname__ = 'mikidown'
-__version__ = '0.2.4'
+__version__ = '0.3.0'
 
 class Setting():
 
@@ -16,11 +16,15 @@ class Setting():
             path = fields.TEXT(stored=True), 
             title = fields.TEXT(stored=True),
             content = fields.TEXT(stored=True))
-        self.indexdir = ".indexdir"
 
         self.notebookName = notebooks[0][0]
         self.notebookPath = notebooks[0][1]
+        self.indexdir = os.path.join(self.notebookPath, "whooshindex")
+        self.notePath = os.path.join(self.notebookPath, "notes")
+        self.htmlPath = os.path.join(self.notebookPath, "html")
+        self.attachmentPath = os.path.join(self.notebookPath, "attachments")
         self.configfile = os.path.join(self.notebookPath, "notebook.conf")
+        self.cssfile = os.path.join(self.notebookPath, "notebook.css")
         self.qsettings = QSettings(self.configfile, QSettings.NativeFormat)
 
         if os.path.exists(self.configfile):

@@ -17,7 +17,7 @@ class MikiEdit(QTextEdit):
         self.setFontPointSize(12)
         self.setTabStopWidth(4)
         self.setVisible(False)
-        indexdir = os.path.join(self.settings.notebookPath, 
+        indexdir = os.path.join(self.settings.notePath, 
                                 self.settings.indexdir)
         self.ix = open_dir(indexdir)
 
@@ -68,7 +68,7 @@ class MikiEdit(QTextEdit):
         html = QFile(fileName)
         html.open(QIODevice.WriteOnly)
         savestream = QTextStream(html)
-        css = QFile(self.settings.notebookPath + '/notes.css')
+        css = QFile(self.settings.cssfile)
         css.open(QIODevice.ReadOnly)
         # Use a html lib may be a better idea?
         savestream << "<html><head><meta charset='utf-8'></head>"
