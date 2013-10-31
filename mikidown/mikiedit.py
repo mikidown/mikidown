@@ -55,7 +55,7 @@ class MikiEdit(QTextEdit):
 
         if self.settings.autoSaveHtml:
             try:
-                self.saveAsHtml(htmlFile)
+                self.saveHtmlOnly(htmlFile)
             except IOError as e:
                 QMessageBox.warning(self, 'Save Error',
                         'Failed to saveHtml %s: %s' % (pageName, e))
@@ -71,18 +71,23 @@ class MikiEdit(QTextEdit):
         # return md.convert(htmltext)
 
     def saveAsHtml(self, htmlFile = None):
-        """ Export current note as html file
+        """ Save as Complete (with css and images) or HTML Only
+            To be merged with saveNoteAs
         """
         if not htmlFile:
-            htmlFile = QFileDialog.getSaveFileName(self, self.tr('Export to HTML'),
-                                               '', '(*.html *.htm);;'+self.tr('All files(*)'))
+            (htmlFile, htmlType) = QFileDialog.getSaveFileNameAndFilter(
+                self, self.tr("Export to HTML"), "", "Complete;;HTML Only")
         if htmlFile == '':
             return
         if not QFileInfo(htmlFile).suffix():
             htmlFile += '.html'
-        fileDir = os.path.dirname(htmlFile)
-        QDir().mkpath(fileDir)
 
+        if htmlType == "Complete":
+            self.saveCompleteHtml(htmlFile)
+        else:
+            self.saveHtmlOnly(htmlFile)
+
+    def saveCompleteHtml(self, htmlFile):
         html = QFile(htmlFile)
         html.open(QIODevice.WriteOnly)
         savestream = QTextStream(html)
@@ -94,6 +99,24 @@ class MikiEdit(QTextEdit):
         savestream << "<style>"
         savestream << QTextStream(css).readAll()
         savestream << "</style>"
+        # Note content
+        savestream << self.toHtml()
+        savestream << "</html>"
+        html.close()
+
+    def saveHtmlOnly(self, htmlFile):
+        fileDir = os.path.dirname(htmlFile)
+        QDir().mkpath(fileDir)
+
+        html = QFile(htmlFile)
+        html.open(QIODevice.WriteOnly)
+        savestream = QTextStream(html)
+        savestream << """
+                      <html><head>
+                        <meta charset="utf-8">
+                        <link rel="stylesheet" href="/css/notebook.css" type="text/css" />
+                      </head>
+                      """
         # Note content
         savestream << self.toHtml()
         savestream << "</html>"

@@ -241,9 +241,12 @@ class Mikibook():
         # If //cssFile// already exists, copy() returns false!
         QFile.copy(cssTemplate, cssFile)
 
-        htmlDir = os.path.join(notebookPath, "html", "notes")
-        if not os.path.isdir(htmlDir):
-            os.makedirs(htmlDir)
+        htmlNoteDir = os.path.join(notebookPath, "html", "notes")
+        htmlCssDir = os.path.join(notebookPath, "html", "css")
+        os.makedirs(htmlNoteDir)
+        os.makedirs(htmlCssDir)
+        htmlCssDirFile = os.path.join(htmlCssDir, 'notebook.css')
+        QFile.copy(cssTemplate, htmlCssDirFile)
 
         # If settings==None, initialize notebook dir without writing to 
         # configuration file.
