@@ -360,7 +360,10 @@ class MikiWindow(QMainWindow):
                     self.watcher.addPath(filename)
 
     def refresh(self, filepath):
-        QTimer.singleShot(500, lambda: self.openFile(filepath))
+        if QFile.exists(filepath):
+            QTimer.singleShot(500, lambda: self.openFile(filepath))
+        else:
+            self.watcher.removePath(filepath)
 
     def currentItemChangedWrapper(self, current, previous):
         if current is None:

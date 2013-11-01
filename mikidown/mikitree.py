@@ -214,33 +214,43 @@ class MikiTree(QTreeWidget):
             writer.commit()
 
     def dropEvent(self, event):
+        """ A note is related to three parts:
+            note file, note folder containing child note, parent note folder. 
+        When drag/drop, should take care of:
+        1. rename note file ("rename" is just another way of saying "move")
+        2. rename note folder
+        3. if parent note has no more child, remove parent note folder
+        """
+
+        # construct file/folder names before and after drag/drop
         sourceItem = self.currentItem()
-        sourcePath = self.itemToPage(sourceItem)
+        sourcePage = self.itemToPage(sourceItem)
         targetItem = self.itemAt(event.pos())
-        targetPath = self.itemToPage(targetItem)
-        if targetPath != '':
-            targetPath = targetPath + '/'
-        oldName = self.pageToFile(sourceItem.text(0))
-        newName = targetPath + sourceItem.text(0) + self.settings.fileExt
-        oldDir = sourcePath
-        newDir = targetPath + sourceItem.text(0)
-        print(newName)
-        # if QDir(newName).exists():
-        if QFile.exists(newName):
+        targetPage = self.itemToPage(targetItem)
+        oldFile = self.itemToFile(sourceItem)
+        newFile = os.path.join(targetPage, 
+            sourceItem.text(0) + self.settings.fileExt)
+        oldDir = sourcePage
+        newDir = os.path.join(targetPage, sourceItem.text(0))
+
+        if QFile.exists(newFile):
             QMessageBox.warning(self, 'Error',
-                                'Page already exists: %s' % newName)
+                                'File already exists: %s' % newFile)
             return
 
-        # if not QDir(newName).exists():
-        QDir(self.notePath).mkpath(targetPath)
-        QDir(self.notePath).rename(oldName, newName)
+        # rename file/folder, remove parent note folder if necessary
+        if targetPage != '':
+            QDir(self.notePath).mkpath(targetPage)
+        QDir(self.notePath).rename(oldFile, newFile)
         if sourceItem.childCount() != 0:
             QDir(self.notePath).rename(oldDir, newDir)
         if sourceItem.parent() is not None:
             parentItem = sourceItem.parent()
-            parentPath = self.itemToPage(parentItem)
+            parentPage = self.itemToPage(parentItem)
             if parentItem.childCount() == 1:
-                QDir(self.notePath).rmdir(parentPath)
+                QDir(self.notePath).rmdir(parentPage)
+
+        # pass the event to default implementation
         QTreeWidget.dropEvent(self, event)
         self.sortItems(0, Qt.AscendingOrder)
         if hasattr(targetItem, 'text'):
@@ -252,21 +262,21 @@ class MikiTree(QTreeWidget):
 
     def renamePage(self, item):
         parent = item.parent()
-        parentPath = self.itemToPage(parent)
+        parentPage = self.itemToPage(parent)
         dialog = ItemDialog(self)
-        dialog.setPath(parentPath)
+        dialog.setPath(parentPage)
         dialog.setText(item.text(0))
         if dialog.exec_():
             newPageName = dialog.editor.text()
             # if hasattr(item, 'text'):       # if item is not QTreeWidget
-            if parentPath != '':
-                parentPath = parentPath + '/'
-            oldName = self.pageToFile(item.text(0))
-            newName = parentPath + newPageName + self.settings.fileExt
-            QDir(self.notePath).rename(oldName, newName)
+            if parentPage != '':
+                parentPage = parentPage + '/'
+            oldFile = self.pageToFile(item.text(0))
+            newFile = parentPage + newPageName + self.settings.fileExt
+            QDir(self.notePath).rename(oldFile, newFile)
             if item.childCount() != 0:
-                oldDir = parentPath + item.text(0)
-                newDir = parentPath + newPageName
+                oldDir = parentPage + item.text(0)
+                newDir = parentPage + newPageName
                 QDir(self.notePath).rename(oldDir, newDir)
             item.setText(0, newPageName)
             self.sortItems(0, Qt.AscendingOrder)
@@ -295,12 +305,12 @@ class MikiTree(QTreeWidget):
         writer.commit()
         b = QDir(self.notePath).remove(self.pageToFile(pagePath))
         parent = item.parent()
-        parentPath = self.itemToPage(parent)
+        parentPage = self.itemToPage(parent)
         if parent is not None:
             index = parent.indexOfChild(item)
             parent.takeChild(index)
             if parent.childCount() == 0:  # if no child, dir not needed
-                QDir(self.notePath).rmdir(parentPath)
+                QDir(self.notePath).rmdir(parentPage)
         else:
             index = self.indexOfTopLevelItem(item)
             self.takeTopLevelItem(index)
