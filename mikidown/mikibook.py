@@ -243,8 +243,8 @@ class Mikibook():
 
         htmlNoteDir = os.path.join(notebookPath, "html", "notes")
         htmlCssDir = os.path.join(notebookPath, "html", "css")
-        os.makedirs(htmlNoteDir)
-        os.makedirs(htmlCssDir)
+        QDir().mkpath(htmlNoteDir)
+        QDir().mkpath(htmlCssDir)
         htmlCssDirFile = os.path.join(htmlCssDir, 'notebook.css')
         QFile.copy(cssTemplate, htmlCssDirFile)
 

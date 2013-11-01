@@ -25,82 +25,29 @@ class MikiWindow(QMainWindow):
         self.settings = settings
         self.notePath = settings.notePath
 
-        self.watcher = QFileSystemWatcher()
-        self.watcher.fileChanged.connect(self.refresh)
+        self.setupCoreComponents()
+        self.setupActions()
+        self.setupMainWindow()
+        self.setupWhoosh()
 
-        self.resize(800, 600)
-        screen = QDesktopWidget().screenGeometry()
-        size = self.geometry()
-        self.move((
-            screen.width()-size.width())/2, (screen.height()-size.height())/2)
-        self.setWindowTitle(
-            '{} - {}'.format(settings.notebookName, __appname__))
-
-
+    def setupCoreComponents(self):
         self.notesTree = MikiTree(self)
         self.initTree(self.notePath, self.notesTree)
         self.notesTree.sortItems(0, Qt.AscendingOrder)
 
-        # Initialize whoosh index, make sure notePath/.indexdir exists
-        self.ix = None
-        indexdir = os.path.join(self.notePath, settings.indexdir)
-        if not QDir(indexdir).exists():
-            QDir().mkdir(indexdir)
-            self.ix = create_in(indexdir, settings.schema)
-            # Fork a process to update index, which benefit responsiveness.
-            p = Process(target=self.whoosh_index, args=())
-            p.start()
-        else:
-            self.ix = open_dir(indexdir)
-        
-        self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
-        self.viewedList.setFixedHeight(25)
         self.notesEdit = MikiEdit(self)
         MikiHighlighter(self.notesEdit)
         self.notesView = MikiView(self)
+
         self.findBar = QToolBar(self.tr('Find'), self)
         self.findBar.setFixedHeight(30)
-        self.noteSplitter = QSplitter(Qt.Horizontal)
-        self.noteSplitter.addWidget(self.notesEdit)
-        self.noteSplitter.addWidget(self.notesView)
-        self.mainSplitter = QSplitter(Qt.Vertical)
-        self.mainSplitter.setChildrenCollapsible(False)
-        self.mainSplitter.addWidget(self.viewedList)
-        self.mainSplitter.addWidget(self.noteSplitter)
-        self.mainSplitter.addWidget(self.findBar)
-        self.setCentralWidget(self.mainSplitter)
 
-        self.searchEdit = QLineEdit()
-        self.searchEdit.returnPressed.connect(self.searchNote)
-        self.searchView = MikiSearch(self)
-        self.searchTab = QWidget()
-        searchLayout = QVBoxLayout()
-        searchLayout.addWidget(self.searchEdit)
-        searchLayout.addWidget(self.searchView)
-        self.searchTab.setLayout(searchLayout)
-        self.tocTree = TocTree()
-        self.tocTree.header().close()
-        self.dockIndex = QDockWidget("Index")
-        self.dockIndex.setObjectName("Index")
-        self.dockSearch = QDockWidget("Search")
-        self.dockSearch.setObjectName("Search")
-        self.dockToc = QDockWidget("TOC")
-        self.dockToc.setObjectName("TOC")
-        self.dockIndex.setWidget(self.notesTree)
-        self.dockSearch.setWidget(self.searchTab)
-        self.dockToc.setWidget(self.tocTree)
-        self.setDockOptions(QMainWindow.VerticalTabs)
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.dockIndex)
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.dockSearch)
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.dockToc)
-        self.tabifyDockWidget(self.dockIndex, self.dockSearch)
-        self.tabifyDockWidget(self.dockSearch, self.dockToc)
-        self.setTabPosition(Qt.LeftDockWidgetArea, QTabWidget.North)
-        self.dockIndex.raise_()      # Put dockIndex on top of the tab stack
-        #self.mainSplitter.setSizes([600,20,600,580])
-        self.mainSplitter.setStretchFactor(0, 0)
+        self.watcher = QFileSystemWatcher()
+        self.watcher.fileChanged.connect(self.refresh)
 
-        # Global Actions
+    def setupActions(self):
+        
+        ################ Global Actions ################ 
         actTabIndex = self.act(self.tr('Switch to Index Tab'),
                                QKeySequence('Ctrl+Shift+I'),
                                lambda: self.raiseDock(self.dockIndex))
@@ -139,6 +86,7 @@ class MikiWindow(QMainWindow):
         self.addAction(actNote8)
         self.addAction(actNote9)
 
+        ################ Menu Actions ################ 
         # actions in menuFile
         self.actionNewPage = self.act(
             self.tr('&New Page...'), QKeySequence.New, trig=self.notesTree.newPage)
@@ -163,6 +111,7 @@ class MikiWindow(QMainWindow):
             '&Delete Page'), QKeySequence('Delete'), trig=self.notesTree.delPageWrapper)
         self.actionQuit = self.act(self.tr('&Quit'), QKeySequence.Quit, SLOT('close()'))
         self.actionQuit.setMenuRole(QAction.QuitRole)
+
         # actions in menuEdit
         self.actionUndo = self.act(self.tr('&Undo'), QKeySequence.Undo,
                                    trig=lambda: self.notesEdit.undo())
@@ -201,6 +150,56 @@ class MikiWindow(QMainWindow):
         # self.actionUpAndDown.setEnabled(False)
         # actions in menuHelp
         self.actionReadme = self.act(self.tr('README'), trig=self.readmeHelp)
+
+    def setupMainWindow(self):
+        self.resize(800, 600)
+        screen = QDesktopWidget().screenGeometry()
+        size = self.geometry()
+        self.move((
+            screen.width()-size.width())/2, (screen.height()-size.height())/2)
+        self.setWindowTitle(
+            '{} - {}'.format(self.settings.notebookName, __appname__))
+
+        self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
+        self.viewedList.setFixedHeight(25)
+        self.noteSplitter = QSplitter(Qt.Horizontal)
+        self.noteSplitter.addWidget(self.notesEdit)
+        self.noteSplitter.addWidget(self.notesView)
+        self.mainSplitter = QSplitter(Qt.Vertical)
+        self.mainSplitter.setChildrenCollapsible(False)
+        self.mainSplitter.addWidget(self.viewedList)
+        self.mainSplitter.addWidget(self.noteSplitter)
+        self.mainSplitter.addWidget(self.findBar)
+        self.setCentralWidget(self.mainSplitter)
+
+        self.searchEdit = QLineEdit()
+        self.searchEdit.returnPressed.connect(self.searchNote)
+        self.searchView = MikiSearch(self)
+        self.searchTab = QWidget()
+        searchLayout = QVBoxLayout()
+        searchLayout.addWidget(self.searchEdit)
+        searchLayout.addWidget(self.searchView)
+        self.searchTab.setLayout(searchLayout)
+        self.tocTree = TocTree()
+        self.tocTree.header().close()
+
+        self.dockIndex = QDockWidget("Index")
+        self.dockIndex.setObjectName("Index")
+        self.dockSearch = QDockWidget("Search")
+        self.dockSearch.setObjectName("Search")
+        self.dockToc = QDockWidget("TOC")
+        self.dockToc.setObjectName("TOC")
+        self.dockIndex.setWidget(self.notesTree)
+        self.dockSearch.setWidget(self.searchTab)
+        self.dockToc.setWidget(self.tocTree)
+        self.setDockOptions(QMainWindow.VerticalTabs)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.dockIndex)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.dockSearch)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.dockToc)
+        self.tabifyDockWidget(self.dockIndex, self.dockSearch)
+        self.tabifyDockWidget(self.dockSearch, self.dockToc)
+        self.setTabPosition(Qt.LeftDockWidgetArea, QTabWidget.North)
+        self.dockIndex.raise_()      # Put dockIndex on top of the tab stack
 
         self.menuBar = QMenuBar(self)
         self.setMenuBar(self.menuBar)
@@ -277,6 +276,19 @@ class MikiWindow(QMainWindow):
             item = self.notesTree.pageToItem(notes[0])
             self.notesTree.setCurrentItem(item)
 
+    def setupWhoosh(self):
+        # Initialize whoosh index, make sure notePath/.indexdir exists
+        self.ix = None
+        indexdir = os.path.join(self.notePath, self.settings.indexdir)
+        if not QDir(indexdir).exists():
+            QDir().mkdir(indexdir)
+            self.ix = create_in(indexdir, self.settings.schema)
+            # Fork a process to update index, which benefit responsiveness.
+            p = Process(target=self.whoosh_index, args=())
+            p.start()
+        else:
+            self.ix = open_dir(indexdir)
+        
     def restore(self):
         """ Restore saved geometry and state.
             Set the status of side panels in View Menu correspondently.
