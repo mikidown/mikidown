@@ -9,14 +9,15 @@ from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser, RegexPlugin
 
 import mikidown.mikidown_rc
-from mikidown.config import __appname__, __version__
-from mikidown.mikibook import NotebookListDialog
-from mikidown.mikitree import *
-from mikidown.mikiedit import *
-from mikidown.mikiview import *
-from mikidown.mikisearch import MikiSearch
-from mikidown.highlighter import MikiHighlighter
-from mikidown.utils import *
+from .config import __appname__, __version__
+from .mikibook import NotebookListDialog
+from .mikitree import *
+from .mikiedit import *
+from .mikiview import *
+from .mikisearch import MikiSearch
+from .attachment import AttachmentView
+from .highlighter import MikiHighlighter
+from .utils import *
 
 
 class MikiWindow(QMainWindow):
@@ -182,22 +183,29 @@ class MikiWindow(QMainWindow):
         self.searchTab.setLayout(searchLayout)
         self.tocTree = TocTree()
         self.tocTree.header().close()
+        self.attachmentView = AttachmentView(self)
 
         self.dockIndex = QDockWidget("Index")
         self.dockIndex.setObjectName("Index")
+        self.dockIndex.setWidget(self.notesTree)
         self.dockSearch = QDockWidget("Search")
         self.dockSearch.setObjectName("Search")
+        self.dockSearch.setWidget(self.searchTab)
         self.dockToc = QDockWidget("TOC")
         self.dockToc.setObjectName("TOC")
-        self.dockIndex.setWidget(self.notesTree)
-        self.dockSearch.setWidget(self.searchTab)
         self.dockToc.setWidget(self.tocTree)
+        self.dockAttachment = QDockWidget("Attachment")
+        self.dockAttachment.setObjectName("Attachment")
+        self.dockAttachment.setWidget(self.attachmentView)
+
         self.setDockOptions(QMainWindow.VerticalTabs)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.dockIndex)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.dockSearch)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.dockToc)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.dockAttachment)
         self.tabifyDockWidget(self.dockIndex, self.dockSearch)
         self.tabifyDockWidget(self.dockSearch, self.dockToc)
+        self.tabifyDockWidget(self.dockToc, self.dockAttachment)
         self.setTabPosition(Qt.LeftDockWidgetArea, QTabWidget.North)
         self.dockIndex.raise_()      # Put dockIndex on top of the tab stack
 
