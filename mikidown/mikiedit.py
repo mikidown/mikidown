@@ -43,19 +43,19 @@ class MikiEdit(QTextEdit):
             return mime
 
         item = self.parent.notesTree.currentItem()
-        attachmentDir = self.parent.notesTree.itemToAttachmentDir(item)
-        if not QDir(attachmentDir).exists():
-            QDir().mkpath(attachmentDir)
+        attDir = self.parent.notesTree.itemToAttachmentDir(item)
+        if not QDir(attDir).exists():
+            QDir().mkpath(attDir)
 
         if source.hasUrls():
             for qurl in source.urls():
                 url = qurl.toString()
                 filename, extension = os.path.splitext(url)
                 filename = os.path.basename(filename)
-                newFilePath = os.path.join(attachmentDir, filename + extension)
+                newFilePath = os.path.join(attDir, filename + extension)
 
                 # TODO: Add a recognized file types list to config, 
-                # listed file types will be copied to attachmentDir 
+                # listed file types will be copied to attDir 
                 if extension.lower() in (".jpg", ".jpeg", ".png", ".gif", ".svg"):
                     url = url.replace("file://", "")
                     QFile.copy(url, newFilePath)

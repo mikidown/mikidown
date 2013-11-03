@@ -107,7 +107,7 @@ class MikiWindow(QMainWindow):
         self.actionPrint = self.act(self.tr(
             '&Print'), QKeySequence('Ctrl+P'), trig=self.printNote)
         self.actionRenamePage = self.act(self.tr(
-            '&Rename Page...'), QKeySequence('F2'), trig=self.notesTree.renamePageWrapper)
+            '&Rename Page...'), QKeySequence('F2'), trig=self.notesTree.renamePage)
         self.actionDelPage = self.act(self.tr(
             '&Delete Page'), QKeySequence('Delete'), trig=self.notesTree.delPageWrapper)
         self.actionQuit = self.act(self.tr('&Quit'), QKeySequence.Quit, SLOT('close()'))
@@ -342,6 +342,13 @@ class MikiWindow(QMainWindow):
                 item = QTreeWidgetItem(item, val)
                 curLevel = level
         self.tocTree.expandAll()
+
+    def updateAttachmentView(self):
+        # Update attachmentView to show corresponding attachments.
+        item = self.notesTree.currentItem()
+        index = self.attachmentView.model.index(
+            self.notesTree.itemToAttachmentDir(item))
+        self.attachmentView.setRootIndex(index)
 
     def openFile(self, filename):
         fh = QFile(filename)

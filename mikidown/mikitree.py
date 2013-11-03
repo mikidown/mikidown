@@ -7,7 +7,6 @@ Naming convention:
 """
 import os
 import datetime
-import hashlib
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -20,6 +19,7 @@ from mikidown.config import Setting
 class ItemDialog(QDialog):
     def __init__(self, parent=None):
         super(ItemDialog, self).__init__(parent)
+
         self.editor = QLineEdit()
         editorLabel = QLabel("Page Name:")
         editorLabel.setBuddy(self.editor)
@@ -64,6 +64,7 @@ class MikiTree(QTreeWidget):
 
     def __init__(self, parent=None):
         super(MikiTree, self).__init__(parent)
+        self.parent = parent
         self.settings = parent.settings
         self.notePath = self.settings.notePath
 
@@ -147,10 +148,7 @@ class MikiTree(QTreeWidget):
         needed and manipulation become easy
         """
         page = self.itemToPage(item)
-        m = hashlib.md5()
-        m.update(bytes(page, "utf-8"))
-        dirName = item.text(0) + '_' + m.hexdigest()
-        return os.path.join(self.settings.attachmentPath, dirName)
+        return os.path.join(self.settings.attachmentPath, page)
 
     def currentPage(self):
         return self.itemToPage(self.currentItem())
@@ -165,14 +163,12 @@ class MikiTree(QTreeWidget):
         menu.addAction("Collapse This Note Tree",
                        lambda item=self.currentItem(): self.recurseCollapse(item))
         menu.addAction("Uncollapse This Note Tree",
-                       lambda item=self.currentItem():  self.recurseExpand(item))
+                       lambda item=self.currentItem(): self.recurseExpand(item))
         menu.addAction("Collapse All", self.collapseAll)
         menu.addAction("Uncollapse All", self.expandAll)
         menu.addSeparator()
-        menu.addAction('Rename Page...',
-                       lambda item=self.currentItem(): self.renamePage(item))
-        self.delCallback = lambda item=self.currentItem(): self.delPage(item)
-        menu.addAction("Delete Page", self.delCallback)
+        menu.addAction('Rename Page...', self.renamePage)
+        menu.addAction("Delete Page", self.delPageWrapper)
         menu.exec_(QCursor.pos())
 
     def newPage(self, name=None):
@@ -216,6 +212,11 @@ class MikiTree(QTreeWidget):
             if hasattr(item, 'text'):
                 self.expandItem(item)
 
+            # create attachment folder if not exist
+            attDir = self.itemToAttachmentDir(newItem)
+            if not QDir(attDir).exists():
+                QDir().mkpath(attDir)
+
             # TODO improvement needed, can be reused somehow
             fileobj = open(fileName, 'r')
             content = fileobj.read()
@@ -226,7 +227,7 @@ class MikiTree(QTreeWidget):
             writer.commit()
 
     def dropEvent(self, event):
-        """ A note is related to three parts:
+        """ A note is related to four parts:
             note file, note folder containing child note, parent note folder. 
         When drag/drop, should take care of:
         1. rename note file ("rename" is just another way of saying "move")
@@ -237,6 +238,7 @@ class MikiTree(QTreeWidget):
         # construct file/folder names before and after drag/drop
         sourceItem = self.currentItem()
         sourcePage = self.itemToPage(sourceItem)
+        oldAttDir = self.itemToAttachmentDir(sourceItem)
         targetItem = self.itemAt(event.pos())
         targetPage = self.itemToPage(targetItem)
         oldFile = self.itemToFile(sourceItem)
@@ -268,11 +270,16 @@ class MikiTree(QTreeWidget):
         if hasattr(targetItem, 'text'):
             self.expandItem(targetItem)
 
-    def renamePageWrapper(self):
-        item = self.currentItem()
-        self.renamePage(item)
+        # if attachment folder exists, rename it
+        if QDir().exists(oldAttDir):
+            newAttDir = self.itemToAttachmentDir(sourceItem)
+            print(oldAttDir, newAttDir)
+            QDir().rename(oldAttDir, newAttDir)
+            self.parent.updateAttachmentView()
 
-    def renamePage(self, item):
+    def renamePage(self):
+        item = self.currentItem()
+        oldAttDir = self.itemToAttachmentDir(item)
         parent = item.parent()
         parentPage = self.itemToPage(parent)
         dialog = ItemDialog(self)
@@ -283,7 +290,7 @@ class MikiTree(QTreeWidget):
             # if hasattr(item, 'text'):       # if item is not QTreeWidget
             if parentPage != '':
                 parentPage = parentPage + '/'
-            oldFile = self.pageToFile(item.text(0))
+            oldFile = self.itemToFile(item)
             newFile = parentPage + newPageName + self.settings.fileExt
             QDir(self.notePath).rename(oldFile, newFile)
             if item.childCount() != 0:
@@ -292,6 +299,12 @@ class MikiTree(QTreeWidget):
                 QDir(self.notePath).rename(oldDir, newDir)
             item.setText(0, newPageName)
             self.sortItems(0, Qt.AscendingOrder)
+
+            # if attachment folder exists, rename it
+            if QDir().exists(oldAttDir):
+                newAttDir = self.itemToAttachmentDir(item)
+                QDir().rename(oldAttDir, newAttDir)
+                self.parent.updateAttachmentView()
 
     def pageExists(self, noteFullName):
         return self.pageToFile(noteFullName) != ""
@@ -307,6 +320,12 @@ class MikiTree(QTreeWidget):
             index = index - 1
             self.dirname = item.child(index).text(0)
             self.delPage(item.child(index))
+
+        # remove attachment folder
+        attDir = self.itemToAttachmentDir(item)
+        for info in QDir(attDir).entryInfoList():
+            QDir().remove(info.absoluteFilePath())
+        QDir().rmdir(attDir)
 
         pagePath = self.itemToPage(item)
         self.ix = open_dir(self.indexdir)

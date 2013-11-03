@@ -1,3 +1,4 @@
+import os
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
@@ -54,9 +55,11 @@ class AttachmentView(QListView):
 
     def __init__(self, parent=None):
         super(AttachmentView, self).__init__(parent)
+        self.parent = parent
         self.settings = parent.settings
 
         self.model = QFileSystemModel()
+        self.model.setFilter(QDir.Files | QDir.AllDirs | QDir.NoDotAndDotDot | ~QDir.Dirs)
         self.model.setRootPath(self.settings.attachmentPath)
         self.setModel(self.model)
 
@@ -69,6 +72,7 @@ class AttachmentView(QListView):
 
     def contextMenuEvent(self, event):
         menu = QMenu()
+        menu.addAction("Insert into note", self.insert)
         menu.addAction("Delete", self.delete)
         menu.exec_(QCursor.pos())
 
@@ -84,11 +88,20 @@ class AttachmentView(QListView):
         self.clearSelection()
         QListView.mouseReleaseEvent(self, event)
 
+    def insert(self):
+        indice = self.selectedIndexes()
+        for i in indice:
+            filePath = self.model.filePath(i)
+            filePath = filePath.replace(self.settings.notebookPath, "..")
+            fileName = os.path.basename(filePath)
+            text = "![%s](%s)" % (fileName, filePath)
+            self.parent.notesEdit.insertPlainText(text)
+
     def delete(self):
         indice = self.selectedIndexes()
         for i in indice:
             filePath = self.model.filePath(i)
-            print(filePath)
+            QFile(filePath).remove()
 
     def click(self, index):
         self.setCurrentIndex(index)
