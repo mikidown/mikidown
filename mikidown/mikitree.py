@@ -7,6 +7,7 @@ Naming convention:
 """
 import os
 import datetime
+import hashlib
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -139,6 +140,17 @@ class MikiTree(QTreeWidget):
         """ The corresponding html file path """
         page = self.itemToPage(item)
         return os.path.join(self.settings.htmlPath, page + ".html")
+
+    def itemToAttachmentDir(self, item):
+        """ The corresponding attachment directory 
+        dirName is constructed by pageName and md5(page), so that no nesting 
+        needed and manipulation become easy
+        """
+        page = self.itemToPage(item)
+        m = hashlib.md5()
+        m.update(bytes(page, "utf-8"))
+        dirName = item.text(0) + '_' + m.hexdigest()
+        return os.path.join(self.settings.attachmentPath, dirName)
 
     def currentPage(self):
         return self.itemToPage(self.currentItem())

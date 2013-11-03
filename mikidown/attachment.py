@@ -3,9 +3,9 @@ from PyQt4.QtGui import *
 
 class AttachmentItemDelegate(QStyledItemDelegate):
 
-    def __init__(self, model, parent=None):
+    def __init__(self, parent=None):
         super(AttachmentItemDelegate, self).__init__(parent)
-        self.model = model
+        self.model = parent.model
         self.width = 96
         self.height = 128
         self.nameHeight = 48
@@ -60,11 +60,11 @@ class AttachmentView(QListView):
         self.model.setRootPath(self.settings.attachmentPath)
         self.setModel(self.model)
 
-        self.setRootIndex(self.model.index(self.settings.attachmentPath))
+        # self.setRootIndex(self.model.index(self.settings.attachmentPath))
         self.setViewMode(QListView.IconMode)
         self.setUniformItemSizes(True)
         self.setResizeMode(QListView.Adjust)
-        self.setItemDelegate(AttachmentItemDelegate(self.model, self))
+        self.setItemDelegate(AttachmentItemDelegate(self))
         self.clicked.connect(self.click)
 
     def contextMenuEvent(self, event):

@@ -1,6 +1,6 @@
 import os
 from multiprocessing import Process
-from PyQt4.QtCore import QDir, QFile, QFileInfo, QTextStream, QIODevice
+from PyQt4.QtCore import QDir, QFile, QFileInfo, QTextStream, QIODevice, QMimeData
 from PyQt4.QtGui import QTextEdit, QFileDialog, QMessageBox
 import markdown
 from whoosh.index import open_dir
@@ -28,6 +28,46 @@ class MikiEdit(QTextEdit):
             writer.update_document(
                 path=path, title=parseTitle(content, path), content=content)
             writer.commit()
+
+    def insertFromMimeData(self, source):
+        """ Intended behavior
+        If copy/drag something that hasUrls, then check the extension name:
+            if image then apply image pattern ![Alt text](/path/to/img.jpg)
+                     else apply link  pattern [text](http://example.net)
+        Else use the default insertFromMimeData implementation
+        """
+        
+        def mimeFromText(text):
+            mime = QMimeData()
+            mime.setText(text)
+            return mime
+
+        item = self.parent.notesTree.currentItem()
+        attachmentDir = self.parent.notesTree.itemToAttachmentDir(item)
+        if not QDir(attachmentDir).exists():
+            QDir().mkpath(attachmentDir)
+
+        if source.hasUrls():
+            for qurl in source.urls():
+                url = qurl.toString()
+                filename, extension = os.path.splitext(url)
+                filename = os.path.basename(filename)
+                newFilePath = os.path.join(attachmentDir, filename + extension)
+
+                # TODO: Add a recognized file types list to config, 
+                # listed file types will be copied to attachmentDir 
+                if extension.lower() in (".jpg", ".jpeg", ".png", ".gif", ".svg"):
+                    url = url.replace("file://", "")
+                    QFile.copy(url, newFilePath)
+
+                    # Rewrite as relative file path
+                    newFilePath = newFilePath.replace(self.settings.notebookPath, "..")
+                    text = "![%s](%s)" % (filename, newFilePath)
+                else:
+                    text = "[%s%s](%s)\n" % (filename, extension, url)
+                super(MikiEdit, self).insertFromMimeData(mimeFromText(text))
+        else:
+            super(MikiEdit, self).insertFromMimeData(source)
 
     def save(self, item):
         pageName = self.parent.notesTree.itemToPage(item)
