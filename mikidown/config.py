@@ -31,6 +31,8 @@ class Setting():
             self.extensions = readListFromSettings(self.qsettings,
                                                    "extensions")
             self.fileExt = self.qsettings.value("fileExt")
+            self.attachmentImage = self.qsettings.value("attachmentImage")
+            self.attachmentDocument = self.qsettings.value("attachmentDocument")
             self.geometry = self.qsettings.value("geometry")
             self.windowstate = self.qsettings.value("windowstate")
             if self.qsettings.value("autoSaveHtml"):
@@ -42,6 +44,8 @@ class Setting():
             self.qsettings.setValue("autoSaveHtml", False)
             self.extensions = []
             self.fileExt = ""
+            self.attachmentImage = []
+            self.attachmentDocument = []
             self.geometry = None
             self.windowstate = None
 
@@ -63,6 +67,18 @@ class Setting():
         if not self.fileExt:
             self.fileExt = ".md"
             self.qsettings.setValue("fileExt", self.fileExt)
+
+        # Image file types that will be copied to attachmentDir 
+        # Inserted as image link
+        if not self.attachmentImage:
+            self.attachmentImage = [".jpg", ".jpeg", ".png", ".gif", ".svg"]
+            self.qsettings.setValue("attachmentImage", self.attachmentImage)
+
+        # Document file types that will be copied to attachmentDir 
+        # Inserted as link
+        if not self.attachmentDocument:
+            self.attachmentDocument = [".pdf", ".doc", ".odt"]
+            self.qsettings.setValue("attachmentDocument", self.attachmentDocument)
 
         # Default autoSaveHtml to False
         if not self.autoSaveHtml:

@@ -228,11 +228,12 @@ class MikiTree(QTreeWidget):
 
     def dropEvent(self, event):
         """ A note is related to four parts:
-            note file, note folder containing child note, parent note folder. 
+            note file, note folder containing child note, parent note folder, attachment folder. 
         When drag/drop, should take care of:
         1. rename note file ("rename" is just another way of saying "move")
         2. rename note folder
         3. if parent note has no more child, remove parent note folder
+        4. rename attachment folder
         """
 
         # construct file/folder names before and after drag/drop
@@ -272,8 +273,10 @@ class MikiTree(QTreeWidget):
 
         # if attachment folder exists, rename it
         if QDir().exists(oldAttDir):
+            # make sure target folder exists
+            QDir().mkpath(self.itemToAttachmentDir(targetItem))
+
             newAttDir = self.itemToAttachmentDir(sourceItem)
-            print(oldAttDir, newAttDir)
             QDir().rename(oldAttDir, newAttDir)
             self.parent.updateAttachmentView()
 

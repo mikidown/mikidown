@@ -56,13 +56,22 @@ class MikiEdit(QTextEdit):
 
                 # TODO: Add a recognized file types list to config, 
                 # listed file types will be copied to attDir 
-                if extension.lower() in (".jpg", ".jpeg", ".png", ".gif", ".svg"):
+                if extension.lower() in self.settings.attachmentImage:
                     url = url.replace("file://", "")
                     QFile.copy(url, newFilePath)
+                    self.parent.updateAttachmentView()
 
                     # Rewrite as relative file path
                     newFilePath = newFilePath.replace(self.settings.notebookPath, "..")
                     text = "![%s](%s)" % (filename, newFilePath)
+                elif extension.lower() in self.settings.attachmentDocument:
+                    url = url.replace("file://", "")
+                    QFile.copy(url, newFilePath)
+                    self.parent.updateAttachmentView()
+
+                    # Rewrite as relative file path
+                    newFilePath = newFilePath.replace(self.settings.notebookPath, "..")
+                    text = "[%s%s](%s)\n" % (filename, extension, newFilePath)
                 else:
                     text = "[%s%s](%s)\n" % (filename, extension, url)
                 super(MikiEdit, self).insertFromMimeData(mimeFromText(text))
