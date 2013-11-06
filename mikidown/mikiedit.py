@@ -1,6 +1,7 @@
 import os
 from multiprocessing import Process
-from PyQt4.QtCore import QDir, QFile, QFileInfo, QTextStream, QIODevice, QMimeData
+from PyQt4.QtCore import *
+from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from PyQt4.QtGui import QTextEdit, QFileDialog, QMessageBox
 import markdown
 from whoosh.index import open_dir
@@ -21,6 +22,10 @@ class MikiEdit(QTextEdit):
         indexdir = os.path.join(self.settings.notePath, 
                                 self.settings.indexdir)
         self.ix = open_dir(indexdir)
+        
+        self.downloadAs = ""
+        self.networkManager = QNetworkAccessManager()
+        self.networkManager.finished.connect(self.downloadFinished)
 
     def updateIndex(self, path, content):
             ''' Update whoosh index, which cost much computing resource '''
@@ -28,6 +33,17 @@ class MikiEdit(QTextEdit):
             writer.update_document(
                 path=path, title=parseTitle(content, path), content=content)
             writer.commit()
+
+    def downloadFinished(self, reply):
+        if reply.error():
+            print("Failed to download")
+        else:
+            attFile = QFile(self.downloadAs)
+            attFile.open(QIODevice.WriteOnly)
+            attFile.write(reply.readAll())
+            attFile.close()
+            print("Succeeded")
+        reply.deleteLater()
 
     def insertFromMimeData(self, source):
         """ Intended behavior
@@ -53,27 +69,33 @@ class MikiEdit(QTextEdit):
                 filename, extension = os.path.splitext(url)
                 filename = os.path.basename(filename)
                 newFilePath = os.path.join(attDir, filename + extension)
+                relativeFilePath = newFilePath.replace(self.settings.notebookPath, "..")
+                attachments = self.settings.attachmentImage + self.settings.attachmentDocument
 
-                # TODO: Add a recognized file types list to config, 
-                # listed file types will be copied to attDir 
-                if extension.lower() in self.settings.attachmentImage:
-                    url = url.replace("file://", "")
-                    QFile.copy(url, newFilePath)
-                    self.parent.updateAttachmentView()
+                if QUrl(qurl).isLocalFile():
+                    if extension.lower() in attachments:
+                        nurl = url.replace("file://", "")
+                        QFile.copy(nurl, newFilePath)
+                        self.parent.updateAttachmentView()
 
-                    # Rewrite as relative file path
-                    newFilePath = newFilePath.replace(self.settings.notebookPath, "..")
-                    text = "![%s](%s)" % (filename, newFilePath)
-                elif extension.lower() in self.settings.attachmentDocument:
-                    url = url.replace("file://", "")
-                    QFile.copy(url, newFilePath)
-                    self.parent.updateAttachmentView()
-
-                    # Rewrite as relative file path
-                    newFilePath = newFilePath.replace(self.settings.notebookPath, "..")
-                    text = "[%s%s](%s)\n" % (filename, extension, newFilePath)
+                        if extension.lower() in self.settings.attachmentImage:
+                            text = "![%s](%s)" % (filename, relativeFilePath)
+                        elif extension.lower() in self.settings.attachmentDocument:
+                            text = "[%s%s](%s)\n" % (filename, extension, relativeFilePath)
+                    else:
+                        text = "[%s%s](%s)\n" % (filename, extension, url)
                 else:
-                    text = "[%s%s](%s)\n" % (filename, extension, url)
+                    if extension.lower() in attachments:
+                        self.downloadAs = newFilePath
+                        self.networkManager.get(QNetworkRequest(qurl))
+
+                        if extension.lower() in self.settings.attachmentImage:
+                            text = "![%s](%s)" % (filename, relativeFilePath)
+                        elif extension.lower() in self.settings.attachmentDocument:
+                            text = "[%s%s](%s)\n" % (filename, extension, relativeFilePath)
+                    else:
+                        text = "[%s%s](%s)\n" % (filename, extension, url)
+
                 super(MikiEdit, self).insertFromMimeData(mimeFromText(text))
         else:
             super(MikiEdit, self).insertFromMimeData(source)
