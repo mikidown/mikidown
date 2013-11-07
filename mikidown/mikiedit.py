@@ -1,14 +1,37 @@
 import os
 from multiprocessing import Process
 from PyQt4.QtCore import *
+from PyQt4.QtGui import *
 from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkRequest
-from PyQt4.QtGui import QTextEdit, QFileDialog, QMessageBox
 import markdown
 from whoosh.index import open_dir
 
 from mikidown.config import *
 from mikidown.utils import parseTitle
 
+
+class AttachmentFileName(QDialog):
+    def __init__(self, parent=None):
+        super(AttachmentFileName, self).__init__(parent)
+        self.editor = QLineEdit()
+        editorLabel = QLabel("File Name:")
+        editorLabel.setBuddy(self.editor)
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
+                                          QDialogButtonBox.Cancel)
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+        layout = QGridLayout()
+        layout.addWidget(editorLabel, 0, 0)
+        layout.addWidget(self.editor, 0, 1)
+        layout.addWidget(self.buttonBox, 1, 1)
+        self.setLayout(layout)
+        self.connect(self.editor, SIGNAL("textEdited(QString)"),
+                     self.updateUi)
+        self.connect(self.buttonBox, SIGNAL("accepted()"), self.accept)
+        self.connect(self.buttonBox, SIGNAL("rejected()"), self.reject)
+
+    def updateUi(self):
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(
+            self.editor.text() != "")
 
 class MikiEdit(QTextEdit):
 
@@ -59,6 +82,7 @@ class MikiEdit(QTextEdit):
         If copy/drag something that hasUrls, then check the extension name:
             if image then apply image pattern ![Alt text](/path/to/img.jpg)
                      else apply link  pattern [text](http://example.net)
+        If copy/drag something that hasImage, then ask for file name
         Else use the default insertFromMimeData implementation
         """
         
@@ -105,6 +129,19 @@ class MikiEdit(QTextEdit):
                     else:
                         text = "[%s%s](%s)\n" % (filename, extension, url)
 
+                super(MikiEdit, self).insertFromMimeData(mimeFromText(text))
+        elif source.hasImage():
+            img = source.imageData()
+            dialog = AttachmentFileName(self)
+            if dialog.exec_():
+                fileName = dialog.editor.text()
+                if not QFileInfo(fileName).suffix():
+                    fileName += '.jpg'
+                attDir = self.parent.notesTree.itemToAttachmentDir(item)
+                filePath = os.path.join(attDir, fileName)
+                img.save(filePath)
+                relativeFilePath = filePath.replace(self.settings.notebookPath, "..")
+                text = "![%s](%s)" % (fileName, relativeFilePath)
                 super(MikiEdit, self).insertFromMimeData(mimeFromText(text))
         else:
             super(MikiEdit, self).insertFromMimeData(source)
