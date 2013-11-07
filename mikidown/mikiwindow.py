@@ -132,7 +132,7 @@ class MikiWindow(QMainWindow):
         self.actionSortLines = self.act(
             self.tr('&Sort Lines'), trig=self.sortLines)
         self.actionInsertImage = self.act(
-            self.tr('&Insert Image'), QKeySequence('Ctrl+I'), trig=self.insertImage)
+            self.tr('&Insert Attachment'), QKeySequence('Ctrl+I'), trig=self.notesEdit.insertAttachmentWrapper)
         self.actionInsertImage.setEnabled(False)
 
         # actions in menuView
@@ -609,14 +609,6 @@ class MikiWindow(QMainWindow):
         lines = text.split('\u2029')      # '\u2029' is the line break
         sortedLines = sorted(lines)
         self.notesEdit.insertPlainText('\n'.join(sortedLines))
-
-    def insertImage(self):
-        # TODO how to include all image types?
-        filename = QFileDialog.getOpenFileName(
-            self, self.tr('Insert image'), '',
-            '(*.jpg *.png *.gif *.tif);;'+self.tr('All files(*)'))
-        filename = '![](file://' + filename + ')'
-        self.notesEdit.insertPlainText(filename)
 
     def notesEditInFocus(self, e):
         if e.gotFocus:

@@ -23,6 +23,15 @@ class MikiEdit(QTextEdit):
                                 self.settings.indexdir)
         self.ix = open_dir(indexdir)
         
+        self.imageFilter = ""
+        self.documentFilter = ""
+        for ext in self.settings.attachmentImage:
+            self.imageFilter += " *" + ext
+        for ext in self.settings.attachmentDocument:
+            self.documentFilter += " *" + ext
+        self.imageFilter = "Image (" + self.imageFilter.strip() + ")"
+        self.documentFilter = "Document (" + self.documentFilter.strip() + ")"
+
         self.downloadAs = ""
         self.networkManager = QNetworkAccessManager()
         self.networkManager.finished.connect(self.downloadFinished)
@@ -99,6 +108,29 @@ class MikiEdit(QTextEdit):
                 super(MikiEdit, self).insertFromMimeData(mimeFromText(text))
         else:
             super(MikiEdit, self).insertFromMimeData(source)
+
+    def insertAttachment(self, filePath, fileType):
+        item = self.parent.notesTree.currentItem()
+        attDir = self.parent.notesTree.itemToAttachmentDir(item)
+        filename, extension = os.path.splitext(filePath)
+        filename = os.path.basename(filename)
+        newFilePath = os.path.join(attDir, filename + extension)
+        relativeFilePath = newFilePath.replace(self.settings.notebookPath, "..")
+        QFile.copy(filePath, newFilePath)
+        self.parent.updateAttachmentView()
+        if fileType == self.imageFilter:
+            text = "![%s](%s)" % (filename, relativeFilePath)
+        else:
+            text = "[%s%s](%s)\n" % (filename, extension, relativeFilePath)
+        self.insertPlainText(text)
+
+    def insertAttachmentWrapper(self):
+        (filePath, fileType) = QFileDialog.getSaveFileNameAndFilter(
+            self, self.tr('Insert attachment'), '',
+            self.imageFilter + ";;" + self.documentFilter)
+        if filePath == "":
+            return
+        self.insertAttachment(filePath, fileType)
 
     def save(self, item):
         pageName = self.parent.notesTree.itemToPage(item)
