@@ -33,10 +33,12 @@ class MikiWindow(QMainWindow):
 
     def setupCoreComponents(self):
         self.notesTree = MikiTree(self)
+        self.notesTree.setObjectName("notesTree")
         self.initTree(self.notePath, self.notesTree)
         self.notesTree.sortItems(0, Qt.AscendingOrder)
 
         self.notesEdit = MikiEdit(self)
+        self.notesEdit.setObjectName("notesEdit")
         MikiHighlighter(self.notesEdit)
         self.notesView = MikiView(self)
 

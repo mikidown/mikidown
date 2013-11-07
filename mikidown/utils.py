@@ -1,6 +1,65 @@
+import os
 import re
 from markdown.extensions.headerid import slugify, unique
+from PyQt4.QtCore import QFile
+from PyQt4.QtGui import *
 
+
+class LineEditDialog(QDialog):
+    """ A dialog asking for page/file name.
+        It also checks for name crash.
+    """
+
+    def __init__(self, path, parent=None):
+        super(LineEditDialog, self).__init__(parent)
+        self.path = path
+
+        # newPage/newSubpage
+        if parent.objectName() == "notesTree":
+            editorLabel = QLabel("Page Name:")
+            self.extNames = [".md", ".markdown", ".mkd"]
+        # Copy Image to notesEdit
+        elif parent.objectName() == "notesEdit":
+            editorLabel = QLabel("File Name:")
+            self.extNames = ["", ".jpg"]
+        else:
+            return
+
+        self.editor = QLineEdit()
+        editorLabel.setBuddy(self.editor)
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
+                                          QDialogButtonBox.Cancel)
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+        layout = QGridLayout()
+        layout.addWidget(editorLabel, 0, 0)
+        layout.addWidget(self.editor, 0, 1)
+        layout.addWidget(self.buttonBox, 1, 1)
+        self.setLayout(layout)
+
+        self.editor.textEdited.connect(self.updateUi)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+    def setText(self, text):
+        self.editor.setText(text)
+        self.editor.selectAll()
+
+    def updateUi(self):
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(
+            self.editor.text() != "")
+
+    def accept(self):
+        notePath = os.path.join(self.path, self.editor.text())
+
+        acceptable = True
+        for ext in self.extNames:
+            if QFile.exists(notePath + ext):
+                acceptable = False
+                QMessageBox.warning(self, 'Error',
+                                    'File already exists: %s' % notePath + ext)
+                break
+        if acceptable:
+            QDialog.accept(self)
 
 def parseHeaders(source):
     """ Parse headers to construct Table Of Contents

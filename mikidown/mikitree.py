@@ -13,51 +13,8 @@ from PyQt4.QtGui import *
 from whoosh.index import open_dir
 from whoosh.qparser import QueryParser
 
-from mikidown.config import Setting
-
-
-class ItemDialog(QDialog):
-    def __init__(self, parent=None):
-        super(ItemDialog, self).__init__(parent)
-
-        self.editor = QLineEdit()
-        editorLabel = QLabel("Page Name:")
-        editorLabel.setBuddy(self.editor)
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                          QDialogButtonBox.Cancel)
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
-        layout = QGridLayout()
-        layout.addWidget(editorLabel, 0, 0)
-        layout.addWidget(self.editor, 0, 1)
-        layout.addWidget(self.buttonBox, 1, 1)
-        self.setLayout(layout)
-        self.connect(self.editor, SIGNAL("textEdited(QString)"),
-                     self.updateUi)
-        self.connect(self.buttonBox, SIGNAL("accepted()"), self.accept)
-        self.connect(self.buttonBox, SIGNAL("rejected()"), self.reject)
-
-    def setPath(self, path):
-        self.path = path
-
-    def setText(self, text):
-        self.editor.setText(text)
-        self.editor.selectAll()
-
-    def updateUi(self):
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(
-            self.editor.text() != "")
-
-    def accept(self):
-        if self.path == '':
-            notePath = self.editor.text()
-        else:
-            notePath = self.path + '/' + self.editor.text()
-
-        if QFile.exists(notePath+'.md') or QFile.exists(notePath+'.mkd') or QFile.exists(notePath+'.markdown'):
-            QMessageBox.warning(self, 'Error',
-                                'Page already exists: %s' % notePath)
-        else:
-            QDialog.accept(self)
+from .config import Setting
+from .utils import LineEditDialog
 
 
 class MikiTree(QTreeWidget):
@@ -188,8 +145,7 @@ class MikiTree(QTreeWidget):
     def newPageCore(self, item, newPageName):
         pagePath = os.path.join(self.notePath, self.itemToPage(item))
         if not newPageName:
-            dialog = ItemDialog(self)
-            dialog.setPath(pagePath)
+            dialog = LineEditDialog(pagePath, self)
             if dialog.exec_():
                 newPageName = dialog.editor.text()
         if newPageName:
@@ -285,8 +241,8 @@ class MikiTree(QTreeWidget):
         oldAttDir = self.itemToAttachmentDir(item)
         parent = item.parent()
         parentPage = self.itemToPage(parent)
-        dialog = ItemDialog(self)
-        dialog.setPath(parentPage)
+        parentPath = os.path.join(self.notePath, parentPage)
+        dialog = LineEditDialog(parentPath, self)
         dialog.setText(item.text(0))
         if dialog.exec_():
             newPageName = dialog.editor.text()

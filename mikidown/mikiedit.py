@@ -6,32 +6,9 @@ from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkRequest
 import markdown
 from whoosh.index import open_dir
 
-from mikidown.config import *
-from mikidown.utils import parseTitle
+from .config import *
+from .utils import LineEditDialog, parseTitle
 
-
-class AttachmentFileName(QDialog):
-    def __init__(self, parent=None):
-        super(AttachmentFileName, self).__init__(parent)
-        self.editor = QLineEdit()
-        editorLabel = QLabel("File Name:")
-        editorLabel.setBuddy(self.editor)
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                          QDialogButtonBox.Cancel)
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
-        layout = QGridLayout()
-        layout.addWidget(editorLabel, 0, 0)
-        layout.addWidget(self.editor, 0, 1)
-        layout.addWidget(self.buttonBox, 1, 1)
-        self.setLayout(layout)
-        self.connect(self.editor, SIGNAL("textEdited(QString)"),
-                     self.updateUi)
-        self.connect(self.buttonBox, SIGNAL("accepted()"), self.accept)
-        self.connect(self.buttonBox, SIGNAL("rejected()"), self.reject)
-
-    def updateUi(self):
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(
-            self.editor.text() != "")
 
 class MikiEdit(QTextEdit):
 
@@ -132,12 +109,12 @@ class MikiEdit(QTextEdit):
                 super(MikiEdit, self).insertFromMimeData(mimeFromText(text))
         elif source.hasImage():
             img = source.imageData()
-            dialog = AttachmentFileName(self)
+            attDir = self.parent.notesTree.itemToAttachmentDir(item)
+            dialog = LineEditDialog(attDir, self)
             if dialog.exec_():
                 fileName = dialog.editor.text()
                 if not QFileInfo(fileName).suffix():
                     fileName += '.jpg'
-                attDir = self.parent.notesTree.itemToAttachmentDir(item)
                 filePath = os.path.join(attDir, fileName)
                 img.save(filePath)
                 relativeFilePath = filePath.replace(self.settings.notebookPath, "..")
