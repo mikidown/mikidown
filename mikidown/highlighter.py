@@ -1,9 +1,12 @@
 import re
 
 from PyQt4.QtGui import QSyntaxHighlighter, QColor, QFont, QTextCharFormat
+from PyQt4.Qt import Qt
 
 
 class MikiHighlighter(QSyntaxHighlighter):
+
+    WORDS = r'(?iu)[\w\']+'
 
     def __init__(self, parent=None):
         super(MikiHighlighter, self).__init__(parent)
@@ -82,11 +85,25 @@ class MikiHighlighter(QSyntaxHighlighter):
             if color[i] != 0:
                 f.setForeground(color[i])
             self.patterns.append((p, f))
+        self.speller = parent.speller
 
         fenced_font = QFont("monospace", baseFontSize, -1)
         self.fenced_block = re.compile("^(?:~{3,}|`{3,}).*$")
         self.fenced_format = QTextCharFormat()
         self.fenced_format.setFont(fenced_font)
+
+
+    def highlightSpellcheck(self, text):
+        for word_object in re.finditer(self.WORDS, str(text)):
+            if not word_object.group():
+                # don't bother with empty words
+                continue
+            if not self.speller.check(word_object.group()):
+                current_format = self.format(word_object.start())
+                current_format.setUnderlineColor(Qt.red)
+                current_format.setUnderlineStyle(QTextCharFormat.SpellCheckUnderline)
+                self.setFormat(word_object.start(),
+                    word_object.end() - word_object.start(), current_format)
 
     def highlightBlock(self, text):
         # highlight patterns
@@ -108,3 +125,5 @@ class MikiHighlighter(QSyntaxHighlighter):
             else:
                 self.setCurrentBlockState(1)
                 self.setFormat(0, len(text), self.fenced_format)
+        self.highlightSpellcheck(text)
+
