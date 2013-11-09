@@ -24,7 +24,7 @@ class Setting():
         self.htmlPath = os.path.join(self.notebookPath, "html", "notes")
         self.attachmentPath = os.path.join(self.notebookPath, "attachments")
         self.configfile = os.path.join(self.notebookPath, "notebook.conf")
-        self.cssfile = os.path.join(self.notebookPath, "notebook.css")
+        self.cssfile = os.path.join(self.notebookPath, "css", "notebook.css")
         self.qsettings = QSettings(self.configfile, QSettings.NativeFormat)
 
         if os.path.exists(self.configfile):

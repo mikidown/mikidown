@@ -29,13 +29,14 @@ class MikiWindow(QMainWindow):
         self.setupCoreComponents()
         self.setupActions()
         self.setupMainWindow()
-        self.setupWhoosh()
 
     def setupCoreComponents(self):
         self.notesTree = MikiTree(self)
         self.notesTree.setObjectName("notesTree")
         self.initTree(self.notePath, self.notesTree)
         self.notesTree.sortItems(0, Qt.AscendingOrder)
+
+        self.setupWhoosh()
 
         self.notesEdit = MikiEdit(self)
         self.notesEdit.setObjectName("notesEdit")

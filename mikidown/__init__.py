@@ -26,16 +26,17 @@ def main():
         Mikibook.create()
         notebooks = Mikibook.read()
 
-    settings = Setting(notebooks)
-    # Initialize application and main window.
-    icon = QIcon(":/icons/mikidown.svg")
-    app.setWindowIcon(icon)
-    window = MikiWindow(settings)
-    window.show()
-    window.restore()        # Restore after window show.
-    tray = MikiTray(icon, window)
-    tray.show()
-    sys.exit(app.exec_())
+    if len(notebooks) != 0:
+        settings = Setting(notebooks)
+        # Initialize application and main window.
+        icon = QIcon(":/icons/mikidown.svg")
+        app.setWindowIcon(icon)
+        window = MikiWindow(settings)
+        window.show()
+        window.restore()        # Restore after window show.
+        tray = MikiTray(icon, window)
+        tray.show()
+        sys.exit(app.exec_())
 
 if __name__ == '__main__':
     main()

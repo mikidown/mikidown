@@ -227,26 +227,21 @@ class Mikibook():
 
     def add(notebookName, notebookPath):
         """ Called by create()
-            Initialise the notebook directory.
+        A notebook directory will be initialised to:
+            css/  notebook.conf  notes/  whooshindex/
         """
-        # Make sure there is notebook.css in notebookPath
-        if not os.path.isdir(notebookPath):
-            os.makedirs(notebookPath)
-        cssFile = os.path.join(notebookPath, 'notebook.css')
-        if os.path.exists('/usr/share/mikidown/notebook.css'):
-            cssTemplate = '/usr/share/mikidown/notebook.css'
+
+        # QDir().mkpath will create all necessary parent directories
+        QDir().mkpath(os.path.join(notebookPath, "notes"))
+        QDir().mkpath(os.path.join(notebookPath, "css"))
+        cssFile = os.path.join(notebookPath, "css", "notebook.css")
+        if os.path.exists("/usr/share/mikidown/notebook.css"):
+            cssTemplate = "/usr/share/mikidown/notebook.css"
         else:
             cssTemplate = os.path.join(
-                os.path.dirname(__file__), 'notebook.css')
+                os.path.dirname(__file__), "notebook.css")
         # If //cssFile// already exists, copy() returns false!
         QFile.copy(cssTemplate, cssFile)
-
-        htmlNoteDir = os.path.join(notebookPath, "html", "notes")
-        htmlCssDir = os.path.join(notebookPath, "html", "css")
-        QDir().mkpath(htmlNoteDir)
-        QDir().mkpath(htmlCssDir)
-        htmlCssDirFile = os.path.join(htmlCssDir, 'notebook.css')
-        QFile.copy(cssTemplate, htmlCssDirFile)
 
         # If settings==None, initialize notebook dir without writing to 
         # configuration file.
