@@ -170,14 +170,6 @@ class MikiEdit(QTextEdit):
                     pageName, self.toPlainText(),))
                 p.start()
 
-        if self.settings.autoSaveHtml:
-            try:
-                self.saveHtmlOnly(htmlFile)
-            except IOError as e:
-                QMessageBox.warning(self, 'Save Error',
-                        'Failed to saveHtml %s: %s' % (pageName, e))
-                raise
-
     def toHtml(self):
         '''markdown.Markdown.convert v.s. markdown.markdown
             Previously `convert` was used, but it doens't work with fenced_code

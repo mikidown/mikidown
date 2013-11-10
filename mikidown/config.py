@@ -35,13 +35,7 @@ class Setting():
             self.attachmentDocument = self.qsettings.value("attachmentDocument")
             self.geometry = self.qsettings.value("geometry")
             self.windowstate = self.qsettings.value("windowstate")
-            if self.qsettings.value("autoSaveHtml"):
-                self.autoSaveHtml = self.qsettings.value("autoSaveHtml").lower() in ["1", "true", "yes"]
-            else:
-                self.autoSaveHtml = False
         else:
-            self.autoSaveHtml = False
-            self.qsettings.setValue("autoSaveHtml", False)
             self.extensions = []
             self.fileExt = ""
             self.attachmentImage = []
@@ -79,10 +73,6 @@ class Setting():
         if not self.attachmentDocument:
             self.attachmentDocument = [".pdf", ".doc", ".odt"]
             self.qsettings.setValue("attachmentDocument", self.attachmentDocument)
-
-        # Default autoSaveHtml to False
-        if not self.autoSaveHtml:
-            self.qsettings.setValue("autoSaveHtml", self.autoSaveHtml)
 
     def saveGeometry(self, geometry):
         self.qsettings.setValue("geometry", geometry)
