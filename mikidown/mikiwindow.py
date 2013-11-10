@@ -290,7 +290,7 @@ class MikiWindow(QMainWindow):
     def setupWhoosh(self):
         # Initialize whoosh index, make sure notePath/.indexdir exists
         self.ix = None
-        indexdir = os.path.join(self.notePath, self.settings.indexdir)
+        indexdir = self.settings.indexdir
         if not QDir(indexdir).exists():
             QDir().mkdir(indexdir)
             self.ix = create_in(indexdir, self.settings.schema)

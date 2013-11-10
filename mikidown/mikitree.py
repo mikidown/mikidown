@@ -35,7 +35,6 @@ class MikiTree(QTreeWidget):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self.customContextMenuRequested.connect(self.contextMenu)
-        self.indexdir = os.path.join(self.notePath, self.settings.indexdir)
 
     def itemToPage(self, item):
         """ get item hierarchy from item """
@@ -177,7 +176,7 @@ class MikiTree(QTreeWidget):
             fileobj = open(fileName, 'r')
             content = fileobj.read()
             fileobj.close()
-            self.ix = open_dir(self.indexdir)
+            self.ix = open_dir(self.settings.indexdir)
             writer = self.ix.writer()
             writer.add_document(path=pagePath+newPageName, content=content)
             writer.commit()
@@ -287,7 +286,7 @@ class MikiTree(QTreeWidget):
         QDir().rmdir(attDir)
 
         pagePath = self.itemToPage(item)
-        self.ix = open_dir(self.indexdir)
+        self.ix = open_dir(self.settings.indexdir)
         query = QueryParser('path', self.ix.schema).parse(pagePath)
         writer = self.ix.writer()
         n = writer.delete_by_query(query)

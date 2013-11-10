@@ -233,7 +233,7 @@ class Mikibook():
     def initialise(notebookName, notebookPath):
         """ Called by create()
         A notebook directory will be initialised to:
-            css/  notebook.conf  notes/  whooshindex/
+            css/  notebook.conf  notes/
         """
 
         # QDir().mkpath will create all necessary parent directories

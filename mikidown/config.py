@@ -19,9 +19,9 @@ class Setting():
 
         self.notebookName = notebooks[0][0]
         self.notebookPath = notebooks[0][1]
-        self.indexdir = os.path.join(self.notebookPath, "whooshindex")
         self.notePath = os.path.join(self.notebookPath, "notes")
         self.htmlPath = os.path.join(self.notebookPath, "html", "notes")
+        self.indexdir = os.path.join(self.notePath, ".indexdir")
         self.attachmentPath = os.path.join(self.notebookPath, "attachments")
         self.configfile = os.path.join(self.notebookPath, "notebook.conf")
         self.cssfile = os.path.join(self.notebookPath, "css", "notebook.css")

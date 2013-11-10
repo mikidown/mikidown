@@ -19,9 +19,7 @@ class MikiEdit(QTextEdit):
         self.setFontPointSize(12)
         self.setTabStopWidth(4)
         self.setVisible(False)
-        indexdir = os.path.join(self.settings.notePath, 
-                                self.settings.indexdir)
-        self.ix = open_dir(indexdir)
+        self.ix = open_dir(self.settings.indexdir)
         
         self.imageFilter = ""
         self.documentFilter = ""
