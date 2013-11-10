@@ -2,6 +2,7 @@
 A simple static site generator for mikidown.
 """
 import os
+import sys
 import shutil
 from PyQt4.QtCore import *
 import markdown
@@ -19,6 +20,7 @@ class Generator():
         self.qsettings = QSettings(self.configfile, QSettings.NativeFormat)
         self.extName = ['.md', '.mkd', '.markdown']
         if os.path.exists(self.configfile):
+            self.count = 0
             extensions = readListFromSettings(self.qsettings,
                                                    "extensions")
             defExt = self.qsettings.value("fileExt")
@@ -27,7 +29,7 @@ class Generator():
                 self.extName.insert(0, defExt)
                 self.md = markdown.Markdown(extensions)
         else:
-            print("Not a valid mikidown notebook folder")
+            print("ERROR: Not a valid mikidown notebook folder")
             sys.exit(1)
 
     def generate(self):
@@ -43,6 +45,8 @@ class Generator():
         attachDstPath = os.path.join(self.sitepath, "attachments")
         shutil.copytree(cssSrcPath, cssDstPath)
         shutil.copytree(attachSrcPath, attachDstPath)
+
+        print('Finished: Processed', self.count, 'notes.')
 
     def initTree(self, notepath, parent):
         if parent == "":
@@ -83,6 +87,7 @@ class Generator():
         html.close()
 
     def convert(self, notefile, htmlfile):
+        self.count += 1
         note = QFile(notefile)
         note.open(QIODevice.ReadOnly)
         html = QFile(htmlfile)
