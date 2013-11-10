@@ -31,7 +31,6 @@ class MikiView(QWebView):
             toc anchor link: #
         '''
         name = qurl.toString()
-        print(name)
         http = re.compile('https?://')
         if http.match(name):                        # external uri
             QDesktopServices.openUrl(qurl)

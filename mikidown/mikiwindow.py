@@ -753,6 +753,9 @@ class MikiWindow(QMainWindow):
 
     def readmeHelp(self):
         readmeFile = '/usr/share/mikidown/README.mkd'
+        if not os.path.exists(readmeFile):
+            readmeFile = os.path.join(
+                os.path.dirname(os.path.dirname(__file__)), 'README.mkd')
         self.importPageCore(readmeFile)
 
     def closeEvent(self, event):

@@ -223,9 +223,14 @@ class Mikibook():
         if newNotebook.exec_():
             notebookName = newNotebook.nameEditor.text()
             notebookPath = newNotebook.pathEditor.text()
-            Mikibook.add(notebookName, notebookPath)
+            Mikibook.initialise(notebookName, notebookPath)
 
-    def add(notebookName, notebookPath):
+            notebooks = Mikibook.read() 
+            notebooks.append([notebookName, notebookPath])
+            # TODO: make mikidown.conf become plain text
+            Mikibook.write(notebooks)
+
+    def initialise(notebookName, notebookPath):
         """ Called by create()
         A notebook directory will be initialised to:
             css/  notebook.conf  notes/  whooshindex/
@@ -235,21 +240,12 @@ class Mikibook():
         QDir().mkpath(os.path.join(notebookPath, "notes"))
         QDir().mkpath(os.path.join(notebookPath, "css"))
         cssFile = os.path.join(notebookPath, "css", "notebook.css")
-        if os.path.exists("/usr/share/mikidown/notebook.css"):
-            cssTemplate = "/usr/share/mikidown/notebook.css"
-        else:
+        cssTemplate = "/usr/share/mikidown/notebook.css"
+        if not os.path.exists(cssTemplate):
             cssTemplate = os.path.join(
                 os.path.dirname(__file__), "notebook.css")
         # If //cssFile// already exists, copy() returns false!
         QFile.copy(cssTemplate, cssFile)
-
-        # If settings==None, initialize notebook dir without writing to 
-        # configuration file.
-        if Mikibook.settings:
-            notebooks = Mikibook.read() 
-            notebooks.append([notebookName, notebookPath])
-            # TODO: make mikidown.conf become plain text
-            Mikibook.write(notebooks)
 
     def remove(name, path):
         notebooks = Mikibook.read()
