@@ -33,6 +33,7 @@ class Setting():
             self.fileExt = self.qsettings.value("fileExt")
             self.attachmentImage = self.qsettings.value("attachmentImage")
             self.attachmentDocument = self.qsettings.value("attachmentDocument")
+            self.version = self.qsettings.value("version")
             self.geometry = self.qsettings.value("geometry")
             self.windowstate = self.qsettings.value("windowstate")
         else:
@@ -40,6 +41,7 @@ class Setting():
             self.fileExt = ""
             self.attachmentImage = []
             self.attachmentDocument = []
+            self.version = None
             self.geometry = None
             self.windowstate = None
 
@@ -73,6 +75,9 @@ class Setting():
         if not self.attachmentDocument:
             self.attachmentDocument = [".pdf", ".doc", ".odt"]
             self.qsettings.setValue("attachmentDocument", self.attachmentDocument)
+
+        if not self.version:
+            self.version = '0'
 
     def saveGeometry(self, geometry):
         self.qsettings.setValue("geometry", geometry)

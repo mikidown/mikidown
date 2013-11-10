@@ -1,6 +1,7 @@
 import re
 
 from PyQt4.QtGui import QSyntaxHighlighter, QColor, QFont, QTextCharFormat
+from .mdx_strkundr import DEL_RE, INS_RE, STRONG_RE, EMPH_RE
 
 
 class MikiHighlighter(QSyntaxHighlighter):
@@ -42,19 +43,19 @@ class MikiHighlighter(QSyntaxHighlighter):
         color[6] = QColor("#888A85")
         font[6] = QFont(None, baseFontSize, -1)
         # 7: delete - ~~delete~~
-        regexp[7] = '~~[^~~]*~~'
+        regexp[7] = DEL_RE
         color[7] = QColor("#888A85")
         font[7] = QFont(None, baseFontSize, -1)
         # 8: insert - __insert__
-        regexp[8] = '__[^__]*__'
+        regexp[8] = INS_RE
         font[8] = QFont(None, baseFontSize, -1)
         font[8].setUnderline(True)
         # 9: strong - **strong**
-        regexp[9] = '\*\*[^**]*\*\*'
+        regexp[9] = STRONG_RE
         color[9] = QColor("#F57900")
         font[9] = QFont(None, baseFontSize, QFont.Bold)
         # 10: emphasis - //emphasis//
-        regexp[10] = r'//[^//\(\)]*//'
+        regexp[10] = EMPH_RE
         color[10] = QColor("#F57900")
         font[10] = QFont(None, baseFontSize, -1, True)
         # 11: links - (links) after [] or links after []:

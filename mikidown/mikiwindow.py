@@ -30,6 +30,11 @@ class MikiWindow(QMainWindow):
         self.setupActions()
         self.setupMainWindow()
 
+        # show changelogs after upgrade mikidown
+        if self.settings.version < __version__:
+            self.changelogHelp()
+            self.settings.qsettings.setValue("version", __version__)
+
     def setupCoreComponents(self):
         self.notesTree = MikiTree(self)
         self.notesTree.setObjectName("notesTree")
@@ -154,6 +159,8 @@ class MikiWindow(QMainWindow):
         # self.actionUpAndDown.setEnabled(False)
         # actions in menuHelp
         self.actionReadme = self.act(self.tr('README'), trig=self.readmeHelp)
+        self.actionChangelog = self.act(self.tr('Changelog'), 
+            trig=self.changelogHelp)
 
     def setupMainWindow(self):
         self.resize(800, 600)
@@ -250,6 +257,7 @@ class MikiWindow(QMainWindow):
         self.menuMode.addAction(self.actionUpAndDown)
         # menuHelp
         self.menuHelp.addAction(self.actionReadme)
+        self.menuHelp.addAction(self.actionChangelog)
 
         self.toolBar = QToolBar(self.tr("toolbar"), self)
         self.toolBar.setObjectName("toolbar")       # needed in saveState()
@@ -417,7 +425,6 @@ class MikiWindow(QMainWindow):
 
     def switchNote(self, num):
         self.viewedListActions[num].trigger()
-
 
     def saveCurrentNote(self):
         item = self.notesTree.currentItem()
@@ -757,6 +764,13 @@ class MikiWindow(QMainWindow):
             readmeFile = os.path.join(
                 os.path.dirname(os.path.dirname(__file__)), 'README.mkd')
         self.importPageCore(readmeFile)
+
+    def changelogHelp(self):
+        changeLog = "/usr/share/mikidown/Changelog.md"
+        if not os.path.exists(changeLog):
+            changeLog = os.path.join(
+                os.path.dirname(os.path.dirname(__file__)), 'Changelog.md')
+        self.importPageCore(changeLog)
 
     def closeEvent(self, event):
         """
