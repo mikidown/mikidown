@@ -38,12 +38,6 @@ def main():
     elif args.command == 'sandbox':
         app = QApplication(sys.argv)
         sandbox = Sandbox()
-        sandbox.newPage()
-        sandbox.setText()
-        sandbox.pageLink()
-        sandbox.delPage()
-        sandbox.window.readmeHelp()
-        print("Start manual testing in sandbox")
         app.aboutToQuit.connect(sandbox.cleanUp)
         sys.exit(app.exec_())
     elif args.command == 'preview':

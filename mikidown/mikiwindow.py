@@ -296,14 +296,15 @@ class MikiWindow(QMainWindow):
         # Initialize whoosh index, make sure notePath/.indexdir exists
         self.ix = None
         indexdir = self.settings.indexdir
-        if not QDir(indexdir).exists():
+        try:
+            self.ix = open_dir(indexdir)
+        except:
             QDir().mkdir(indexdir)
             self.ix = create_in(indexdir, self.settings.schema)
             # Fork a process to update index, which benefit responsiveness.
             p = Process(target=self.whoosh_index, args=())
             p.start()
-        else:
-            self.ix = open_dir(indexdir)
+
         
     def restore(self):
         """ Restore saved geometry and state.

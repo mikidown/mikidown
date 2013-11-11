@@ -45,11 +45,16 @@ class MikiEdit(QTextEdit):
         self.networkManager.finished.connect(self.downloadFinished)
         self.speller = Dict()
 
-    def updateIndex(self, path, content):
+        # Fork a process to update index, which benefit responsiveness.
+        self.whooshProcess = Process(target=self.updateIndex)
+
+    def updateIndex(self):
             ''' Update whoosh index, which cost much computing resource '''
+            page = self.parent.notesTree.currentPage()
+            content = self.toPlainText()
             writer = self.ix.writer()
             writer.update_document(
-                path=path, title=parseTitle(content, path), content=content)
+                path=page, title=parseTitle(content, page), content=content)
             writer.commit()
 
     def downloadFinished(self, reply):
@@ -223,10 +228,7 @@ class MikiEdit(QTextEdit):
                 savestream << self.toPlainText()
                 fh.close()
                 self.document().setModified(False)
-                # Fork a process to update index, which benefit responsiveness.
-                p = Process(target=self.updateIndex, args=(
-                    pageName, self.toPlainText(),))
-                p.start()
+                self.whooshProcess.start()
 
     def toHtml(self):
         '''markdown.Markdown.convert v.s. markdown.markdown

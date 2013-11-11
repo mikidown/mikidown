@@ -1,7 +1,7 @@
 import os
 import shutil
 from PyQt4.QtCore import QSettings
-from PyQt4.QtGui import QApplication, QIcon
+from PyQt4.QtGui import QApplication
 
 from .mikiwindow import MikiWindow
 from .mikibook import Mikibook
@@ -18,6 +18,13 @@ class Sandbox():
         self.window.show()
         
         print("...Create notebook works")
+
+        self.newPage()
+        self.setText()
+        self.pageLink()
+        self.delPage()
+        self.window.readmeHelp()
+        print("Start manual testing in sandbox")
 
     def newPage(self):
         self.window.notesTree.newPage('pageOne')
@@ -72,5 +79,10 @@ class Sandbox():
         print("...delPage works")
 
     def cleanUp(self):
+        """ When quitting mikidown, the whooshProcess may take time to finish.
+        Terminate whooshProcess to ensure shutil.rmtree success.
+        """
+        if self.window.notesEdit.whooshProcess.is_alive():
+            self.window.notesEdit.whooshProcess.terminate()
         shutil.rmtree("test_notebook")
         print("...Cleaned up")
