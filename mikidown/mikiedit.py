@@ -3,11 +3,21 @@ from multiprocessing import Process
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkRequest
+from PyQt4.Qt import QMouseEvent, QEvent, QAction, QTextCursor
 import markdown
 from whoosh.index import open_dir
 
 from .config import *
 from .utils import LineEditDialog, parseTitle
+
+# Spell checker support
+try:
+    from enchant import Dict
+except ImportError:
+    print ("No spell checking available. Pyenchant is not installed.")
+    class Dict:
+        def check(self, *args):
+            return True
 
 
 class MikiEdit(QTextEdit):
@@ -33,6 +43,7 @@ class MikiEdit(QTextEdit):
         self.downloadAs = ""
         self.networkManager = QNetworkAccessManager()
         self.networkManager.finished.connect(self.downloadFinished)
+        self.speller = Dict()
 
     def updateIndex(self, path, content):
             ''' Update whoosh index, which cost much computing resource '''
@@ -143,6 +154,55 @@ class MikiEdit(QTextEdit):
         if filePath == "":
             return
         self.insertAttachment(filePath, fileType)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.RightButton:
+            # Rewrite the mouse event to a left button event so the cursor is
+            # moved to the location of the pointer.
+            event = QMouseEvent(QEvent.MouseButtonPress, event.pos(),
+                Qt.LeftButton, Qt.LeftButton, Qt.NoModifier)
+        QTextEdit.mousePressEvent(self, event)
+ 
+    def contextMenuEvent(self, event):
+        class SpellAction(QAction):
+            correct = pyqtSignal(str)
+            def __init__(self, *args):
+                QAction.__init__(self, *args)
+                self.triggered.connect(
+                    lambda x: self.correct.emit(str(self.text()))
+                )
+ 
+ 
+        popup_menu = self.createStandardContextMenu()
+ 
+        # Select the word under the cursor.
+        cursor = self.textCursor()
+        cursor.select(QTextCursor.WordUnderCursor)
+        self.setTextCursor(cursor)
+ 
+        if self.textCursor().hasSelection():
+            text = str(self.textCursor().selectedText())
+            font = QFont()
+            font.setBold(True)
+            if not self.speller.check(text):
+                lastAction = popup_menu.actions()[0]
+                for word in self.speller.suggest(text)[:10]:
+                    action = SpellAction(word, popup_menu)
+                    action.setFont(font)
+                    action.correct.connect(self.correctWord)
+                    popup_menu.insertAction(lastAction, action)
+                popup_menu.insertSeparator(lastAction)
+        popup_menu.exec_(event.globalPos())
+ 
+    def correctWord(self, word):
+        '''
+        Replaces the selected text with word.
+        '''
+        cursor = self.textCursor()
+        cursor.beginEditBlock()
+        cursor.removeSelectedText()
+        cursor.insertText(word)
+        cursor.endEditBlock()
 
     def save(self, item):
         pageName = self.parent.notesTree.itemToPage(item)
