@@ -4,7 +4,9 @@ A simple static site generator for mikidown.
 import os
 import sys
 import shutil
+from multiprocessing import Process
 from PyQt4.QtCore import *
+from PyQt4.QtGui import QApplication
 import markdown
 from mikidown.config import readListFromSettings
 
@@ -20,7 +22,6 @@ class Generator():
         self.qsettings = QSettings(self.configfile, QSettings.NativeFormat)
         self.extName = ['.md', '.mkd', '.markdown']
         if os.path.exists(self.configfile):
-            self.count = 0
             extensions = readListFromSettings(self.qsettings,
                                                    "extensions")
             defExt = self.qsettings.value("fileExt")
@@ -33,8 +34,15 @@ class Generator():
             sys.exit(1)
 
     def generate(self):
+        # clear sitepath
+        self.count = 0
         if os.path.exists(self.sitepath):
-            shutil.rmtree(self.sitepath)
+            for file_object in os.listdir(self.sitepath):
+                file_object_path = os.path.join(self.sitepath, file_object)
+                if os.path.isfile(file_object_path):
+                    os.unlink(file_object_path)
+                else:
+                    shutil.rmtree(file_object_path)
         QDir().mkpath(self.htmlpath)
         self.initTree(self.notepath, "")
 
@@ -47,6 +55,37 @@ class Generator():
         shutil.copytree(attachSrcPath, attachDstPath)
 
         print('Finished: Processed', self.count, 'notes.')
+
+    def regenerate(self):
+        # QFileSystemWatcher won't work without a QApplication!
+        app = QApplication(sys.argv)
+        watcher = QFileSystemWatcher()
+        watcher.addPath(self.notepath)
+        watcher.directoryChanged.connect(self.generate)
+        sys.exit(app.exec_())
+
+    def preview(self, port=3131):
+        processWatcher = Process(target=self.regenerate)
+        processWatcher.start()
+        self.generate()
+
+        from http.server import HTTPServer, SimpleHTTPRequestHandler
+
+        HandlerClass = SimpleHTTPRequestHandler
+        HandlerClass.protocol_version = "HTTP/1.1"
+        ServerClass = HTTPServer
+        server_address = ('', port)
+        httpd = ServerClass(server_address, HandlerClass)
+        sa = httpd.socket.getsockname()
+        os.chdir(self.sitepath)
+        print("Serving HTTP on", sa[0], "port", sa[1], "...")
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            print("\nKeyboard interrupt received, exiting.")
+            processWatcher.terminate()
+            httpd.server_close()
+            sys.exit(0)
 
     def initTree(self, notepath, parent):
         if parent == "":
