@@ -51,9 +51,6 @@ class MikiWindow(QMainWindow):
         self.findBar = QToolBar(self.tr('Find'), self)
         self.findBar.setFixedHeight(30)
 
-        self.watcher = QFileSystemWatcher()
-        self.watcher.fileChanged.connect(self.refresh)
-
     def setupActions(self):
         
         ################ Global Actions ################ 
@@ -382,14 +379,6 @@ class MikiWindow(QMainWindow):
                 self.updateRecentViewedNotes()
                 self.viewedListActions[0].setChecked(True)
                 #self.statusLabel.setText(noteFullName)
-                if not filename in self.watcher.files():
-                    self.watcher.addPath(filename)
-
-    def refresh(self, filepath):
-        if QFile.exists(filepath):
-            QTimer.singleShot(500, lambda: self.openFile(filepath))
-        else:
-            self.watcher.removePath(filepath)
 
     def currentItemChangedWrapper(self, current, previous):
         if current is None:
@@ -398,10 +387,8 @@ class MikiWindow(QMainWindow):
         prev = self.notesTree.itemToPage(previous)
         if self.notesTree.pageExists(prev):
             self.saveNote(previous)
-            self.watcher.removePath(self.notesTree.pageToFile(prev))
 
         currentFile = self.notesTree.itemToFile(current)
-        self.watcher.addPath(currentFile)
         self.openFile(currentFile)
 
         # Update attachmentView to show corresponding attachments.
