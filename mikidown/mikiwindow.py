@@ -158,6 +158,8 @@ class MikiWindow(QMainWindow):
         self.actionReadme = self.act(self.tr('README'), trig=self.readmeHelp)
         self.actionChangelog = self.act(self.tr('Changelog'), 
             trig=self.changelogHelp)
+        self.actionAboutQt = QAction(self.tr('About Qt'), self)
+        self.actionAboutQt.triggered.connect(qApp.aboutQt)
 
     def setupMainWindow(self):
         self.resize(800, 600)
@@ -255,6 +257,7 @@ class MikiWindow(QMainWindow):
         # menuHelp
         self.menuHelp.addAction(self.actionReadme)
         self.menuHelp.addAction(self.actionChangelog)
+        self.menuHelp.addAction(self.actionAboutQt)
 
         self.toolBar = QToolBar(self.tr("toolbar"), self)
         self.toolBar.setObjectName("toolbar")       # needed in saveState()
@@ -281,7 +284,7 @@ class MikiWindow(QMainWindow):
         self.notesTree.currentItemChanged.connect(
             self.currentItemChangedWrapper)
         self.tocTree.currentItemChanged.connect(self.tocNavigate)
-        self.connect(self.notesEdit, SIGNAL('textChanged()'), self.noteEditted)
+        self.notesEdit.textChanged.connect(self.noteEditted)
 
         self.notesEdit.document(
         ).modificationChanged.connect(self.modificationChanged)
