@@ -10,15 +10,6 @@ from whoosh.index import open_dir
 from .config import *
 from .utils import LineEditDialog, parseTitle
 
-# Spell checker support
-try:
-    from enchant import Dict
-except ImportError:
-    print ("No spell checking available. Pyenchant is not installed.")
-    class Dict:
-        def check(self, *args):
-            return True
-
 
 class MikiEdit(QTextEdit):
 
@@ -31,6 +22,15 @@ class MikiEdit(QTextEdit):
         self.setVisible(False)
         self.ix = open_dir(self.settings.indexdir)
         
+        # Spell checker support
+        try:
+            from enchant import Dict
+        except ImportError:
+            print ("No spell checking available. Pyenchant is not installed.")
+            class Dict:
+                def check(self, *args):
+                    return True
+
         self.imageFilter = ""
         self.documentFilter = ""
         for ext in self.settings.attachmentImage:

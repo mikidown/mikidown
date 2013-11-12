@@ -299,7 +299,7 @@ class MikiWindow(QMainWindow):
         try:
             self.ix = open_dir(indexdir)
         except:
-            QDir().mkdir(indexdir)
+            QDir().mkpath(indexdir)
             self.ix = create_in(indexdir, self.settings.schema)
             # Fork a process to update index, which benefit responsiveness.
             p = Process(target=self.whoosh_index, args=())

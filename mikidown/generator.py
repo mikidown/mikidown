@@ -52,7 +52,8 @@ class Generator():
         attachSrcPath = os.path.join(self.notebookPath, "attachments")
         attachDstPath = os.path.join(self.sitepath, "attachments")
         shutil.copytree(cssSrcPath, cssDstPath)
-        shutil.copytree(attachSrcPath, attachDstPath)
+        if os.path.exists(attachSrcPath):
+            shutil.copytree(attachSrcPath, attachDstPath)
 
         print('Finished: Processed', self.count, 'notes.')
 
