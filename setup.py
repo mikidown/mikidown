@@ -37,7 +37,8 @@ setup(
     scripts=['mikidown.py'],
     packages=['mikidown'],
     data_files=[('share/mikidown', ['README.mkd']), 
-                ('share/mikidown', ['mikidown/notes.css']), 
+                ('share/mikidown', ['mikidown/notebook.css']), 
+                ('share/mikidown', ['Changelog.md']), 
                 ('share/mikidown/css', glob.glob("mikidown/css/*")), 
                 ('share/icons/hicolor/scalable/apps', ['mikidown/icons/mikidown.svg']), 
                 ('share/applications', ['mikidown.desktop'])
