@@ -22,6 +22,7 @@ Run mikidown without installing
 - Page cross-link
 - Import from plain text files, export to HTML, PDF
 - Customise your note style (by editing CSS file)
+- Spell check
 
 ## Dependencies
 
@@ -29,6 +30,7 @@ Run mikidown without installing
 - PyQt
 - python-markdown
 - python-whoosh
+- python-pyenchant ( Optional for spell checking )
 
 ## Beautiful notes powered by markdown
 
