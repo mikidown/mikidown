@@ -193,6 +193,7 @@ class MikiEdit(QTextEdit):
  
         if self.textCursor().hasSelection():
             text = str(self.textCursor().selectedText())
+            self.textCursor().clearSelection()
             font = QFont()
             font.setBold(True)
             if not self.speller.check(text):
