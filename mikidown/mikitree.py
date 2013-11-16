@@ -8,8 +8,8 @@ Naming convention:
 import os
 import datetime
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4.QtCore import Qt, QDir, QFile, QIODevice, QSize, QTextStream
+from PyQt4.QtGui import (QAbstractItemView, QCursor, QMenu, QTreeWidget, QTreeWidgetItem)
 from whoosh.index import open_dir
 from whoosh.qparser import QueryParser
 
@@ -72,12 +72,12 @@ class MikiTree(QTreeWidget):
         return self.pageToFile(self.itemToPage(item))
 
     def pageToFile(self, page):
-        """ get filepath from page 
+        """ get filepath from page
             filepath = notePath + page + fileExt
-            fileExt is stored in notebook.conf 
+            fileExt is stored in notebook.conf
         """
 
-        # When exists foo.md, foo.mkd, foo.markdown, 
+        # When exists foo.md, foo.mkd, foo.markdown,
         # the one with defExt will be returned
         extName = ['.md', '.mkd', '.markdown']
         defExt = self.settings.fileExt
@@ -92,15 +92,15 @@ class MikiTree(QTreeWidget):
             if QFile.exists(filepath):
                 return filepath
         return ""
-    
+
     def itemToHtmlFile(self, item):
         """ The corresponding html file path """
         page = self.itemToPage(item)
         return os.path.join(self.settings.htmlPath, page + ".html")
 
     def itemToAttachmentDir(self, item):
-        """ The corresponding attachment directory 
-        dirName is constructed by pageName and md5(page), so that no nesting 
+        """ The corresponding attachment directory
+        dirName is constructed by pageName and md5(page), so that no nesting
         needed and manipulation become easy
         """
         page = self.itemToPage(item)
@@ -149,7 +149,7 @@ class MikiTree(QTreeWidget):
                 newPageName = dialog.editor.text()
         if newPageName:
             if hasattr(item, 'text'):
-                pagePath = os.path.join(self.notePath, 
+                pagePath = os.path.join(self.notePath,
                                         pagePath + '/')
             if not QDir(pagePath).exists():
                 QDir(self.notePath).mkdir(pagePath)
@@ -183,7 +183,7 @@ class MikiTree(QTreeWidget):
 
     def dropEvent(self, event):
         """ A note is related to four parts:
-            note file, note folder containing child note, parent note folder, attachment folder. 
+            note file, note folder containing child note, parent note folder, attachment folder.
         When drag/drop, should take care of:
         1. rename note file ("rename" is just another way of saying "move")
         2. rename note folder
@@ -198,7 +198,7 @@ class MikiTree(QTreeWidget):
         targetItem = self.itemAt(event.pos())
         targetPage = self.itemToPage(targetItem)
         oldFile = self.itemToFile(sourceItem)
-        newFile = os.path.join(targetPage, 
+        newFile = os.path.join(targetPage,
             sourceItem.text(0) + self.settings.fileExt)
         oldDir = sourcePage
         newDir = os.path.join(targetPage, sourceItem.text(0))

@@ -1,6 +1,6 @@
 import os
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4.QtCore import Qt, QDir, QFile, QFileInfo, QRect, QSize
+from PyQt4.QtGui import (QColor, QFileDialog, QFileIconProvider, QFileSystemModel, QListView, QPen, QPixmap, QStyle, QStyledItemDelegate)
 
 class AttachmentItemDelegate(QStyledItemDelegate):
 
@@ -19,7 +19,7 @@ class AttachmentItemDelegate(QStyledItemDelegate):
 
         img = QPixmap(filePath)
         if img.isNull():
-            # If not image file, try to load icon with QFileIconProvider 
+            # If not image file, try to load icon with QFileIconProvider
             # according to file type (extension name).
             # Currently not work as intended.
             fileInfo = self.model.fileInfo(index)
@@ -27,7 +27,7 @@ class AttachmentItemDelegate(QStyledItemDelegate):
             img = icon.pixmap(QSize(32, 32))
 
         # Scale to height, align center horizontally, align bottom vertically.
-        if img.height() > self.thumbHeight: 
+        if img.height() > self.thumbHeight:
             img = img.scaledToHeight(self.thumbHeight, Qt.SmoothTransformation)
         imgLeft = (self.width - img.width()) / 2
         imgTop = self.thumbHeight - img.height()
@@ -41,9 +41,9 @@ class AttachmentItemDelegate(QStyledItemDelegate):
             pen = QPen(QColor.fromRgb(255, 255, 255), 1, Qt.SolidLine)
         else:
             pen = QPen(QColor.fromRgb(51, 51, 51), 1, Qt.SolidLine)
-            
+
         painter.setPen(pen)
-        painter.drawText(QRect(r.left(), r.top()+self.thumbHeight, self.width, self.nameHeight), 
+        painter.drawText(QRect(r.left(), r.top()+self.thumbHeight, self.width, self.nameHeight),
             Qt.AlignHCenter | Qt.TextWrapAnywhere, fileName)
 
     def sizeHint(self, option, index):

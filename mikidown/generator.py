@@ -5,10 +5,10 @@ import os
 import sys
 import shutil
 from multiprocessing import Process
-from PyQt4.QtCore import *
+from PyQt4.QtCore import QDir, QFile, QIODevice, QSettings, QTextStream
 from PyQt4.QtGui import QApplication
 import markdown
-from mikidown.config import readListFromSettings
+from .config import readListFromSettings
 
 
 class Generator():
@@ -111,7 +111,7 @@ class Generator():
             QDir().mkdir(htmlDir)
 
         for name in noduplicate:
-            path = notepath + '/' + name 
+            path = notepath + '/' + name
             filename = os.path.join(parent, name)
             for ext in self.extName:
                 notefile = os.path.join(self.notepath, filename + ext)

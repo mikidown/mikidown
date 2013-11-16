@@ -2,7 +2,7 @@ import os
 import re
 from markdown.extensions.headerid import slugify, unique
 from PyQt4.QtCore import QFile
-from PyQt4.QtGui import *
+from PyQt4.QtGui import (QDialog, QDialogButtonBox, QGridLayout, QLabel, QLineEdit, QMessageBox)
 
 
 class LineEditDialog(QDialog):
@@ -78,7 +78,7 @@ def parseHeaders(source):
         hdr = m.group(2)
         pos = m.start()
         hdrs.append((pos, level, hdr))
-    
+
     # setext headers
     RE = re.compile(r'(.+)\n([=-]+[ ]*)(\n|$)', re.MULTILINE)
     for m in RE.finditer(source):

@@ -1,13 +1,12 @@
 import os
 from multiprocessing import Process
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4.QtCore import pyqtSignal, Qt, QDir, QFile, QFileInfo, QMimeData, QIODevice, QTextStream
+from PyQt4.QtGui import QFont, QTextEdit, QMessageBox
 from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from PyQt4.Qt import QMouseEvent, QEvent, QAction, QTextCursor
 import markdown
 from whoosh.index import open_dir
 
-from .config import *
 from .utils import LineEditDialog, parseTitle
 
 
@@ -21,7 +20,7 @@ class MikiEdit(QTextEdit):
         self.setTabStopWidth(4)
         self.setVisible(False)
         self.ix = open_dir(self.settings.indexdir)
-        
+
         # Spell checker support
         try:
             from enchant import Dict
@@ -76,7 +75,7 @@ class MikiEdit(QTextEdit):
         If copy/drag something that hasImage, then ask for file name
         Else use the default insertFromMimeData implementation
         """
-        
+
         def mimeFromText(text):
             mime = QMimeData()
             mime.setText(text)
@@ -167,7 +166,7 @@ class MikiEdit(QTextEdit):
             event = QMouseEvent(QEvent.MouseButtonPress, event.pos(),
                 Qt.LeftButton, Qt.LeftButton, Qt.NoModifier)
         QTextEdit.mousePressEvent(self, event)
- 
+
     def contextMenuEvent(self, event):
         class SpellAction(QAction):
             correct = pyqtSignal(str)
@@ -176,15 +175,15 @@ class MikiEdit(QTextEdit):
                 self.triggered.connect(
                     lambda x: self.correct.emit(str(self.text()))
                 )
- 
- 
+
+
         popup_menu = self.createStandardContextMenu()
- 
+
         # Select the word under the cursor.
         cursor = self.textCursor()
         cursor.select(QTextCursor.WordUnderCursor)
         self.setTextCursor(cursor)
- 
+
         if self.textCursor().hasSelection():
             text = str(self.textCursor().selectedText())
             font = QFont()
@@ -198,7 +197,7 @@ class MikiEdit(QTextEdit):
                     popup_menu.insertAction(lastAction, action)
                 popup_menu.insertSeparator(lastAction)
         popup_menu.exec_(event.globalPos())
- 
+
     def correctWord(self, word):
         '''
         Replaces the selected text with word.

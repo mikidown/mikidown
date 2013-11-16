@@ -1,23 +1,25 @@
+"""
+The mainwindow module.
+"""
 import os
 from multiprocessing import Process
 
-import markdown
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtWebKit import QWebView, QWebPage
+from PyQt4.QtCore import SIGNAL, SLOT, Qt, QDir, QFile, QFileInfo, QIODevice, QPoint, QSize, QTextStream
+from PyQt4.QtGui import (qApp, QAction, QCheckBox, QDesktopWidget, QDockWidget, QIcon, QLabel, QLineEdit, QMainWindow, QMenuBar, QMessageBox, QKeySequence, QStatusBar, QSplitter, QTabWidget, QToolBar, QTreeWidgetItem, QTreeWidgetItemIterator, QVBoxLayout, QWidget)
+from PyQt4.QtWebKit import QWebPage
 from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser, RegexPlugin
 
 import mikidown.mikidown_rc
 from .config import __appname__, __version__
 from .mikibook import NotebookListDialog
-from .mikitree import *
-from .mikiedit import *
-from .mikiview import *
+from .mikitree import MikiTree, TocTree
+from .mikiedit import MikiEdit
+from .mikiview import MikiView
 from .mikisearch import MikiSearch
 from .attachment import AttachmentView
 from .highlighter import MikiHighlighter
-from .utils import *
+from .utils import parseHeaders, parseTitle
 
 
 class MikiWindow(QMainWindow):
@@ -52,8 +54,8 @@ class MikiWindow(QMainWindow):
         self.findBar.setFixedHeight(30)
 
     def setupActions(self):
-        
-        ################ Global Actions ################ 
+
+        ################ Global Actions ################
         actTabIndex = self.act(self.tr('Switch to Index Tab'),
                                QKeySequence('Ctrl+Shift+I'),
                                lambda: self.raiseDock(self.dockIndex))
@@ -62,7 +64,7 @@ class MikiWindow(QMainWindow):
                                lambda: self.raiseDock(self.dockSearch))
         self.addAction(actTabIndex)
         self.addAction(actTabSearch)
-        
+
         # Shortcuts to switch notes.
         actNote1 = self.act(self.tr(""), QKeySequence("Ctrl+1"),
                             lambda: self.switchNote(1))
@@ -92,7 +94,7 @@ class MikiWindow(QMainWindow):
         self.addAction(actNote8)
         self.addAction(actNote9)
 
-        ################ Menu Actions ################ 
+        ################ Menu Actions ################
         # actions in menuFile
         self.actionNewPage = self.act(
             self.tr('&New Page...'), QKeySequence.New, trig=self.notesTree.newPage)
@@ -156,7 +158,7 @@ class MikiWindow(QMainWindow):
         # self.actionUpAndDown.setEnabled(False)
         # actions in menuHelp
         self.actionReadme = self.act(self.tr('README'), trig=self.readmeHelp)
-        self.actionChangelog = self.act(self.tr('Changelog'), 
+        self.actionChangelog = self.act(self.tr('Changelog'),
             trig=self.changelogHelp)
         self.actionAboutQt = QAction(self.tr('About Qt'), self)
         self.actionAboutQt.triggered.connect(qApp.aboutQt)
@@ -308,7 +310,7 @@ class MikiWindow(QMainWindow):
             p = Process(target=self.whoosh_index, args=())
             p.start()
 
-        
+
     def restore(self):
         """ Restore saved geometry and state.
             Set the status of side panels in View Menu correspondently.
@@ -319,7 +321,7 @@ class MikiWindow(QMainWindow):
             self.restoreState(self.settings.windowstate)
 
     def initTree(self, notePath, parent):
-        ''' When there exist foo.md, foo.mkd, foo.markdown, 
+        ''' When there exist foo.md, foo.mkd, foo.markdown,
             only one item will be shown in notesTree.
         '''
         if not QDir(notePath).exists():
@@ -332,7 +334,7 @@ class MikiWindow(QMainWindow):
         noduplicate = list(set(nl))
         for name in noduplicate:
             item = QTreeWidgetItem(parent, [name])
-            path = notePath + '/' + name 
+            path = notePath + '/' + name
             self.initTree(path, item)
 
     def updateToc(self):
@@ -479,7 +481,7 @@ class MikiWindow(QMainWindow):
         fileBody = QTextStream(fh).readAll()
         fh.close()
         note = QFileInfo(filename)
-        path = os.path.join(self.notePath, 
+        path = os.path.join(self.notePath,
                             note.completeBaseName() + self.settings.fileExt)
         fh = QFile(path)
         if fh.exists():
@@ -500,7 +502,7 @@ class MikiWindow(QMainWindow):
         if dialog.exec_():
             pass
 
-    def act(self, name, shortcut=None, trig=None, checkable=False, 
+    def act(self, name, shortcut=None, trig=None, checkable=False,
             icon=None, tooltip=None):
         """ A wrapper to several QAction methods """
         if icon:
@@ -522,15 +524,15 @@ class MikiWindow(QMainWindow):
             self.actionSplit.setChecked(False)
         self.notesView.setVisible(not viewmode)
         self.notesEdit.setVisible(viewmode)
-        
+
         # Gives the keyboard input focus to notesEdit/notesView.
         # Without this, keyboard input may change note text even when
-        # notesEdit is invisible. 
+        # notesEdit is invisible.
         if viewmode:
             self.notesEdit.setFocus()
         else:
             self.notesView.setFocus()
-        
+
         self.saveCurrentNote()
         self.actionInsertImage.setEnabled(viewmode)
         self.actionLeftAndRight.setEnabled(True)
@@ -551,13 +553,13 @@ class MikiWindow(QMainWindow):
         else:
             self.notesEdit.setVisible(viewmode)
             splitSize = [sizes[1]*0.45, sizes[1]*0.55]
-        
+
         # setFocus for the same reason as in edit(self, viewmode)
         if viewmode:
             self.notesEdit.setFocus()
         else:
             self.notesView.setFocus()
-        
+
         self.actionFlipEditAndView.setEnabled(viewmode)
         self.actionUpAndDown.setEnabled(viewmode)
         self.actionInsertImage.setEnabled(viewmode)
@@ -654,8 +656,8 @@ class MikiWindow(QMainWindow):
                     </style>
                    """
             for title, path, hi in results:
-                html += ("<p><a href='" + path + "'>" + title + 
-                         "</a><br/><span class='path'>" + 
+                html += ("<p><a href='" + path + "'>" + title +
+                         "</a><br/><span class='path'>" +
                          path + "</span><br/>" + hi + "</p>")
             self.searchView.setHtml(html)
 
@@ -714,7 +716,7 @@ class MikiWindow(QMainWindow):
                 splitName = f.split('/')
                 self.viewedListActions.append(
                     self.act(splitName[-1], None, self.openFunction(f), True))
-                
+
         self.settings.updateRecentViewedNotes(existedNotes)
         for action in self.viewedListActions:
             self.viewedList.addAction(action)
@@ -765,10 +767,10 @@ class MikiWindow(QMainWindow):
 
     def closeEvent(self, event):
         """
-            saveGeometry: Saves the current geometry and state for 
+            saveGeometry: Saves the current geometry and state for
                           top-level widgets
-            saveState: Restores the state of this mainwindow's toolbars 
-                       and dockwidgets 
+            saveState: Restores the state of this mainwindow's toolbars
+                       and dockwidgets
         """
         self.saveCurrentNote()
         self.settings.saveGeometry(self.saveGeometry())

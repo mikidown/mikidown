@@ -4,11 +4,10 @@ Notebook management module.
 
 import os
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4.QtCore import Qt, QDir, QFile, QSettings, QSize
+from PyQt4.QtGui import (QAbstractItemDelegate, QAbstractItemView, QColor, QDialog, QDialogButtonBox, QFont, QGridLayout, QLineEdit, QListWidget, QListWidgetItem, QPen, QPushButton, QStyle)
 
-import mikidown
-from mikidown.config import *
+from .config import Setting, readListFromSettings, writeListToSettings
 
 
 class ListDelegate(QAbstractItemDelegate):
@@ -55,7 +54,7 @@ class NotebookListDialog(QDialog):
 
     def __init__(self, parent=None):
         super(NotebookListDialog, self).__init__(parent)
-        
+
         self.notebookList = QListWidget()
         self.moveUp = QPushButton('<<')
         self.moveDown = QPushButton('>>')
@@ -225,7 +224,7 @@ class Mikibook():
             notebookPath = newNotebook.pathEditor.text()
             Mikibook.initialise(notebookName, notebookPath)
 
-            notebooks = Mikibook.read() 
+            notebooks = Mikibook.read()
             notebooks.append([notebookName, notebookPath])
             # TODO: make mikidown.conf become plain text
             Mikibook.write(notebooks)

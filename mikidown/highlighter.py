@@ -1,8 +1,8 @@
 import re
 
 from PyQt4.QtGui import QSyntaxHighlighter, QColor, QFont, QTextCharFormat
-from .mdx_strkundr import DEL_RE, INS_RE, STRONG_RE, EMPH_RE
 from PyQt4.QtCore import Qt
+from .mdx_strkundr import DEL_RE, INS_RE, STRONG_RE, EMPH_RE
 
 
 class MikiHighlighter(QSyntaxHighlighter):

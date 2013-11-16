@@ -7,7 +7,7 @@ from PyQt4.QtCore import QSettings
 from PyQt4.QtGui import QApplication, QIcon
 
 import mikidown.mikidown_rc
-from .config import *
+from .config import Setting
 from .generator import Generator
 from .mikitray import MikiTray
 from .mikiwindow import MikiWindow
@@ -21,13 +21,13 @@ def main():
 
     parser = argparse.ArgumentParser(description='A note taking application, featuring markdown syntax')
     subparsers = parser.add_subparsers(dest='command')
-    parser_generate = subparsers.add_parser('generate', 
+    parser_generate = subparsers.add_parser('generate',
         help='generate a static html site from notebook')
-    parser_preview = subparsers.add_parser('preview', 
+    parser_preview = subparsers.add_parser('preview',
         help='automatically regenerate html site when notes modified')
-    parser_preview.add_argument('-p', '--port', dest='port', 
+    parser_preview.add_argument('-p', '--port', dest='port',
         type=int, help='port number')
-    parser_sandbox = subparsers.add_parser('sandbox', 
+    parser_sandbox = subparsers.add_parser('sandbox',
         help='for test purpose, all notes will be lost when exit')
     args = parser.parse_args()
 
