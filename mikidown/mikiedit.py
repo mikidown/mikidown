@@ -6,6 +6,7 @@ from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from PyQt4.Qt import QMouseEvent, QEvent, QAction, QTextCursor
 import markdown
 from whoosh.index import open_dir
+import html2text
 
 from .config import *
 from .utils import LineEditDialog, parseTitle
@@ -134,6 +135,11 @@ class MikiEdit(QTextEdit):
                 relativeFilePath = filePath.replace(self.settings.notebookPath, "..")
                 text = "![%s](%s)" % (fileName, relativeFilePath)
                 super(MikiEdit, self).insertFromMimeData(mimeFromText(text))
+        elif source.hasHtml():
+            backToMarkdown = html2text.HTML2Text()
+            html = source.html()
+            markdown = backToMarkdown.handle(html)
+            super(MikiEdit, self).insertFromMimeData(mimeFromText(markdown))
         else:
             super(MikiEdit, self).insertFromMimeData(source)
 

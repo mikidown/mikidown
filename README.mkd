@@ -30,6 +30,7 @@ Run mikidown without installing
 - PyQt
 - python-markdown
 - python-whoosh
+- python-html2text 
 - python-pyenchant ( Optional for spell checking )
 
 ## Beautiful notes powered by markdown
