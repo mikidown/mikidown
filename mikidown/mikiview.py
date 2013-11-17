@@ -1,6 +1,7 @@
 import re
 
-from PyQt4.QtCore import QDir, QUrl, QPoint, QTimer
+from PyQt4.QtCore import QDir, QPoint, QTimer, QUrl
+from PyQt4.QtGui import QDesktopServices
 from PyQt4.QtWebKit import QWebView, QWebPage
 import markdown
 
