@@ -5,7 +5,7 @@ import os
 import sys
 import shutil
 from multiprocessing import Process
-from PyQt4.QtCore import QDir, QFile, QIODevice, QSettings, QTextStream
+from PyQt4.QtCore import QDir, QFile, QFileSystemWatcher, QIODevice, QSettings, QTextStream
 from PyQt4.QtGui import QApplication
 import markdown
 from .config import readListFromSettings

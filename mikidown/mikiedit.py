@@ -45,8 +45,6 @@ class MikiEdit(QTextEdit):
         self.networkManager.finished.connect(self.downloadFinished)
         self.speller = Dict()
 
-        # Fork a process to update index, which benefit responsiveness.
-        self.whooshProcess = Process(target=self.updateIndex)
 
     def updateIndex(self):
             ''' Update whoosh index, which cost much computing resource '''
@@ -234,7 +232,9 @@ class MikiEdit(QTextEdit):
                 savestream << self.toPlainText()
                 fh.close()
                 self.document().setModified(False)
-                self.whooshProcess.start()
+
+                # Fork a process to update index, which benefit responsiveness.
+                Process(target=self.updateIndex).start()
 
     def toHtml(self):
         '''markdown.Markdown.convert v.s. markdown.markdown
