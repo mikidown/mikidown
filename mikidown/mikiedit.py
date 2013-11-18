@@ -1,9 +1,8 @@
 import os
 from multiprocessing import Process
-from PyQt4.QtCore import pyqtSignal, Qt, QDir, QFile, QFileInfo, QMimeData, QIODevice, QTextStream
-from PyQt4.QtGui import QFont, QTextEdit, QMessageBox
+from PyQt4.QtCore import QDir, QFile, QFileInfo, QMimeData, QIODevice, QTextStream
+from PyQt4.QtGui import QAction, QCursor, QFont, QTextCursor, QTextEdit, QMessageBox
 from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkRequest
-from PyQt4.Qt import QMouseEvent, QEvent, QAction, QTextCursor
 import markdown
 from whoosh.index import open_dir
 import html2text
@@ -163,55 +162,30 @@ class MikiEdit(QTextEdit):
             return
         self.insertAttachment(filePath, fileType)
 
-    def mousePressEvent(self, event):
-        if event.button() == Qt.RightButton:
-            # Rewrite the mouse event to a left button event so the cursor is
-            # moved to the location of the pointer.
-            event = QMouseEvent(QEvent.MouseButtonPress, event.pos(),
-                Qt.LeftButton, Qt.LeftButton, Qt.NoModifier)
-        QTextEdit.mousePressEvent(self, event)
-
     def contextMenuEvent(self, event):
-        class SpellAction(QAction):
-            correct = pyqtSignal(str)
-            def __init__(self, *args):
-                QAction.__init__(self, *args)
-                self.triggered.connect(
-                    lambda x: self.correct.emit(str(self.text()))
-                )
 
+        def correctWord(cursor, word):
+            # if there is a selection, the selection is deleted and replaced
+            return lambda: cursor.insertText(word)
 
         popup_menu = self.createStandardContextMenu()
 
-        # Select the word under the cursor.
-        cursor = self.textCursor()
+        # Spellcheck the word under mouse cursor, not self.textCursor
+        cursor = self.cursorForPosition(event.pos())
         cursor.select(QTextCursor.WordUnderCursor)
-        self.setTextCursor(cursor)
 
-        if self.textCursor().hasSelection():
-            text = str(self.textCursor().selectedText())
-            self.textCursor().clearSelection()
-            font = QFont()
-            font.setBold(True)
+        text = cursor.selectedText()
+        if text:
             if not self.speller.check(text):
                 lastAction = popup_menu.actions()[0]
                 for word in self.speller.suggest(text)[:10]:
-                    action = SpellAction(word, popup_menu)
-                    action.setFont(font)
-                    action.correct.connect(self.correctWord)
+                    action = QAction(word, popup_menu)
+                    action.triggered.connect(correctWord(cursor, word))
+                    action.setFont(QFont("sans", weight=QFont.Bold))
                     popup_menu.insertAction(lastAction, action)
                 popup_menu.insertSeparator(lastAction)
-        popup_menu.exec_(event.globalPos())
 
-    def correctWord(self, word):
-        '''
-        Replaces the selected text with word.
-        '''
-        cursor = self.textCursor()
-        cursor.beginEditBlock()
-        cursor.removeSelectedText()
-        cursor.insertText(word)
-        cursor.endEditBlock()
+        popup_menu.exec_(event.globalPos())
 
     def save(self, item):
         pageName = self.parent.notesTree.itemToPage(item)
