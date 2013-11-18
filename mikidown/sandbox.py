@@ -1,5 +1,6 @@
 import os
 import shutil
+import time
 from PyQt4.QtCore import QSettings
 from PyQt4.QtGui import QApplication
 
@@ -9,14 +10,14 @@ from .config import Setting
 
 
 class Sandbox():
-    
+
     def __init__(self):
         path = os.path.join(os.getcwd(), "test_notebook")
         Mikibook.initialise("test", path)
         settings = Setting([["test", path]])
         self.window = MikiWindow(settings)
         self.window.show()
-        
+
         print("...Create notebook works")
 
         self.newPage()
@@ -29,7 +30,7 @@ class Sandbox():
     def newPage(self):
         self.window.notesTree.newPage('pageOne')
         self.window.notesTree.newSubpage('subpageOne')
-        
+
         itemOne = self.window.notesTree.pageToItem('pageOne')
         self.window.notesTree.setCurrentItem(itemOne)
         self.window.notesTree.newPage('pageTwo')
@@ -65,7 +66,7 @@ class Sandbox():
 
         noteName = self.window.notesTree.currentItem().text(0)
         assert(noteName == "pageTwo")
-        
+
         print("...pageLink works")
 
     def delPage(self):
@@ -82,7 +83,8 @@ class Sandbox():
         """ When quitting mikidown, the whooshProcess may take time to finish.
         Terminate whooshProcess to ensure shutil.rmtree success.
         """
-        if self.window.notesEdit.whooshProcess.is_alive():
-            self.window.notesEdit.whooshProcess.terminate()
+
+        # sleep 2 seconds for whooshindex to finish, otherwise rmtree may fail
+        time.sleep(2)
         shutil.rmtree("test_notebook")
         print("...Cleaned up")
