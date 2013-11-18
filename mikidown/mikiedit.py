@@ -65,19 +65,31 @@ class MikiEdit(QTextEdit):
             print("Succeeded")
         reply.deleteLater()
 
+    def mimeFromText(self, text):
+        mime = QMimeData()
+        mime.setText(text)
+        return mime
+
+    def createMimeDataFromSelection(self):
+        """ Reimplement this to prevent copied text taken as hasHtml() """
+        plaintext = self.textCursor().selectedText()
+
+        # From QTextCursor doc:
+        # if the selection obtained from an editor spans a line break,
+        # the text will contain a Unicode U+2029 paragraph separator character
+        # instead of a newline \n character
+        text = plaintext.replace('\u2029', '\n')
+        return self.mimeFromText(text)
+
     def insertFromMimeData(self, source):
         """ Intended behavior
         If copy/drag something that hasUrls, then check the extension name:
             if image then apply image pattern ![Alt text](/path/to/img.jpg)
                      else apply link  pattern [text](http://example.net)
         If copy/drag something that hasImage, then ask for file name
+        If copy/drag something that hasHtml, then html2text
         Else use the default insertFromMimeData implementation
         """
-
-        def mimeFromText(text):
-            mime = QMimeData()
-            mime.setText(text)
-            return mime
 
         item = self.parent.notesTree.currentItem()
         attDir = self.parent.notesTree.itemToAttachmentDir(item)
@@ -117,7 +129,7 @@ class MikiEdit(QTextEdit):
                     else:
                         text = "[%s%s](%s)\n" % (filename, extension, url)
 
-                super(MikiEdit, self).insertFromMimeData(mimeFromText(text))
+                super(MikiEdit, self).insertFromMimeData(self.mimeFromText(text))
         elif source.hasImage():
             img = source.imageData()
             attDir = self.parent.notesTree.itemToAttachmentDir(item)
@@ -130,12 +142,12 @@ class MikiEdit(QTextEdit):
                 img.save(filePath)
                 relativeFilePath = filePath.replace(self.settings.notebookPath, "..")
                 text = "![%s](%s)" % (fileName, relativeFilePath)
-                super(MikiEdit, self).insertFromMimeData(mimeFromText(text))
+                super(MikiEdit, self).insertFromMimeData(self.mimeFromText(text))
         elif source.hasHtml():
             backToMarkdown = html2text.HTML2Text()
             html = source.html()
             markdown = backToMarkdown.handle(html)
-            super(MikiEdit, self).insertFromMimeData(mimeFromText(markdown))
+            super(MikiEdit, self).insertFromMimeData(self.mimeFromText(markdown))
         else:
             super(MikiEdit, self).insertFromMimeData(source)
 
@@ -165,6 +177,7 @@ class MikiEdit(QTextEdit):
     def contextMenuEvent(self, event):
 
         def correctWord(cursor, word):
+            # From QTextCursor doc:
             # if there is a selection, the selection is deleted and replaced
             return lambda: cursor.insertText(word)
 
