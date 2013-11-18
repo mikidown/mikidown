@@ -1,6 +1,6 @@
 import os
 from PyQt4.QtCore import Qt, QDir, QFile, QFileInfo, QRect, QSize
-from PyQt4.QtGui import (QColor, QFileDialog, QFileIconProvider, QFileSystemModel, QListView, QPen, QPixmap, QStyle, QStyledItemDelegate)
+from PyQt4.QtGui import (QColor, QFileDialog, QFileIconProvider, QFileSystemModel, QListView, QMenu, QPen, QPixmap, QStyle, QStyledItemDelegate)
 
 class AttachmentItemDelegate(QStyledItemDelegate):
 
@@ -78,7 +78,7 @@ class AttachmentView(QListView):
             menu.addAction("Delete", self.delete)
         else:
             pass
-        menu.exec_(QCursor.pos())
+        menu.exec_(event.globalPos())
 
     def mousePressEvent(self, event):
         """ Trigger click() when an item is pressed.
