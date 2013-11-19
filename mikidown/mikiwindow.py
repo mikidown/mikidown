@@ -4,8 +4,13 @@ The mainwindow module.
 import os
 from multiprocessing import Process
 
-from PyQt4.QtCore import SIGNAL, SLOT, Qt, QDir, QFile, QFileInfo, QIODevice, QPoint, QSize, QTextStream, QUrl
-from PyQt4.QtGui import (qApp, QAction, QCheckBox, QDesktopWidget, QDialog, QDockWidget, QFileDialog, QIcon, QLabel, QLineEdit, QMainWindow, QMenuBar, QMessageBox, QKeySequence, QPrintDialog, QPrinter, QStatusBar, QSplitter, QTabWidget, QTextCursor, QTextDocument, QToolBar, QTreeWidgetItem, QTreeWidgetItemIterator, QVBoxLayout, QWidget)
+from PyQt4.QtCore import (Qt, QDir, QFile, QFileInfo, QIODevice,
+                          QPoint, QSize, QTextStream, QUrl)
+from PyQt4.QtGui import (qApp, QAction, QCheckBox, QDesktopWidget, QDialog,
+    QDockWidget, QFileDialog, QIcon, QLabel, QLineEdit, QMainWindow, QMenuBar,
+    QMessageBox, QKeySequence, QPrintDialog, QPrinter, QStatusBar, QSplitter,
+    QTabWidget, QTextCursor, QTextDocument, QToolBar, QTreeWidgetItem,
+    QTreeWidgetItemIterator, QVBoxLayout, QWidget)
 from PyQt4.QtWebKit import QWebPage
 from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser, RegexPlugin
@@ -28,22 +33,28 @@ class MikiWindow(QMainWindow):
         self.settings = settings
         self.notePath = settings.notePath
 
-        self.setupCoreComponents()
-        self.setupActions()
-        self.setupMainWindow()
-
-        # show changelogs after upgrade mikidown
-        if self.settings.version < __version__:
-            self.changelogHelp()
-            self.settings.qsettings.setValue("version", __version__)
-
-    def setupCoreComponents(self):
+        ################ Setup core components ################
         self.notesTree = MikiTree(self)
         self.notesTree.setObjectName("notesTree")
         self.initTree(self.notePath, self.notesTree)
         self.notesTree.sortItems(0, Qt.AscendingOrder)
 
+        self.ix = None
         self.setupWhoosh()
+
+        self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
+        self.viewedListActions = []
+        self.noteSplitter = QSplitter(Qt.Horizontal)
+
+        self.dockIndex = QDockWidget("Index")
+        self.dockSearch = QDockWidget("Search")
+        self.searchEdit = QLineEdit()
+        self.searchView = MikiSearch(self)
+        self.searchTab = QWidget()
+        self.dockToc = QDockWidget("TOC")
+        self.tocTree = TocTree()
+        self.dockAttachment = QDockWidget("Attachment")
+        self.attachmentView = AttachmentView(self)
 
         self.notesEdit = MikiEdit(self)
         self.notesEdit.setObjectName("notesEdit")
@@ -52,10 +63,30 @@ class MikiWindow(QMainWindow):
 
         self.findBar = QToolBar(self.tr('Find'), self)
         self.findBar.setFixedHeight(30)
+        self.findEdit = QLineEdit(self.findBar)
+        self.checkBox = QCheckBox(self.tr('Match case'), self.findBar)
+
+        self.statusBar = QStatusBar(self)
+        self.statusLabel = QLabel(self)
+
+
+        ################ Setup actions ################
+        self.actions = dict()
+        self.setupActions()
+
+
+        ################ Setup mainwindow ################
+        self.setupMainWindow()
+
+        # show changelogs after upgrade mikidown
+        if self.settings.version < __version__:
+            self.changelogHelp()
+            self.settings.qsettings.setValue("version", __version__)
+
 
     def setupActions(self):
 
-        ################ Global Actions ################
+        # Global Actions
         actTabIndex = self.act(self.tr('Switch to Index Tab'),
                                QKeySequence('Ctrl+Shift+I'),
                                lambda: self.raiseDock(self.dockIndex))
@@ -96,72 +127,121 @@ class MikiWindow(QMainWindow):
 
         ################ Menu Actions ################
         # actions in menuFile
-        self.actionNewPage = self.act(
-            self.tr('&New Page...'), QKeySequence.New, trig=self.notesTree.newPage)
-        self.actionNewSubpage = self.act(self.tr('New Sub&page...'), QKeySequence(
-            'Ctrl+Shift+N'), trig=self.notesTree.newSubpage)
-        self.actionImportPage = self.act(
+        actionNewPage = self.act(self.tr('&New Page...'),
+            QKeySequence.New, trig=self.notesTree.newPage)
+        self.actions.update(newPage=actionNewPage)
+
+        actionNewSubpage = self.act(self.tr('New Sub&page...'),
+            QKeySequence('Ctrl+Shift+N'), trig=self.notesTree.newSubpage)
+        self.actions.update(newSubPage=actionNewSubpage)
+
+        actionImportPage = self.act(
             self.tr('&Import Page...'), trig=self.importPage)
-        self.actionOpenNotebook = self.act(
-            self.tr('&Open Notebook...'), QKeySequence.Open, trig=self.openNotebook)
-        self.actionSave = self.act(self.tr(
+        self.actions.update(importPage=actionImportPage)
+
+        actionOpenNotebook = self.act(
+            self.tr('&Open Notebook...'), QKeySequence.Open, self.openNotebook)
+        self.actions.update(openNotebook=actionOpenNotebook)
+
+        actionSave = self.act(self.tr(
             '&Save'), QKeySequence.Save, trig=self.saveCurrentNote)
-        self.actionSave.setEnabled(False)
-        self.actionSaveAs = self.act(self.tr('Save &As...'), QKeySequence(
+        actionSave.setEnabled(False)
+        self.actions.update(save=actionSave)
+
+        actionSaveAs = self.act(self.tr('Save &As...'), QKeySequence(
             'Ctrl+Shift+S'), trig=self.saveNoteAs)
-        self.actionHtml = self.act(
+        self.actions.update(saveAs=actionSaveAs)
+
+        actionHtml = self.act(
             self.tr('to &HTML'), trig=self.notesEdit.saveAsHtml)
-        self.actionPrint = self.act(self.tr(
+        self.actions.update(html=actionHtml)
+
+        actionPrint = self.act(self.tr(
             '&Print'), QKeySequence('Ctrl+P'), trig=self.printNote)
-        self.actionRenamePage = self.act(self.tr(
-            '&Rename Page...'), QKeySequence('F2'), trig=self.notesTree.renamePage)
-        self.actionDelPage = self.act(self.tr(
-            '&Delete Page'), QKeySequence('Delete'), trig=self.notesTree.delPageWrapper)
-        self.actionQuit = self.act(self.tr('&Quit'), QKeySequence.Quit, SLOT('close()'))
-        self.actionQuit.setMenuRole(QAction.QuitRole)
+        self.actions.update(print_=actionPrint)
+
+        actionRenamePage = self.act(self.tr('&Rename Page...'),
+            QKeySequence('F2'), trig=self.notesTree.renamePage)
+        self.actions.update(renamePage=actionRenamePage)
+
+        actionDelPage = self.act(self.tr('&Delete Page'),
+            QKeySequence('Delete'), trig=self.notesTree.delPageWrapper)
+        self.actions.update(delPage=actionDelPage)
+
+        actionQuit = self.act(
+            self.tr('&Quit'), QKeySequence.Quit, self.close)
+        actionQuit.setMenuRole(QAction.QuitRole)
+        self.actions.update(quit=actionQuit)
 
         # actions in menuEdit
-        self.actionUndo = self.act(self.tr('&Undo'), QKeySequence.Undo,
+        actionUndo = self.act(self.tr('&Undo'), QKeySequence.Undo,
                                    trig=lambda: self.notesEdit.undo())
-        self.actionUndo.setEnabled(False)
-        self.notesEdit.undoAvailable.connect(self.actionUndo.setEnabled)
-        self.actionRedo = self.act(self.tr('&Redo'), QKeySequence.Redo,
+        actionUndo.setEnabled(False)
+        self.notesEdit.undoAvailable.connect(actionUndo.setEnabled)
+        self.actions.update(undo=actionUndo)
+
+        actionRedo = self.act(self.tr('&Redo'), QKeySequence.Redo,
                                    trig=lambda: self.notesEdit.redo())
-        self.actionRedo.setEnabled(False)
-        self.notesEdit.redoAvailable.connect(self.actionRedo.setEnabled)
-        self.actionFindText = self.act(self.tr('&Find Text'), QKeySequence.Find,
+        actionRedo.setEnabled(False)
+        self.notesEdit.redoAvailable.connect(actionRedo.setEnabled)
+        self.actions.update(redo=actionRedo)
+
+        actionFindText = self.act(self.tr('&Find Text'), QKeySequence.Find,
             self.findBar.setVisible, True)
-        self.actionFind = self.act(
+        self.actions.update(findText=actionFindText)
+
+        actionFind = self.act(
             self.tr('Next'), QKeySequence.FindNext, trig=self.findText)
-        self.actionFindPrev = self.act(
+        self.actions.update(find=actionFind)
+
+        actionFindPrev = self.act(
             self.tr('Previous'), QKeySequence.FindPrevious,
             trig=lambda: self.findText(back=True))
-        self.actionSortLines = self.act(
+        self.actions.update(findPrev=actionFindPrev)
+
+        actionSortLines = self.act(
             self.tr('&Sort Lines'), trig=self.sortLines)
-        self.actionInsertImage = self.act(
-            self.tr('&Insert Attachment'), QKeySequence('Ctrl+I'), trig=self.notesEdit.insertAttachmentWrapper)
-        self.actionInsertImage.setEnabled(False)
+        self.actions.update(sortLines=actionSortLines)
+
+        actionInsertImage = self.act(self.tr('&Insert Attachment'),
+            QKeySequence('Ctrl+I'), self.notesEdit.insertAttachmentWrapper)
+        actionInsertImage.setEnabled(False)
+        self.actions.update(insertImage=actionInsertImage)
 
         # actions in menuView
-        self.actionEdit = self.act(self.tr('Edit'), QKeySequence('Ctrl+E'),
+        actionEdit = self.act(self.tr('Edit'), QKeySequence('Ctrl+E'),
             self.edit, True, ":/icons/edit.svg", "Edit mode (Ctrl+E)")
-        self.actionSplit = self.act(self.tr('Split'), QKeySequence('Ctrl+R'),
+        self.actions.update(edit=actionEdit)
+
+        actionSplit = self.act(self.tr('Split'), QKeySequence('Ctrl+R'),
             self.liveView, True, ":/icons/split.svg", "Split mode (Ctrl+R)")
-        self.actionFlipEditAndView = self.act(
+        self.actions.update(split=actionSplit)
+
+        actionFlipEditAndView = self.act(
             self.tr('Flip Edit and View'), trig=self.flipEditAndView)
-        self.actionFlipEditAndView.setEnabled(False)
-        self.actionLeftAndRight = self.act(
-            self.tr('Split into Left and Right'), trig=self.leftAndRight)
-        self.actionUpAndDown = self.act(
-            self.tr('Split into Up and Down'), trig=self.upAndDown)
+        actionFlipEditAndView.setEnabled(False)
+        self.actions.update(flipEditAndView=actionFlipEditAndView)
+
+        #actionLeftAndRight = self.act(
+        #    self.tr('Split into Left and Right'), trig=self.leftAndRight)
+        #actionUpAndDown = self.act(
+        #    self.tr('Split into Up and Down'), trig=self.upAndDown)
         # self.actionLeftAndRight.setEnabled(False)
         # self.actionUpAndDown.setEnabled(False)
+
         # actions in menuHelp
-        self.actionReadme = self.act(self.tr('README'), trig=self.readmeHelp)
-        self.actionChangelog = self.act(self.tr('Changelog'),
+        actionReadme = self.act(self.tr('README'), trig=self.readmeHelp)
+        self.actions.update(readme=actionReadme)
+
+        actionChangelog = self.act(self.tr('Changelog'),
             trig=self.changelogHelp)
-        self.actionAboutQt = QAction(self.tr('About Qt'), self)
-        self.actionAboutQt.triggered.connect(qApp.aboutQt)
+        self.actions.update(changelog=actionChangelog)
+
+        #actionAboutQt = QAction(self.tr('About Qt'), self)
+        #actionAboutQt.triggered.connect(qApp.aboutQt)
+        actionAboutQt = self.act(self.tr('About Qt'), trig=qApp.aboutQt)
+        self.actions.update(aboutQt=actionAboutQt)
+
 
     def setupMainWindow(self):
         self.resize(800, 600)
@@ -172,40 +252,29 @@ class MikiWindow(QMainWindow):
         self.setWindowTitle(
             '{} - {}'.format(self.settings.notebookName, __appname__))
 
-        self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
         self.viewedList.setFixedHeight(25)
-        self.noteSplitter = QSplitter(Qt.Horizontal)
         self.noteSplitter.addWidget(self.notesEdit)
         self.noteSplitter.addWidget(self.notesView)
-        self.mainSplitter = QSplitter(Qt.Vertical)
-        self.mainSplitter.setChildrenCollapsible(False)
-        self.mainSplitter.addWidget(self.viewedList)
-        self.mainSplitter.addWidget(self.noteSplitter)
-        self.mainSplitter.addWidget(self.findBar)
-        self.setCentralWidget(self.mainSplitter)
+        mainSplitter = QSplitter(Qt.Vertical)
+        mainSplitter.setChildrenCollapsible(False)
+        mainSplitter.addWidget(self.viewedList)
+        mainSplitter.addWidget(self.noteSplitter)
+        mainSplitter.addWidget(self.findBar)
+        self.setCentralWidget(mainSplitter)
 
-        self.searchEdit = QLineEdit()
         self.searchEdit.returnPressed.connect(self.searchNote)
-        self.searchView = MikiSearch(self)
-        self.searchTab = QWidget()
         searchLayout = QVBoxLayout()
         searchLayout.addWidget(self.searchEdit)
         searchLayout.addWidget(self.searchView)
         self.searchTab.setLayout(searchLayout)
-        self.tocTree = TocTree()
         self.tocTree.header().close()
-        self.attachmentView = AttachmentView(self)
 
-        self.dockIndex = QDockWidget("Index")
         self.dockIndex.setObjectName("Index")
         self.dockIndex.setWidget(self.notesTree)
-        self.dockSearch = QDockWidget("Search")
         self.dockSearch.setObjectName("Search")
         self.dockSearch.setWidget(self.searchTab)
-        self.dockToc = QDockWidget("TOC")
         self.dockToc.setObjectName("TOC")
         self.dockToc.setWidget(self.tocTree)
-        self.dockAttachment = QDockWidget("Attachment")
         self.dockAttachment.setObjectName("Attachment")
         self.dockAttachment.setWidget(self.attachmentView)
 
@@ -220,77 +289,73 @@ class MikiWindow(QMainWindow):
         self.setTabPosition(Qt.LeftDockWidgetArea, QTabWidget.North)
         self.dockIndex.raise_()      # Put dockIndex on top of the tab stack
 
-        self.menuBar = QMenuBar(self)
-        self.setMenuBar(self.menuBar)
-        self.menuFile = self.menuBar.addMenu(self.tr('&File'))
-        self.menuEdit = self.menuBar.addMenu(self.tr('&Edit'))
-        self.menuView = self.menuBar.addMenu(self.tr('&View'))
-        self.menuHelp = self.menuBar.addMenu(self.tr('&Help'))
+        menuBar = QMenuBar(self)
+        self.setMenuBar(menuBar)
+        menuFile = menuBar.addMenu(self.tr('&File'))
+        menuEdit = menuBar.addMenu(self.tr('&Edit'))
+        menuView = menuBar.addMenu(self.tr('&View'))
+        menuHelp = menuBar.addMenu(self.tr('&Help'))
         # menuFile
-        self.menuFile.addAction(self.actionNewPage)
-        self.menuFile.addAction(self.actionNewSubpage)
-        self.menuFile.addAction(self.actionImportPage)
-        self.menuFile.addAction(self.actionOpenNotebook)
-        self.menuFile.addSeparator()
-        self.menuFile.addAction(self.actionSave)
-        self.menuFile.addAction(self.actionSaveAs)
-        self.menuFile.addAction(self.actionPrint)
-        self.menuExport = self.menuFile.addMenu(self.tr('&Export'))
-        self.menuExport.addAction(self.actionHtml)
-        self.menuFile.addSeparator()
-        self.menuFile.addAction(self.actionRenamePage)
-        self.menuFile.addAction(self.actionDelPage)
-        self.menuFile.addSeparator()
-        self.menuFile.addAction(self.actionQuit)
+        menuFile.addAction(self.actions.get('newPage'))
+        menuFile.addAction(self.actions.get('newSubpage'))
+        menuFile.addAction(self.actions.get('importPage'))
+        menuFile.addAction(self.actions.get('openNotebook'))
+        menuFile.addSeparator()
+        menuFile.addAction(self.actions.get('save'))
+        menuFile.addAction(self.actions.get('saveAs'))
+        menuFile.addAction(self.actions.get('print_'))
+        menuExport = menuFile.addMenu(self.tr('&Export'))
+        menuExport.addAction(self.actions.get('html'))
+        menuFile.addSeparator()
+        menuFile.addAction(self.actions.get('renamePage'))
+        menuFile.addAction(self.actions.get('delPage'))
+        menuFile.addSeparator()
+        menuFile.addAction(self.actions.get('quit'))
         # menuEdit
-        self.menuEdit.addAction(self.actionUndo)
-        self.menuEdit.addAction(self.actionRedo)
-        self.menuEdit.addAction(self.actionFindText)
-        self.menuEdit.addSeparator()
-        self.menuEdit.addAction(self.actionSortLines)
-        self.menuEdit.addAction(self.actionInsertImage)
+        menuEdit.addAction(self.actions.get('undo'))
+        menuEdit.addAction(self.actions.get('redo'))
+        menuEdit.addAction(self.actions.get('findText'))
+        menuEdit.addSeparator()
+        menuEdit.addAction(self.actions.get('sortLines'))
+        menuEdit.addAction(self.actions.get('insertImage'))
         # menuView
-        self.menuView.addAction(self.actionEdit)
-        self.menuView.addAction(self.actionSplit)
-        self.menuView.addAction(self.actionFlipEditAndView)
-        self.menuShowHide = self.menuView.addMenu(self.tr('Show/Hide'))
-        self.menuShowHide.addAction(self.dockIndex.toggleViewAction())
-        self.menuShowHide.addAction(self.dockSearch.toggleViewAction())
-        self.menuShowHide.addAction(self.dockToc.toggleViewAction())
-        self.menuShowHide.addAction(self.dockAttachment.toggleViewAction())
-        self.menuMode = self.menuView.addMenu(self.tr('Mode'))
-        self.menuMode.addAction(self.actionLeftAndRight)
-        self.menuMode.addAction(self.actionUpAndDown)
+        menuView.addAction(self.actions.get('edit'))
+        menuView.addAction(self.actions.get('split'))
+        menuView.addAction(self.actions.get('flipEditAndView'))
+        menuShowHide = menuView.addMenu(self.tr('Show/Hide'))
+        menuShowHide.addAction(self.dockIndex.toggleViewAction())
+        menuShowHide.addAction(self.dockSearch.toggleViewAction())
+        menuShowHide.addAction(self.dockToc.toggleViewAction())
+        menuShowHide.addAction(self.dockAttachment.toggleViewAction())
+        #menuMode = menuView.addMenu(self.tr('Mode'))
+        #menuMode.addAction(self.actionLeftAndRight)
+        #menuMode.addAction(self.actionUpAndDown)
         # menuHelp
-        self.menuHelp.addAction(self.actionReadme)
-        self.menuHelp.addAction(self.actionChangelog)
-        self.menuHelp.addAction(self.actionAboutQt)
+        menuHelp.addAction(self.actions.get('readme'))
+        menuHelp.addAction(self.actions.get('changelog'))
+        menuHelp.addAction(self.actions.get('AboutQt'))
 
-        self.toolBar = QToolBar(self.tr("toolbar"), self)
-        self.toolBar.setObjectName("toolbar")       # needed in saveState()
-        self.toolBar.setIconSize(QSize(16, 16))
-        self.toolBar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        self.addToolBar(Qt.TopToolBarArea, self.toolBar)
-        self.toolBar.addAction(self.actionEdit)
-        self.toolBar.addAction(self.actionSplit)
-        self.findEdit = QLineEdit(self.findBar)
+        toolBar = QToolBar(self.tr("toolbar"), self)
+        toolBar.setObjectName("toolbar")       # needed in saveState()
+        toolBar.setIconSize(QSize(16, 16))
+        toolBar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.addToolBar(Qt.TopToolBarArea, toolBar)
+        toolBar.addAction(self.actions.get('edit'))
+        toolBar.addAction(self.actions.get('split'))
         self.findEdit.returnPressed.connect(self.findText)
-        self.checkBox = QCheckBox(self.tr('Match case'), self.findBar)
         self.findBar.addWidget(self.findEdit)
         self.findBar.addWidget(self.checkBox)
-        self.findBar.addAction(self.actionFindPrev)
-        self.findBar.addAction(self.actionFind)
+        self.findBar.addAction(self.actions.get('findPrev'))
+        self.findBar.addAction(self.actions.get('find'))
         self.findBar.setVisible(False)
         self.findBar.visibilityChanged.connect(self.findBarVisibilityChanged)
 
-        self.statusBar = QStatusBar(self)
         self.setStatusBar(self.statusBar)
-        self.statusLabel = QLabel(self)
         self.statusBar.addWidget(self.statusLabel, 1)
 
         self.notesTree.currentItemChanged.connect(
             self.currentItemChangedWrapper)
-        self.tocTree.currentItemChanged.connect(self.tocNavigate)
+        self.tocTree.itemClicked.connect(self.tocNavigate)
         self.notesEdit.textChanged.connect(self.noteEditted)
 
         self.notesEdit.document(
@@ -304,7 +369,6 @@ class MikiWindow(QMainWindow):
 
     def setupWhoosh(self):
         # Initialize whoosh index, make sure notePath/.indexdir exists
-        self.ix = None
         indexdir = self.settings.indexdir
         try:
             self.ix = open_dir(indexdir)
@@ -407,7 +471,7 @@ class MikiWindow(QMainWindow):
             self.notesTree.itemToAttachmentDir(current))
         self.attachmentView.setRootIndex(index)
 
-    def tocNavigate(self, current, previous):
+    def tocNavigate(self, current):
         ''' works for notesEdit now '''
         if current is None:
             return
@@ -438,7 +502,7 @@ class MikiWindow(QMainWindow):
     def saveNoteAs(self):
         self.saveCurrentNote()
         fileName = QFileDialog.getSaveFileName(self, self.tr('Save as'), '',
-                                               '(*.md *.mkd *.markdown);;'+self.tr('All files(*)'))
+            '(*.md *.mkd *.markdown);;'+self.tr('All files(*)'))
         if fileName == '':
             return
         if not QFileInfo(fileName).suffix():
@@ -464,7 +528,7 @@ class MikiWindow(QMainWindow):
 
     def modificationChanged(self, changed):
         """ Fired one time: modified or not """
-        self.actionSave.setEnabled(changed)
+        self.actions.get('save').setEnabled(changed)
         name = self.notesTree.currentPage()
         self.statusBar.clearMessage()
         if changed:
@@ -491,7 +555,7 @@ class MikiWindow(QMainWindow):
         fh = QFile(path)
         if fh.exists():
             QMessageBox.warning(self, 'Import Error',
-                                'Page already exists: %s' % note.completeBaseName())
+                'Page already exists: %s' % note.completeBaseName())
             return
         fh.open(QIODevice.WriteOnly)
         savestream = QTextStream(fh)
@@ -519,14 +583,14 @@ class MikiWindow(QMainWindow):
         action.setCheckable(checkable)
         if tooltip:
             action.setToolTip(tooltip)
-        self.connect(action, SIGNAL('triggered(bool)'), trig)
+        action.triggered.connect(trig)
         return action
 
     def edit(self, viewmode):
         """ Switch between EDIT and VIEW mode. """
 
-        if self.actionSplit.isChecked():
-            self.actionSplit.setChecked(False)
+        if self.actions.get('split').isChecked():
+            self.actions.get('split').setChecked(False)
         self.notesView.setVisible(not viewmode)
         self.notesEdit.setVisible(viewmode)
 
@@ -539,9 +603,9 @@ class MikiWindow(QMainWindow):
             self.notesView.setFocus()
 
         self.saveCurrentNote()
-        self.actionInsertImage.setEnabled(viewmode)
-        self.actionLeftAndRight.setEnabled(True)
-        self.actionUpAndDown.setEnabled(True)
+        self.actions.get('insertImage').setEnabled(viewmode)
+        #self.actionLeftAndRight.setEnabled(True)
+        #self.actionUpAndDown.setEnabled(True)
 
         # Render the note text as it is.
         self.notesView.updateView()
@@ -549,10 +613,10 @@ class MikiWindow(QMainWindow):
     def liveView(self, viewmode):
         """ Switch between VIEW and LIVE VIEW mode. """
 
-        self.actionSplit.setChecked(viewmode)
+        self.actions.get('split').setChecked(viewmode)
         sizes = self.noteSplitter.sizes()
-        if self.actionEdit.isChecked():
-            self.actionEdit.setChecked(False)
+        if self.actions.get('edit').isChecked():
+            self.actions.get('edit').setChecked(False)
             self.notesView.setVisible(viewmode)
             splitSize = [sizes[0]*0.45, sizes[0]*0.55]
         else:
@@ -565,9 +629,9 @@ class MikiWindow(QMainWindow):
         else:
             self.notesView.setFocus()
 
-        self.actionFlipEditAndView.setEnabled(viewmode)
-        self.actionUpAndDown.setEnabled(viewmode)
-        self.actionInsertImage.setEnabled(viewmode)
+        self.actions.get('flipEditAndView').setEnabled(viewmode)
+        #self.actionUpAndDown.setEnabled(viewmode)
+        self.actions.get('insertImage').setEnabled(viewmode)
         self.noteSplitter.setSizes(splitSize)
         self.saveCurrentNote()
 
@@ -575,7 +639,7 @@ class MikiWindow(QMainWindow):
         self.notesView.updateView()
 
     def findBarVisibilityChanged(self, visible):
-        self.actionFindText.setChecked(visible)
+        self.actions.get('findText').setChecked(visible)
         if visible:
             self.findEdit.setFocus(Qt.ShortcutFocusReason)
 
@@ -620,7 +684,7 @@ class MikiWindow(QMainWindow):
 
     def notesEditInFocus(self, e):
         if e.gotFocus:
-            self.actionInsertImage.setEnabled(True)
+            self.actions.get('insertImage').setEnabled(True)
         # if e.lostFocus:
         #    self.actionInsertImage.setEnabled(False)
 
@@ -710,7 +774,6 @@ class MikiWindow(QMainWindow):
         """ Switching notes will triger this. """
 
         self.viewedList.clear()
-        self.viewedListActions = []
 
         # Check notes exists.
         viewedNotes = self.settings.recentViewedNotes()
@@ -747,14 +810,14 @@ class MikiWindow(QMainWindow):
     def leftAndRight(self):
         self.liveView(True)
         self.noteSplitter.setOrientation(Qt.Horizontal)
-        self.actionLeftAndRight.setEnabled(False)
-        self.actionUpAndDown.setEnabled(True)
+        #self.actionLeftAndRight.setEnabled(False)
+        #self.actionUpAndDown.setEnabled(True)
 
     def upAndDown(self):
         self.liveView(True)
         self.noteSplitter.setOrientation(Qt.Vertical)
-        self.actionUpAndDown.setEnabled(False)
-        self.actionLeftAndRight.setEnabled(True)
+        #self.actionUpAndDown.setEnabled(False)
+        #self.actionLeftAndRight.setEnabled(True)
 
     def readmeHelp(self):
         readmeFile = '/usr/share/mikidown/README.mkd'
