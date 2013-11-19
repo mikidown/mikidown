@@ -5,8 +5,9 @@ Notebook management module.
 import os
 
 from PyQt4.QtCore import Qt, QDir, QFile, QSettings, QSize
-from PyQt4.QtGui import (QAbstractItemDelegate, QAbstractItemView, QColor, QDialog, QDialogButtonBox, QFont, QGridLayout, QLineEdit, QListWidget, QListWidgetItem, QPen, QPushButton, QStyle)
+from PyQt4.QtGui import (QAbstractItemDelegate, QAbstractItemView, QColor, QDialog, QDialogButtonBox, QFileDialog, QFont, QGridLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QPen, QPushButton, QStyle)
 
+import mikidown
 from .config import Setting, readListFromSettings, writeListToSettings
 
 
@@ -184,11 +185,9 @@ class NewNotebookDlg(QDialog):
         grid.addWidget(buttonBox, 5, 4, 1, 2)
         self.setLayout(grid)
 
-        self.connect(browse, SIGNAL("clicked()"),
-                     self.browse)
-        self.connect(buttonBox, SIGNAL("accepted()"), self.accept)
-        self.connect(buttonBox, SIGNAL("rejected()"), self.reject)
-        self.connect(self, SIGNAL('close()'), SLOT('close()'))
+        browse.clicked.connect(self.browse)
+        buttonBox.accepted.connect(self.accept)
+        buttonBox.rejected.connect(self.reject)
 
     def browse(self):
         default = os.environ['HOME']

@@ -5,7 +5,7 @@ import os
 from multiprocessing import Process
 
 from PyQt4.QtCore import SIGNAL, SLOT, Qt, QDir, QFile, QFileInfo, QIODevice, QPoint, QSize, QTextStream, QUrl
-from PyQt4.QtGui import (qApp, QAction, QCheckBox, QDesktopWidget, QDockWidget, QIcon, QLabel, QLineEdit, QMainWindow, QMenuBar, QMessageBox, QKeySequence, QStatusBar, QSplitter, QTabWidget, QTextCursor, QToolBar, QTreeWidgetItem, QTreeWidgetItemIterator, QVBoxLayout, QWidget)
+from PyQt4.QtGui import (qApp, QAction, QCheckBox, QDesktopWidget, QDialog, QDockWidget, QFileDialog, QIcon, QLabel, QLineEdit, QMainWindow, QMenuBar, QMessageBox, QKeySequence, QPrintDialog, QPrinter, QStatusBar, QSplitter, QTabWidget, QTextCursor, QTextDocument, QToolBar, QTreeWidgetItem, QTreeWidgetItemIterator, QVBoxLayout, QWidget)
 from PyQt4.QtWebKit import QWebPage
 from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser, RegexPlugin

@@ -9,7 +9,7 @@ import os
 import datetime
 
 from PyQt4.QtCore import Qt, QDir, QFile, QIODevice, QSize, QTextStream
-from PyQt4.QtGui import (QAbstractItemView, QCursor, QMenu, QTreeWidget, QTreeWidgetItem)
+from PyQt4.QtGui import (QAbstractItemView, QCursor, QMenu, QMessageBox, QTreeWidget, QTreeWidgetItem)
 from whoosh.index import open_dir
 from whoosh.qparser import QueryParser
 
