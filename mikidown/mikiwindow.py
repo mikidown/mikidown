@@ -90,137 +90,101 @@ class MikiWindow(QMainWindow):
 
         # Global Actions
         actTabIndex = self.act(self.tr('Switch to Index Tab'),
-                               QKeySequence('Ctrl+Shift+I'),
-                               lambda: self.raiseDock(self.dockIndex))
+            lambda: self.raiseDock(self.dockIndex), 'Ctrl+Shift+I')
         actTabSearch = self.act(self.tr('Switch to Search Tab'),
-                                QKeySequence('Ctrl+Shift+F'),
-                               lambda: self.raiseDock(self.dockSearch))
+            lambda: self.raiseDock(self.dockSearch), 'Ctrl+Shift+F')
         self.addAction(actTabIndex)
         self.addAction(actTabSearch)
-
-        # Shortcuts to switch notes.
-        actNote1 = self.act(self.tr(""), QKeySequence("Alt+1"),
-                            lambda: self.switchNote(1))
-        actNote2 = self.act(self.tr(""), QKeySequence("Alt+2"),
-                            lambda: self.switchNote(2))
-        actNote3 = self.act(self.tr(""), QKeySequence("Alt+3"),
-                            lambda: self.switchNote(3))
-        actNote4 = self.act(self.tr(""), QKeySequence("Alt+4"),
-                            lambda: self.switchNote(4))
-        actNote5 = self.act(self.tr(""), QKeySequence("Alt+5"),
-                            lambda: self.switchNote(5))
-        actNote6 = self.act(self.tr(""), QKeySequence("Alt+6"),
-                            lambda: self.switchNote(6))
-        actNote7 = self.act(self.tr(""), QKeySequence("Alt+7"),
-                            lambda: self.switchNote(7))
-        actNote8 = self.act(self.tr(""), QKeySequence("Alt+8"),
-                            lambda: self.switchNote(8))
-        actNote9 = self.act(self.tr(""), QKeySequence("Alt+9"),
-                            lambda: self.switchNote(9))
-        self.addAction(actNote1)
-        self.addAction(actNote2)
-        self.addAction(actNote3)
-        self.addAction(actNote4)
-        self.addAction(actNote5)
-        self.addAction(actNote6)
-        self.addAction(actNote7)
-        self.addAction(actNote8)
-        self.addAction(actNote9)
 
         ################ Menu Actions ################
         # actions in menuFile
         actionNewPage = self.act(self.tr('&New Page...'),
-            QKeySequence.New, trig=self.notesTree.newPage)
+            self.notesTree.newPage, QKeySequence.New)
         self.actions.update(newPage=actionNewPage)
 
         actionNewSubpage = self.act(self.tr('New Sub&page...'),
-            QKeySequence('Ctrl+Shift+N'), trig=self.notesTree.newSubpage)
+            self.notesTree.newSubpage, 'Ctrl+Shift+N')
         self.actions.update(newSubPage=actionNewSubpage)
 
-        actionImportPage = self.act(
-            self.tr('&Import Page...'), trig=self.importPage)
+        actionImportPage = self.act(self.tr('&Import Page...'), self.importPage)
         self.actions.update(importPage=actionImportPage)
 
-        actionOpenNotebook = self.act(
-            self.tr('&Open Notebook...'), QKeySequence.Open, self.openNotebook)
+        actionOpenNotebook = self.act(self.tr('&Open Notebook...'),
+            self.openNotebook, QKeySequence.Open)
         self.actions.update(openNotebook=actionOpenNotebook)
 
-        actionSave = self.act(self.tr(
-            '&Save'), QKeySequence.Save, trig=self.saveCurrentNote)
+        actionSave = self.act(self.tr('&Save'),
+            self.saveCurrentNote, QKeySequence.Save)
         actionSave.setEnabled(False)
         self.actions.update(save=actionSave)
 
-        actionSaveAs = self.act(self.tr('Save &As...'), QKeySequence(
-            'Ctrl+Shift+S'), trig=self.saveNoteAs)
+        actionSaveAs = self.act(self.tr('Save &As...'),
+            self.saveNoteAs, QKeySequence.SaveAs)
         self.actions.update(saveAs=actionSaveAs)
 
-        actionHtml = self.act(
-            self.tr('to &HTML'), trig=self.notesEdit.saveAsHtml)
+        actionHtml = self.act(self.tr('to &HTML'), self.notesEdit.saveAsHtml)
         self.actions.update(html=actionHtml)
 
-        actionPrint = self.act(self.tr(
-            '&Print'), QKeySequence('Ctrl+P'), trig=self.printNote)
+        actionPrint = self.act(self.tr('&Print'),
+            self.printNote, QKeySequence.Print)
         self.actions.update(print_=actionPrint)
 
         actionRenamePage = self.act(self.tr('&Rename Page...'),
-            QKeySequence('F2'), trig=self.notesTree.renamePage)
+            self.notesTree.renamePage, 'F2')
         self.actions.update(renamePage=actionRenamePage)
 
         actionDelPage = self.act(self.tr('&Delete Page'),
-            QKeySequence('Delete'), trig=self.notesTree.delPageWrapper)
+            self.notesTree.delPageWrapper, QKeySequence.Delete)
         self.actions.update(delPage=actionDelPage)
 
-        actionQuit = self.act(
-            self.tr('&Quit'), QKeySequence.Quit, self.close)
+        actionQuit = self.act(self.tr('&Quit'), self.close, QKeySequence.Quit)
         actionQuit.setMenuRole(QAction.QuitRole)
         self.actions.update(quit=actionQuit)
 
         # actions in menuEdit
-        actionUndo = self.act(self.tr('&Undo'), QKeySequence.Undo,
-                                   trig=lambda: self.notesEdit.undo())
+        actionUndo = self.act(self.tr('&Undo'),
+            lambda: self.notesEdit.undo(), QKeySequence.Undo)
         actionUndo.setEnabled(False)
         self.notesEdit.undoAvailable.connect(actionUndo.setEnabled)
         self.actions.update(undo=actionUndo)
 
-        actionRedo = self.act(self.tr('&Redo'), QKeySequence.Redo,
-                                   trig=lambda: self.notesEdit.redo())
+        actionRedo = self.act(self.tr('&Redo'),
+            lambda: self.notesEdit.redo(), QKeySequence.Redo)
         actionRedo.setEnabled(False)
         self.notesEdit.redoAvailable.connect(actionRedo.setEnabled)
         self.actions.update(redo=actionRedo)
 
-        actionFindText = self.act(self.tr('&Find Text'), QKeySequence.Find,
-            self.findBar.setVisible, True)
+        actionFindText = self.act(self.tr('&Find Text'),
+            self.findBar.setVisible, QKeySequence.Find, True)
         self.actions.update(findText=actionFindText)
 
-        actionFind = self.act(
-            self.tr('Next'), QKeySequence.FindNext, trig=self.findText)
+        actionFind = self.act(self.tr('Next'),
+            self.findText, QKeySequence.FindNext)
         self.actions.update(find=actionFind)
 
-        actionFindPrev = self.act(
-            self.tr('Previous'), QKeySequence.FindPrevious,
-            trig=lambda: self.findText(back=True))
+        actionFindPrev = self.act(self.tr('Previous'),
+            lambda: self.findText(back=True), QKeySequence.FindPrevious)
         self.actions.update(findPrev=actionFindPrev)
 
-        actionSortLines = self.act(
-            self.tr('&Sort Lines'), trig=self.sortLines)
+        actionSortLines = self.act(self.tr('&Sort Lines'), self.sortLines)
         self.actions.update(sortLines=actionSortLines)
 
         actionInsertImage = self.act(self.tr('&Insert Attachment'),
-            QKeySequence('Ctrl+I'), self.notesEdit.insertAttachmentWrapper)
+            self.notesEdit.insertAttachmentWrapper, 'Ctrl+I')
         actionInsertImage.setEnabled(False)
         self.actions.update(insertImage=actionInsertImage)
 
         # actions in menuView
-        actionEdit = self.act(self.tr('Edit'), QKeySequence('Ctrl+E'),
-            self.edit, True, ":/icons/edit.svg", "Edit mode (Ctrl+E)")
+        actionEdit = self.act(self.tr('Edit'), self.edit, 'Ctrl+E',
+            True, ":/icons/edit.svg", "Edit mode (Ctrl+E)")
         self.actions.update(edit=actionEdit)
 
-        actionSplit = self.act(self.tr('Split'), QKeySequence('Ctrl+R'),
-            self.liveView, True, ":/icons/split.svg", "Split mode (Ctrl+R)")
+        actionSplit = self.act(self.tr('Split'), self.liveView, 'Ctrl+R',
+            True, ":/icons/split.svg", "Split mode (Ctrl+R)")
         self.actions.update(split=actionSplit)
 
-        actionFlipEditAndView = self.act(
-            self.tr('Flip Edit and View'), trig=self.flipEditAndView)
+        actionFlipEditAndView = self.act(self.tr('Flip Edit and View'),
+            self.flipEditAndView)
         actionFlipEditAndView.setEnabled(False)
         self.actions.update(flipEditAndView=actionFlipEditAndView)
 
@@ -232,16 +196,13 @@ class MikiWindow(QMainWindow):
         # self.actionUpAndDown.setEnabled(False)
 
         # actions in menuHelp
-        actionReadme = self.act(self.tr('README'), trig=self.readmeHelp)
+        actionReadme = self.act(self.tr('README'), self.readmeHelp)
         self.actions.update(readme=actionReadme)
 
-        actionChangelog = self.act(self.tr('Changelog'),
-            trig=self.changelogHelp)
+        actionChangelog = self.act(self.tr('Changelog'), self.changelogHelp)
         self.actions.update(changelog=actionChangelog)
 
-        #actionAboutQt = QAction(self.tr('About Qt'), self)
-        #actionAboutQt.triggered.connect(qApp.aboutQt)
-        actionAboutQt = self.act(self.tr('About Qt'), trig=qApp.aboutQt)
+        actionAboutQt = self.act(self.tr('About Qt'), qApp.aboutQt)
         self.actions.update(aboutQt=actionAboutQt)
 
 
@@ -574,7 +535,7 @@ class MikiWindow(QMainWindow):
         if dialog.exec_():
             pass
 
-    def act(self, name, shortcut=None, trig=None, checkable=False,
+    def act(self, name, trig, shortcut=None, checkable=False,
             icon=None, tooltip=None):
         """ A wrapper to several QAction methods """
         if icon:
@@ -582,7 +543,7 @@ class MikiWindow(QMainWindow):
         else:
             action = QAction(name, self)
         if shortcut:
-            action.setShortcut(shortcut)
+            action.setShortcut(QKeySequence(shortcut))
         action.setCheckable(checkable)
         if tooltip:
             action.setToolTip(tooltip)
@@ -774,11 +735,10 @@ class MikiWindow(QMainWindow):
         self.settings.updateRecentViewedNotes(notes)
 
     def updateRecentViewedNotes(self):
-        """ Switching notes will trigger this. 
+        """ Switching notes will trigger this.
             When Alt pressed, show note number.
         """
 
-        noAlt = not self.altPressed
         self.viewedList.clear()
         self.viewedListActions = []
 
@@ -790,17 +750,19 @@ class MikiWindow(QMainWindow):
             if self.notesTree.pageExists(f):
                 existedNotes.append(f)
                 splitName = f.split('/')
-                if noAlt or i == 0 or i > 9:
-                    name = splitName[-1]
-                else:
+                if self.altPressed and i in range(1, 10):
                     name = str(i) + ': ' + splitName[-1]
-                action = self.act(name, None, self.openFunction(f), True)
-                if i > 0 and i <= 9:
-                    action.setToolTip('Alt+' + str(i))
+                else:
+                    name = splitName[-1]
+                if i in range(1, 10):
+                    action = self.act(name, self.openFunction(f), 'Alt+'+str(i), 
+                        True, None, 'Alt+'+str(i))
+                else:
+                    action = self.act(name, self.openFunction(f), None, True)
                 self.viewedListActions.append(action)
                 i += 1
 
-        if noAlt:
+        if not self.altPressed:
             self.settings.updateRecentViewedNotes(existedNotes)
         for action in self.viewedListActions:
             self.viewedList.addAction(action)
