@@ -69,6 +69,8 @@ class MikiWindow(QMainWindow):
         self.statusBar = QStatusBar(self)
         self.statusLabel = QLabel(self)
 
+        self.altPressed = False
+
 
         ################ Setup actions ################
         self.actions = dict()
@@ -97,23 +99,23 @@ class MikiWindow(QMainWindow):
         self.addAction(actTabSearch)
 
         # Shortcuts to switch notes.
-        actNote1 = self.act(self.tr(""), QKeySequence("Ctrl+1"),
+        actNote1 = self.act(self.tr(""), QKeySequence("Alt+1"),
                             lambda: self.switchNote(1))
-        actNote2 = self.act(self.tr(""), QKeySequence("Ctrl+2"),
+        actNote2 = self.act(self.tr(""), QKeySequence("Alt+2"),
                             lambda: self.switchNote(2))
-        actNote3 = self.act(self.tr(""), QKeySequence("Ctrl+3"),
+        actNote3 = self.act(self.tr(""), QKeySequence("Alt+3"),
                             lambda: self.switchNote(3))
-        actNote4 = self.act(self.tr(""), QKeySequence("Ctrl+4"),
+        actNote4 = self.act(self.tr(""), QKeySequence("Alt+4"),
                             lambda: self.switchNote(4))
-        actNote5 = self.act(self.tr(""), QKeySequence("Ctrl+5"),
+        actNote5 = self.act(self.tr(""), QKeySequence("Alt+5"),
                             lambda: self.switchNote(5))
-        actNote6 = self.act(self.tr(""), QKeySequence("Ctrl+6"),
+        actNote6 = self.act(self.tr(""), QKeySequence("Alt+6"),
                             lambda: self.switchNote(6))
-        actNote7 = self.act(self.tr(""), QKeySequence("Ctrl+7"),
+        actNote7 = self.act(self.tr(""), QKeySequence("Alt+7"),
                             lambda: self.switchNote(7))
-        actNote8 = self.act(self.tr(""), QKeySequence("Ctrl+8"),
+        actNote8 = self.act(self.tr(""), QKeySequence("Alt+8"),
                             lambda: self.switchNote(8))
-        actNote9 = self.act(self.tr(""), QKeySequence("Ctrl+9"),
+        actNote9 = self.act(self.tr(""), QKeySequence("Alt+9"),
                             lambda: self.switchNote(9))
         self.addAction(actNote1)
         self.addAction(actNote2)
@@ -486,7 +488,8 @@ class MikiWindow(QMainWindow):
         self.notesView.load(QUrl(link))
 
     def switchNote(self, num):
-        self.viewedListActions[num].trigger()
+        if num < len(self.viewedListActions):
+            self.viewedListActions[num].trigger()
 
     def saveCurrentNote(self):
         item = self.notesTree.currentItem()
@@ -771,23 +774,37 @@ class MikiWindow(QMainWindow):
         self.settings.updateRecentViewedNotes(notes)
 
     def updateRecentViewedNotes(self):
-        """ Switching notes will triger this. """
+        """ Switching notes will trigger this. 
+            When Alt pressed, show note number.
+        """
 
+        noAlt = not self.altPressed
         self.viewedList.clear()
+        self.viewedListActions = []
 
         # Check notes exists.
         viewedNotes = self.settings.recentViewedNotes()
         existedNotes = []
+        i = 0
         for f in viewedNotes:
             if self.notesTree.pageExists(f):
                 existedNotes.append(f)
                 splitName = f.split('/')
-                self.viewedListActions.append(
-                    self.act(splitName[-1], None, self.openFunction(f), True))
+                if noAlt or i == 0 or i > 9:
+                    name = splitName[-1]
+                else:
+                    name = str(i) + ': ' + splitName[-1]
+                action = self.act(name, None, self.openFunction(f), True)
+                if i > 0 and i <= 9:
+                    action.setToolTip('Alt+' + str(i))
+                self.viewedListActions.append(action)
+                i += 1
 
-        self.settings.updateRecentViewedNotes(existedNotes)
+        if noAlt:
+            self.settings.updateRecentViewedNotes(existedNotes)
         for action in self.viewedListActions:
             self.viewedList.addAction(action)
+        self.viewedListActions[0].setChecked(True)
 
     def openFunction(self, name):
         item = self.notesTree.pageToItem(name)
@@ -832,6 +849,21 @@ class MikiWindow(QMainWindow):
             changeLog = os.path.join(
                 os.path.dirname(os.path.dirname(__file__)), 'Changelog.md')
         self.importPageCore(changeLog)
+
+    def keyPressEvent(self, event):
+        """ When Alt pressed, note number will be shown in viewedList. """
+        if event.key() == Qt.Key_Alt:
+            self.altPressed = True
+            self.updateRecentViewedNotes()
+        else:
+            QMainWindow.keyPressEvent(self, event)
+
+    def keyReleaseEvent(self, event):
+        if event.key() == Qt.Key_Alt:
+            self.altPressed = False
+            self.updateRecentViewedNotes()
+        else:
+            QMainWindow.keyPressEvent(self, event)
 
     def closeEvent(self, event):
         """
