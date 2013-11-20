@@ -14,7 +14,7 @@ class MikiTray(QSystemTrayIcon):
         self.setVisible(True)
 
         menu = QMenu()
-        menu.addAction(parent.actionQuit)
+        menu.addAction(parent.actions.get('quit'))
         self.setContextMenu(menu)
         self.activated.connect(self.toggleShow)
 

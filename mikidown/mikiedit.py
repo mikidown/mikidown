@@ -1,6 +1,6 @@
 import os
 from multiprocessing import Process
-from PyQt4.QtCore import QDir, QFile, QFileInfo, QMimeData, QIODevice, QTextStream, QUrl
+from PyQt4.QtCore import Qt, QDir, QFile, QFileInfo, QMimeData, QIODevice, QTextStream, QUrl
 from PyQt4.QtGui import QAction, QCursor, QFileDialog, QFont, QTextCursor, QTextEdit, QMessageBox
 from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkRequest
 import markdown
@@ -17,7 +17,6 @@ class MikiEdit(QTextEdit):
         self.parent = parent
         self.settings = parent.settings
         self.setFontPointSize(12)
-        self.setTabStopWidth(4)
         self.setVisible(False)
         self.ix = open_dir(self.settings.indexdir)
 
@@ -199,6 +198,15 @@ class MikiEdit(QTextEdit):
                 popup_menu.insertSeparator(lastAction)
 
         popup_menu.exec_(event.globalPos())
+
+    def keyPressEvent(self, event):
+        """ for Qt.Key_Tab, expand as 4 spaces
+            for other keys, use default implementation
+        """
+        if event.key() == Qt.Key_Tab:
+            self.insertPlainText('    ')
+        else:
+            QTextEdit.keyPressEvent(self, event)
 
     def save(self, item):
         pageName = self.parent.notesTree.itemToPage(item)
