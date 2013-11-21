@@ -1,9 +1,20 @@
 import os
 import re
 from markdown.extensions.headerid import slugify, unique
-from PyQt4.QtCore import QFile
-from PyQt4.QtGui import (QDialog, QDialogButtonBox, QGridLayout, QLabel, QLineEdit, QMessageBox)
+from PyQt4.QtCore import Qt, QFile, QRect
+from PyQt4.QtGui import (QDialog, QDialogButtonBox, QGridLayout, QIcon, QLabel, QLineEdit, QMessageBox, QPainter, QPixmap)
 
+
+class ViewedNoteIcon(QIcon):
+    def __init__(self, num, parent=None):
+        super(ViewedNoteIcon, self).__init__(parent)
+        pixmap = QPixmap(16, 16)
+        pixmap.fill(Qt.cyan)
+        rect = QRect(0, 0, 16, 16)
+        painter = QPainter(pixmap)
+        painter.drawText(rect, Qt.AlignHCenter | Qt.AlignVCenter, str(num))
+        self.addPixmap(pixmap)
+        del painter
 
 class LineEditDialog(QDialog):
     """ A dialog asking for page/file name.

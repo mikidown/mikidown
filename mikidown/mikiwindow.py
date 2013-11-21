@@ -24,7 +24,7 @@ from .mikiview import MikiView
 from .mikisearch import MikiSearch
 from .attachment import AttachmentView
 from .highlighter import MikiHighlighter
-from .utils import parseHeaders, parseTitle
+from .utils import ViewedNoteIcon, parseHeaders, parseTitle
 
 
 class MikiWindow(QMainWindow):
@@ -43,6 +43,8 @@ class MikiWindow(QMainWindow):
         self.setupWhoosh()
 
         self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
+        self.viewedList.setIconSize(QSize(16, 16))
+        self.viewedList.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self.viewedListActions = []
         self.noteSplitter = QSplitter(Qt.Horizontal)
 
@@ -176,11 +178,11 @@ class MikiWindow(QMainWindow):
 
         # actions in menuView
         actionEdit = self.act(self.tr('Edit'), self.edit, 'Ctrl+E',
-            True, ":/icons/edit.svg", "Edit mode (Ctrl+E)")
+            True, QIcon(':/icons/edit.svg'), 'Edit mode (Ctrl+E)')
         self.actions.update(edit=actionEdit)
 
         actionSplit = self.act(self.tr('Split'), self.liveView, 'Ctrl+R',
-            True, ":/icons/split.svg", "Split mode (Ctrl+R)")
+            True, QIcon(':/icons/split.svg'), 'Split mode (Ctrl+R)')
         self.actions.update(split=actionSplit)
 
         actionFlipEditAndView = self.act(self.tr('Flip Edit and View'),
@@ -539,7 +541,7 @@ class MikiWindow(QMainWindow):
             icon=None, tooltip=None):
         """ A wrapper to several QAction methods """
         if icon:
-            action = QAction(QIcon(icon), name, self)
+            action = QAction(icon, name, self)
         else:
             action = QAction(name, self)
         if shortcut:
@@ -749,16 +751,13 @@ class MikiWindow(QMainWindow):
         for f in viewedNotes:
             if self.notesTree.pageExists(f):
                 existedNotes.append(f)
-                splitName = f.split('/')
+                names = f.split('/')
                 if self.altPressed and i in range(1, 10):
-                    name = str(i) + ': ' + splitName[-1]
+                    action = self.act(names[-1], self.openFunction(f), 
+                        'Alt+'+str(i), True, ViewedNoteIcon(i), 'Alt+'+str(i))
                 else:
-                    name = splitName[-1]
-                if i in range(1, 10):
-                    action = self.act(name, self.openFunction(f), 'Alt+'+str(i), 
-                        True, None, 'Alt+'+str(i))
-                else:
-                    action = self.act(name, self.openFunction(f), None, True)
+                    action = self.act(names[-1], self.openFunction(f),
+                        None, True)
                 self.viewedListActions.append(action)
                 i += 1
 
