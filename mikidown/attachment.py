@@ -33,18 +33,22 @@ class AttachmentItemDelegate(QStyledItemDelegate):
         imgTop = self.thumbHeight - img.height()
         painter.drawPixmap(r.left()+imgLeft, r.top()+imgTop, img)
 
-        # TODO: Rounding rectangle should be scaled to fileName length!
+        rect = QRect(r.left(), r.top()+self.thumbHeight, self.width, self.nameHeight)
+        flag = Qt.AlignHCenter | Qt.TextWrapAnywhere
+        # get the bounding rectangle of the fileName
+        bdRect = painter.boundingRect(rect, flag, fileName)
+        if bdRect.height() < rect.height():
+            rect = bdRect
+
         if option.state & QStyle.State_Selected:
             painter.setBrush(Qt.darkBlue)
-            # painter.drawRect(r.left()+imgLeft, r.top()+imgTop, img.width(), img.height())
-            painter.drawRoundedRect(r.left(), r.top()+self.thumbHeight, self.width, self.nameHeight, 5, 5)
+            painter.drawRoundedRect(rect, 5, 5)
             pen = QPen(QColor.fromRgb(255, 255, 255), 1, Qt.SolidLine)
         else:
             pen = QPen(QColor.fromRgb(51, 51, 51), 1, Qt.SolidLine)
 
         painter.setPen(pen)
-        painter.drawText(QRect(r.left(), r.top()+self.thumbHeight, self.width, self.nameHeight),
-            Qt.AlignHCenter | Qt.TextWrapAnywhere, fileName)
+        painter.drawText(rect, flag, fileName)
 
     def sizeHint(self, option, index):
         return QSize(self.width + 16, self.height + 16)
