@@ -1,6 +1,6 @@
 import os
 
-from PyQt4.QtCore import QSettings
+from PyQt4.QtCore import QDir, QFile, QSettings
 from whoosh import fields
 
 
@@ -13,7 +13,7 @@ class Setting():
 
         # Index directory of whoosh, located in notebookPath.
         self.schema = fields.Schema(
-            path = fields.TEXT(stored=True), 
+            path = fields.TEXT(stored=True),
             title = fields.TEXT(stored=True),
             content = fields.TEXT(stored=True))
 
@@ -24,7 +24,8 @@ class Setting():
         self.indexdir = os.path.join(self.notePath, ".indexdir")
         self.attachmentPath = os.path.join(self.notebookPath, "attachments")
         self.configfile = os.path.join(self.notebookPath, "notebook.conf")
-        self.cssfile = os.path.join(self.notebookPath, "css", "notebook.css")
+        cssPath = os.path.join(self.notebookPath, "css")
+        self.cssfile = os.path.join(cssPath, "notebook.css")
         self.qsettings = QSettings(self.configfile, QSettings.NativeFormat)
 
         if os.path.exists(self.configfile):
@@ -64,19 +65,42 @@ class Setting():
             self.fileExt = ".md"
             self.qsettings.setValue("fileExt", self.fileExt)
 
-        # Image file types that will be copied to attachmentDir 
+        # Image file types that will be copied to attachmentDir
         # Inserted as image link
         if not self.attachmentImage:
             self.attachmentImage = [".jpg", ".jpeg", ".png", ".gif", ".svg"]
             self.qsettings.setValue("attachmentImage", self.attachmentImage)
 
-        # Document file types that will be copied to attachmentDir 
+        # Document file types that will be copied to attachmentDir
         # Inserted as link
         if not self.attachmentDocument:
             self.attachmentDocument = [".pdf", ".doc", ".odt"]
             self.qsettings.setValue("attachmentDocument", self.attachmentDocument)
 
+        # Migrate notebookPath to v0.3.0 folder structure
         if not self.version:
+            notebookDir = QDir(self.notebookPath)
+
+            # move all markdown files to notes/
+            dirList = notebookDir.entryList(QDir.Dirs | QDir.NoDotAndDotDot)
+            fileList = notebookDir.entryList(['*.md', '*.mkd', '*.markdown'])
+            notebookDir.mkdir('notes')
+            for d in dirList + fileList:
+                notebookDir.rename(d, os.path.join('notes', d))
+
+            # remove .indexdir folder
+            oldIndexDir = QDir(os.path.join(self.notebookPath, '.indexdir'))
+            indexFileList = oldIndexDir.entryList()
+            for f in indexFileList:
+                oldIndexDir.remove(f)
+            notebookDir.rmdir('.indexdir')
+
+            # rename notes.css to css/notebook.css
+            oldCssFile = os.path.join(self.notebookPath, 'notes.css')
+            QDir().mkpath(cssPath)
+            if os.path.exists(oldCssFile):
+                QFile.rename(oldCssFile, self.cssfile)
+
             self.version = '0'
 
     def saveGeometry(self, geometry):

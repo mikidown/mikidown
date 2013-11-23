@@ -417,7 +417,6 @@ class MikiWindow(QMainWindow):
                 self.notesView.updateView()
                 self.setCurrentNote()
                 self.updateRecentViewedNotes()
-                self.viewedListActions[0].setChecked(True)
                 #self.statusLabel.setText(noteFullName)
 
     def currentItemChangedWrapper(self, current, previous):
@@ -765,7 +764,8 @@ class MikiWindow(QMainWindow):
             self.settings.updateRecentViewedNotes(existedNotes)
         for action in self.viewedListActions:
             self.viewedList.addAction(action)
-        self.viewedListActions[0].setChecked(True)
+        if len(self.viewedListActions):
+            self.viewedListActions[0].setChecked(True)
 
     def openFunction(self, name):
         item = self.notesTree.pageToItem(name)
