@@ -106,7 +106,7 @@ class MikiWindow(QMainWindow):
 
         actionNewSubpage = self.act(self.tr('New Sub&page...'),
             self.notesTree.newSubpage, 'Ctrl+Shift+N')
-        self.actions.update(newSubPage=actionNewSubpage)
+        self.actions.update(newSubpage=actionNewSubpage)
 
         actionImportPage = self.act(self.tr('&Import Page...'), self.importPage)
         self.actions.update(importPage=actionImportPage)
@@ -261,32 +261,32 @@ class MikiWindow(QMainWindow):
         menuView = menuBar.addMenu(self.tr('&View'))
         menuHelp = menuBar.addMenu(self.tr('&Help'))
         # menuFile
-        menuFile.addAction(self.actions.get('newPage'))
-        menuFile.addAction(self.actions.get('newSubpage'))
-        menuFile.addAction(self.actions.get('importPage'))
-        menuFile.addAction(self.actions.get('openNotebook'))
+        menuFile.addAction(self.actions['newPage'])
+        menuFile.addAction(self.actions['newSubpage'])
+        menuFile.addAction(self.actions['importPage'])
+        menuFile.addAction(self.actions['openNotebook'])
         menuFile.addSeparator()
-        menuFile.addAction(self.actions.get('save'))
-        menuFile.addAction(self.actions.get('saveAs'))
-        menuFile.addAction(self.actions.get('print_'))
+        menuFile.addAction(self.actions['save'])
+        menuFile.addAction(self.actions['saveAs'])
+        menuFile.addAction(self.actions['print_'])
         menuExport = menuFile.addMenu(self.tr('&Export'))
-        menuExport.addAction(self.actions.get('html'))
+        menuExport.addAction(self.actions['html'])
         menuFile.addSeparator()
-        menuFile.addAction(self.actions.get('renamePage'))
-        menuFile.addAction(self.actions.get('delPage'))
+        menuFile.addAction(self.actions['renamePage'])
+        menuFile.addAction(self.actions['delPage'])
         menuFile.addSeparator()
-        menuFile.addAction(self.actions.get('quit'))
+        menuFile.addAction(self.actions['quit'])
         # menuEdit
-        menuEdit.addAction(self.actions.get('undo'))
-        menuEdit.addAction(self.actions.get('redo'))
-        menuEdit.addAction(self.actions.get('findText'))
+        menuEdit.addAction(self.actions['undo'])
+        menuEdit.addAction(self.actions['redo'])
+        menuEdit.addAction(self.actions['findText'])
         menuEdit.addSeparator()
-        menuEdit.addAction(self.actions.get('sortLines'))
-        menuEdit.addAction(self.actions.get('insertImage'))
+        menuEdit.addAction(self.actions['sortLines'])
+        menuEdit.addAction(self.actions['insertImage'])
         # menuView
-        menuView.addAction(self.actions.get('edit'))
-        menuView.addAction(self.actions.get('split'))
-        menuView.addAction(self.actions.get('flipEditAndView'))
+        menuView.addAction(self.actions['edit'])
+        menuView.addAction(self.actions['split'])
+        menuView.addAction(self.actions['flipEditAndView'])
         menuShowHide = menuView.addMenu(self.tr('Show/Hide'))
         menuShowHide.addAction(self.dockIndex.toggleViewAction())
         menuShowHide.addAction(self.dockSearch.toggleViewAction())
@@ -296,22 +296,22 @@ class MikiWindow(QMainWindow):
         #menuMode.addAction(self.actionLeftAndRight)
         #menuMode.addAction(self.actionUpAndDown)
         # menuHelp
-        menuHelp.addAction(self.actions.get('readme'))
-        menuHelp.addAction(self.actions.get('changelog'))
-        menuHelp.addAction(self.actions.get('AboutQt'))
+        menuHelp.addAction(self.actions['readme'])
+        menuHelp.addAction(self.actions['changelog'])
+        menuHelp.addAction(self.actions['aboutQt'])
 
         toolBar = QToolBar(self.tr("toolbar"), self)
         toolBar.setObjectName("toolbar")       # needed in saveState()
         toolBar.setIconSize(QSize(16, 16))
         toolBar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self.addToolBar(Qt.TopToolBarArea, toolBar)
-        toolBar.addAction(self.actions.get('edit'))
-        toolBar.addAction(self.actions.get('split'))
+        toolBar.addAction(self.actions['edit'])
+        toolBar.addAction(self.actions['split'])
         self.findEdit.returnPressed.connect(self.findText)
         self.findBar.addWidget(self.findEdit)
         self.findBar.addWidget(self.checkBox)
-        self.findBar.addAction(self.actions.get('findPrev'))
-        self.findBar.addAction(self.actions.get('find'))
+        self.findBar.addAction(self.actions['findPrev'])
+        self.findBar.addAction(self.actions['find'])
         self.findBar.setVisible(False)
         self.findBar.visibilityChanged.connect(self.findBarVisibilityChanged)
 
@@ -494,7 +494,7 @@ class MikiWindow(QMainWindow):
 
     def modificationChanged(self, changed):
         """ Fired one time: modified or not """
-        self.actions.get('save').setEnabled(changed)
+        self.actions['save'].setEnabled(changed)
         name = self.notesTree.currentPage()
         self.statusBar.clearMessage()
         if changed:
@@ -555,8 +555,8 @@ class MikiWindow(QMainWindow):
     def edit(self, viewmode):
         """ Switch between EDIT and VIEW mode. """
 
-        if self.actions.get('split').isChecked():
-            self.actions.get('split').setChecked(False)
+        if self.actions['split'].isChecked():
+            self.actions['split'].setChecked(False)
         self.notesView.setVisible(not viewmode)
         self.notesEdit.setVisible(viewmode)
 
@@ -569,7 +569,7 @@ class MikiWindow(QMainWindow):
             self.notesView.setFocus()
 
         self.saveCurrentNote()
-        self.actions.get('insertImage').setEnabled(viewmode)
+        self.actions['insertImage'].setEnabled(viewmode)
         #self.actionLeftAndRight.setEnabled(True)
         #self.actionUpAndDown.setEnabled(True)
 
@@ -579,10 +579,10 @@ class MikiWindow(QMainWindow):
     def liveView(self, viewmode):
         """ Switch between VIEW and LIVE VIEW mode. """
 
-        self.actions.get('split').setChecked(viewmode)
+        self.actions['split'].setChecked(viewmode)
         sizes = self.noteSplitter.sizes()
-        if self.actions.get('edit').isChecked():
-            self.actions.get('edit').setChecked(False)
+        if self.actions['edit'].isChecked():
+            self.actions['edit'].setChecked(False)
             self.notesView.setVisible(viewmode)
             splitSize = [sizes[0]*0.45, sizes[0]*0.55]
         else:
@@ -595,9 +595,9 @@ class MikiWindow(QMainWindow):
         else:
             self.notesView.setFocus()
 
-        self.actions.get('flipEditAndView').setEnabled(viewmode)
+        self.actions['flipEditAndView'].setEnabled(viewmode)
         #self.actionUpAndDown.setEnabled(viewmode)
-        self.actions.get('insertImage').setEnabled(viewmode)
+        self.actions['insertImage'].setEnabled(viewmode)
         self.noteSplitter.setSizes(splitSize)
         self.saveCurrentNote()
 
@@ -605,7 +605,7 @@ class MikiWindow(QMainWindow):
         self.notesView.updateView()
 
     def findBarVisibilityChanged(self, visible):
-        self.actions.get('findText').setChecked(visible)
+        self.actions['findText'].setChecked(visible)
         if visible:
             self.findEdit.setFocus(Qt.ShortcutFocusReason)
 
@@ -650,7 +650,7 @@ class MikiWindow(QMainWindow):
 
     def notesEditInFocus(self, e):
         if e.gotFocus:
-            self.actions.get('insertImage').setEnabled(True)
+            self.actions['insertImage'].setEnabled(True)
         # if e.lostFocus:
         #    self.actionInsertImage.setEnabled(False)
 
@@ -753,7 +753,7 @@ class MikiWindow(QMainWindow):
                 existedNotes.append(f)
                 names = f.split('/')
                 if self.altPressed and i in range(1, 10):
-                    action = self.act(names[-1], self.openFunction(f), 
+                    action = self.act(names[-1], self.openFunction(f),
                         'Alt+'+str(i), True, ViewedNoteIcon(i), 'Alt+'+str(i))
                 else:
                     action = self.act(names[-1], self.openFunction(f),
