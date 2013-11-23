@@ -62,9 +62,9 @@ All python-markdown [extensions] are supported. To enable/disable extension, edi
     - `**strong**` will yield <strong>strong</strong>
     - `//emphasis//` will yield <em>emphasis</em>
 
-## Contributor
+## Contributors
 
-[ShadowKyogre]
+[ShadowKyogre] and [more](https://github.com/rnons/mikidown/graphs/contributors)
 
 [Fork and help] are much appreciated.
 

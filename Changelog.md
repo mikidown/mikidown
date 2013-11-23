@@ -2,12 +2,19 @@
 
 ## Version 0.3.0
 
-Prior to v0.3.0, notebook folder contains:
+- Notebook folder redesigned, see [#23]
+        // notebook.conf attachments/ css/ notes/ _site/ //
 
-    notebook.conf notes.css .indexdir/ markdown_files
+- When attachment (image or document) is inserted, it is saved into **attachment/** folder
+- Spell checking support with enchant, see [#24]
+        new optional dependencies: [pyenchant]
 
-In version v0.3.0, notebook folder will contain:
+- A simple static site generator incorporated
 
-    notebook.conf css/notebook.css notes/
+        mikidown generate
+        mikidown preview
 
-**NOTE**: You need to manually move all your markdown files into //notebookPath/notes/// folder.
+
+[#23]: https://github.com/rnons/mikidown/issues/23
+[#24]: https://github.com/rnons/mikidown/issues/24
+[pyenchant]: https://pypi.python.org/pypi/pyenchant
