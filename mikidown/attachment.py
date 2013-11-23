@@ -1,6 +1,7 @@
 import os
-from PyQt4.QtCore import Qt, QDir, QFile, QFileInfo, QRect, QSize
-from PyQt4.QtGui import (QColor, QFileDialog, QFileIconProvider, QFileSystemModel, QListView, QMenu, QPen, QPixmap, QStyle, QStyledItemDelegate)
+from PyQt4.QtCore import Qt, QDir, QFile, QRect, QSize
+from PyQt4.QtGui import (QColor, QFileIconProvider, QFileSystemModel,
+    QListView, QMenu, QPen, QPixmap, QStyle, QStyledItemDelegate)
 
 class AttachmentItemDelegate(QStyledItemDelegate):
 
@@ -33,7 +34,8 @@ class AttachmentItemDelegate(QStyledItemDelegate):
         imgTop = self.thumbHeight - img.height()
         painter.drawPixmap(r.left()+imgLeft, r.top()+imgTop, img)
 
-        rect = QRect(r.left(), r.top()+self.thumbHeight, self.width, self.nameHeight)
+        rect = QRect(r.left(), r.top()+self.thumbHeight,
+                     self.width, self.nameHeight)
         flag = Qt.AlignHCenter | Qt.TextWrapAnywhere
         # get the bounding rectangle of the fileName
         bdRect = painter.boundingRect(rect, flag, fileName)
@@ -63,7 +65,7 @@ class AttachmentView(QListView):
         self.settings = parent.settings
 
         self.model = QFileSystemModel()
-        self.model.setFilter(QDir.Files | QDir.AllDirs | QDir.NoDotAndDotDot | ~QDir.Dirs)
+        self.model.setFilter(QDir.Files)
         self.model.setRootPath(self.settings.attachmentPath)
         self.setModel(self.model)
 
