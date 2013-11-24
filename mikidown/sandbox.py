@@ -1,6 +1,5 @@
 import os
 import shutil
-import time
 from PyQt4.QtCore import QSettings
 from PyQt4.QtGui import QApplication
 
@@ -84,7 +83,5 @@ class Sandbox():
         Terminate whooshProcess to ensure shutil.rmtree success.
         """
 
-        # sleep 2 seconds for whooshindex to finish, otherwise rmtree may fail
-        time.sleep(2)
         shutil.rmtree("test_notebook")
         print("...Cleaned up")
