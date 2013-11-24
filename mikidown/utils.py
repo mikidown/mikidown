@@ -26,7 +26,7 @@ class LineEditDialog(QDialog):
         self.path = path
 
         # newPage/newSubpage
-        if parent.objectName() == "notesTree":
+        if parent.objectName() in ["mikiWindow", "notesTree"]:
             editorLabel = QLabel("Page Name:")
             self.extNames = [".md", ".markdown", ".mkd"]
         # Copy Image to notesEdit

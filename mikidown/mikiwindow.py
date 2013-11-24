@@ -24,12 +24,13 @@ from .mikiview import MikiView
 from .mikisearch import MikiSearch
 from .attachment import AttachmentView
 from .highlighter import MikiHighlighter
-from .utils import ViewedNoteIcon, parseHeaders, parseTitle
+from .utils import LineEditDialog, ViewedNoteIcon, parseHeaders, parseTitle
 
 
 class MikiWindow(QMainWindow):
     def __init__(self, settings, parent=None):
         super(MikiWindow, self).__init__(parent)
+        self.setObjectName("mikiWindow")
         self.settings = settings
         self.notePath = settings.notePath
 
@@ -514,21 +515,24 @@ class MikiWindow(QMainWindow):
         fh.open(QIODevice.ReadOnly)
         fileBody = QTextStream(fh).readAll()
         fh.close()
-        note = QFileInfo(filename)
-        path = os.path.join(self.notePath,
-                            note.completeBaseName() + self.settings.fileExt)
-        fh = QFile(path)
+        page = QFileInfo(filename).completeBaseName()
+        fh = QFile(self.notesTree.pageToFile(page))
         if fh.exists():
             QMessageBox.warning(self, 'Import Error',
-                'Page already exists: %s' % note.completeBaseName())
-            return
+                'Page already exists: %s' % page)
+            dialog = LineEditDialog(self.notePath, self)
+            if dialog.exec_():
+                page = dialog.editor.text()
+                fh.close()
+                fh = QFile(self.notesTree.pageToFile(page))
+            else:
+                return
         fh.open(QIODevice.WriteOnly)
         savestream = QTextStream(fh)
         savestream << fileBody
         fh.close()
-        QTreeWidgetItem(self.notesTree, [note.completeBaseName()])
+        item = QTreeWidgetItem(self.notesTree, [page])
         self.notesTree.sortItems(0, Qt.AscendingOrder)
-        item = self.notesTree.pageToItem(note.completeBaseName())
         self.notesTree.setCurrentItem(item)
 
     def openNotebook(self):

@@ -91,7 +91,9 @@ class MikiTree(QTreeWidget):
             filepath = os.path.join(self.notePath, page + ext)
             if QFile.exists(filepath):
                 return filepath
-        return ""
+
+        # return filename with default extension name even if file not exists.
+        return os.path.join(self.notePath, page + defExt)
 
     def itemToHtmlFile(self, item):
         """ The corresponding html file path """
@@ -265,7 +267,7 @@ class MikiTree(QTreeWidget):
                 self.parent.updateAttachmentView()
 
     def pageExists(self, noteFullName):
-        return self.pageToFile(noteFullName) != ""
+        return QFile.exists(self.pageToFile(noteFullName))
 
     def delPageWrapper(self):
         item = self.currentItem()
