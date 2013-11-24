@@ -99,7 +99,7 @@ class MikiHighlighter(QSyntaxHighlighter):
             if not word_object.group():
                 # don't bother with empty words
                 continue
-            if not self.speller.check(word_object.group()):
+            if self.speller and not self.speller.check(word_object.group()):
                 current_format = self.format(word_object.start())
                 current_format.setUnderlineColor(Qt.red)
                 current_format.setUnderlineStyle(QTextCharFormat.SpellCheckUnderline)

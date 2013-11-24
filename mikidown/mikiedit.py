@@ -22,12 +22,15 @@ class MikiEdit(QTextEdit):
 
         # Spell checker support
         try:
-            from enchant import Dict
+            import enchant
+            enchant.Dict()
+            self.speller = enchant.Dict()
         except ImportError:
-            print ("No spell checking available. Pyenchant is not installed.")
-            class Dict:
-                def check(self, *args):
-                    return True
+            print("Spell checking unavailable. Need to install pyenchant.")
+            self.speller = None
+        except enchant.errors.DictNotFoundError:
+            print("Spell checking unavailable. Need to install dictionary (e.g. aspell-en).")
+            self.speller = None
 
         self.imageFilter = ""
         self.documentFilter = ""
@@ -41,7 +44,6 @@ class MikiEdit(QTextEdit):
         self.downloadAs = ""
         self.networkManager = QNetworkAccessManager()
         self.networkManager.finished.connect(self.downloadFinished)
-        self.speller = Dict()
 
 
     def updateIndex(self):
@@ -190,7 +192,7 @@ class MikiEdit(QTextEdit):
         cursor.select(QTextCursor.WordUnderCursor)
 
         text = cursor.selectedText()
-        if text:
+        if self.speller and text:
             if not self.speller.check(text):
                 lastAction = popup_menu.actions()[0]
                 for word in self.speller.suggest(text)[:10]:
