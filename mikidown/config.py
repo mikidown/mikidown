@@ -83,6 +83,8 @@ class Setting():
 
             # move all markdown files to notes/
             dirList = notebookDir.entryList(QDir.Dirs | QDir.NoDotAndDotDot)
+            if 'css' in dirList:
+                dirList.remove('css')
             fileList = notebookDir.entryList(['*.md', '*.mkd', '*.markdown'])
             notebookDir.mkdir('notes')
             for d in dirList + fileList:
