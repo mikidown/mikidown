@@ -119,28 +119,42 @@ class Generator():
                     break
             htmlfile = os.path.join(self.htmlpath, filename + ".html")
             #print(notefile, htmlfile)
-            self.convert(notefile, htmlfile)
+            self.convert(notefile, htmlfile, os.path.join(parent,name))
             self.initTree(path, os.path.join(parent,name))
 
             # append subpages to page
             savestream << '<li><a href="/notes/' + filename + '.html">' + name + '</a></li>'
         html.close()
 
-    def convert(self, notefile, htmlfile):
+    def convert(self, notefile, htmlfile, page):
+
         self.count += 1
         note = QFile(notefile)
         note.open(QIODevice.ReadOnly)
         html = QFile(htmlfile)
         html.open(QIODevice.WriteOnly)
         savestream = QTextStream(html)
-        savestream << """
-                        <html><head>
-                          <meta charset='utf-8'>
-                          <link rel='stylesheet' href='/css/notebook.css' type='text/css' />
-                        </head>
-                      """
+        savestream << '<html><head>' \
+                      '<meta charset="utf-8">' \
+                      '<link rel="stylesheet" href="/css/notebook.css" type="text/css" />' \
+                      '</head>'
+        savestream << "<header>" + self.breadcrumb(page) + "</header>"
         # Note content
         savestream << self.md.convert(QTextStream(note).readAll())
         savestream << "</html>"
         note.close()
         html.close()
+
+    def breadcrumb(self, page):
+        """ Generate breadcrumb from page hierarchy.
+            e.g. page github/mikidown will be shown as:
+            <a>github</a> / <a>mikidown</a>
+        """
+
+        parts = page.split('/')
+        crumb = '<a href="/">Index</a>'
+        for i in range(len(parts)):
+            crumb += ' / '
+            crumb += '<a href="/notes/' + '/'.join(parts[0:i+1]) + '.html">' + parts[i] + '</a>'
+
+        return crumb
