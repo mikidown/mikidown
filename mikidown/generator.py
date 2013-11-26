@@ -58,11 +58,32 @@ class Generator():
         print('Finished: Processed', self.count, 'notes.')
 
     def regenerate(self):
+
+        def recursiveAddPath(filePath):
+            """ recursively add files and directories to watcher """
+            watcher.addPath(filePath)
+            fileList = QDir(filePath).entryInfoList(QDir.Dirs | QDir.Files | QDir.NoDotAndDotDot)
+            for f in fileList:
+                recursiveAddPath(f.absoluteFilePath())
+
+        def directoryChanged(filePath):
+            watchedFiles = watcher.directories() + watcher.files()
+            fileList = QDir(filePath).entryInfoList(QDir.Dirs | QDir.Files | QDir.NoDotAndDotDot)
+            for f in fileList:
+                if f.absoluteFilePath() not in watchedFiles:
+                    watcher.addPath(f.absoluteFilePath())
+
+            self.generate()
+
         # QFileSystemWatcher won't work without a QApplication!
         app = QApplication(sys.argv)
         watcher = QFileSystemWatcher()
-        watcher.addPath(self.notepath)
-        watcher.directoryChanged.connect(self.generate)
+        recursiveAddPath(self.notepath)
+
+        # add/remove file triggers this
+        watcher.directoryChanged.connect(directoryChanged)
+        # edit file triggers this
+        watcher.fileChanged.connect(self.generate)
         sys.exit(app.exec_())
 
     def preview(self, port=3131):
