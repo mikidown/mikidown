@@ -2,6 +2,7 @@
 The mainwindow module.
 """
 import os
+import shutil
 from multiprocessing import Process
 
 from PyQt4.QtCore import (Qt, QDir, QFile, QFileInfo, QIODevice,
@@ -115,6 +116,9 @@ class MikiWindow(QMainWindow):
         actionOpenNotebook = self.act(self.tr('&Open Notebook...'),
             self.openNotebook, QKeySequence.Open)
         self.actions.update(openNotebook=actionOpenNotebook)
+
+        actionReIndex = self.act(self.tr('Re-index'), self.reIndex)
+        self.actions.update(reIndex=actionReIndex)
 
         actionSave = self.act(self.tr('&Save'),
             self.saveCurrentNote, QKeySequence.Save)
@@ -266,6 +270,7 @@ class MikiWindow(QMainWindow):
         menuFile.addAction(self.actions['newSubpage'])
         menuFile.addAction(self.actions['importPage'])
         menuFile.addAction(self.actions['openNotebook'])
+        menuFile.addAction(self.actions['reIndex'])
         menuFile.addSeparator()
         menuFile.addAction(self.actions['save'])
         menuFile.addAction(self.actions['saveAs'])
@@ -539,6 +544,11 @@ class MikiWindow(QMainWindow):
         dialog = NotebookListDialog(self)
         if dialog.exec_():
             pass
+
+    def reIndex(self):
+        """ Whoosh index breaks for unknown reasons (sometimes) """
+        shutil.rmtree(self.settings.indexdir)
+        self.setupWhoosh()
 
     def act(self, name, trig, shortcut=None, checkable=False,
             icon=None, tooltip=None):
