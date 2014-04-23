@@ -206,15 +206,18 @@ class Mikibook():
     # ~/.config/mikidown/mikidown.conf
     settings = QSettings('mikidown', 'mikidown')
 
+    @staticmethod
     def read():
         """ Read notebook list from config file """
         return readListFromSettings(Mikibook.settings, 'notebookList')
 
+    @staticmethod
     def write(notebooks):
         """ Write notebook list to config file """
         return writeListToSettings(
             Mikibook.settings, 'notebookList', notebooks)
 
+    @staticmethod
     def create():
         """ Display a dialog to set notebookName and notebookPath """
         newNotebook = NewNotebookDlg()
@@ -228,6 +231,7 @@ class Mikibook():
             # TODO: make mikidown.conf become plain text
             Mikibook.write(notebooks)
 
+    @staticmethod
     def initialise(notebookName, notebookPath):
         """ Called by create()
         A notebook directory will be initialised to:
@@ -245,6 +249,7 @@ class Mikibook():
         # If //cssFile// already exists, copy() returns false!
         QFile.copy(cssTemplate, cssFile)
 
+    @staticmethod
     def remove(name, path):
         notebooks = Mikibook.read()
         notebooks.remove([name, path])
