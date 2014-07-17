@@ -57,6 +57,7 @@ class Setting():
                  , 'headerid'        # add id to headers
                  , 'headerlink'      # add anchor to headers
                  , 'footnotes'
+                 , 'asciimathml'
                  ]
             writeListToSettings(self.qsettings, "extensions", self.extensions)
 
