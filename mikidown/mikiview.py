@@ -5,7 +5,6 @@ from PyQt4.QtGui import QDesktopServices
 from PyQt4.QtWebKit import QWebView, QWebPage
 import markdown
 
-
 class MikiView(QWebView):
 
     def __init__(self, parent=None):

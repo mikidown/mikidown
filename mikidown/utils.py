@@ -4,6 +4,7 @@ from markdown.extensions.headerid import slugify, unique
 from PyQt4.QtCore import Qt, QFile, QRect
 from PyQt4.QtGui import (QDialog, QDialogButtonBox, QGridLayout, QIcon, QLabel, QLineEdit, QMessageBox, QPainter, QPixmap)
 
+jscript_tpl = '<script type="text/javascript" src="{}"></script>'
 
 class ViewedNoteIcon(QIcon):
     def __init__(self, num, parent=None):
