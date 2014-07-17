@@ -145,7 +145,8 @@ class MikiHighlighter(QSyntaxHighlighter):
             m = self.fenced_block.match(text)
             m2 = self.math_block.match(text)
             self.setCurrentBlockState(0)
-            if self.previousBlockState() > 1:
+
+            if self.previousBlockState() < 1:
                 if m:
                     self.setCurrentBlockState(1)
                 elif m2:
