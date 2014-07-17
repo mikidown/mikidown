@@ -37,6 +37,7 @@ class Setting():
             self.version = self.qsettings.value("version")
             self.geometry = self.qsettings.value("geometry")
             self.windowstate = self.qsettings.value("windowstate")
+            self.mathjax = self.qsettings.value('mathJax')
         else:
             self.extensions = []
             self.fileExt = ""
@@ -45,6 +46,7 @@ class Setting():
             self.version = None
             self.geometry = None
             self.windowstate = None
+            self.mathjax = ''
 
         # Default enabled python-markdown extensions.
         # http://pythonhosted.org/Markdown/extensions/index.html
@@ -105,6 +107,10 @@ class Setting():
                 QFile.rename(oldCssFile, self.cssfile)
 
             self.version = '0'
+
+        if not self.mathjax:
+            self.mathjax = 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
+            self.qsettings.setValue('mathJax', self.mathjax)
 
     def saveGeometry(self, geometry):
         self.qsettings.setValue("geometry", geometry)

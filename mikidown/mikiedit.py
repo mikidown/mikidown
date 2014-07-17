@@ -7,8 +7,7 @@ import markdown
 from whoosh.index import open_dir
 import html2text
 
-from .utils import LineEditDialog, parseTitle
-
+from .utils import LineEditDialog, parseTitle, jscript_tpl
 
 class MikiEdit(QTextEdit):
 
@@ -241,7 +240,8 @@ class MikiEdit(QTextEdit):
             Previously `convert` was used, but it doens't work with fenced_code
         '''
         htmltext = self.toPlainText()
-        return markdown.markdown(htmltext, self.settings.extensions)
+        return markdown.markdown(jscript_tpl.format(self.settings.mathjax)+
+                                 '\n'+htmltext, self.settings.extensions)
         # md = markdown.Markdown(extensions)
         # return md.convert(htmltext)
 
