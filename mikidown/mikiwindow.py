@@ -17,6 +17,7 @@ from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser, RegexPlugin
 
 import mikidown.mikidown_rc
+from .slashpleter import SlashPleter
 from .config import __appname__, __version__
 from .mikibook import NotebookListDialog
 from .mikitree import MikiTree, TocTree
@@ -37,6 +38,11 @@ class MikiWindow(QMainWindow):
 
         ################ Setup core components ################
         self.notesTree = MikiTree(self)
+        self.quickNoteNav = QLineEdit()
+        self.notesTab = QWidget()
+        self.completer = SlashPleter()
+        self.completer.setModel(self.notesTree.model())
+        self.quickNoteNav.setCompleter(self.completer)
         self.notesTree.setObjectName("notesTree")
         self.initTree(self.notePath, self.notesTree)
         self.notesTree.sortItems(0, Qt.AscendingOrder)
@@ -176,6 +182,10 @@ class MikiWindow(QMainWindow):
         actionSortLines = self.act(self.tr('&Sort Lines'), self.sortLines)
         self.actions.update(sortLines=actionSortLines)
 
+        actionQuickNav = self.act(self.tr("&Quick Open Note"),
+                        self.quickNoteNav.setFocus, 'Ctrl+G')
+        self.addAction(actionQuickNav)
+
         actionInsertImage = self.act(self.tr('&Insert Attachment'),
             self.notesEdit.insertAttachmentWrapper, 'Ctrl+I')
         actionInsertImage.setEnabled(False)
@@ -233,14 +243,19 @@ class MikiWindow(QMainWindow):
         self.setCentralWidget(mainSplitter)
 
         self.searchEdit.returnPressed.connect(self.searchNote)
+        self.quickNoteNav.returnPressed.connect(self.openFuncWrapper)
         searchLayout = QVBoxLayout()
         searchLayout.addWidget(self.searchEdit)
         searchLayout.addWidget(self.searchView)
         self.searchTab.setLayout(searchLayout)
         self.tocTree.header().close()
 
+        indexLayout = QVBoxLayout(self.notesTab)
+        indexLayout.addWidget(self.quickNoteNav)
+        indexLayout.addWidget(self.notesTree)
+
         self.dockIndex.setObjectName("Index")
-        self.dockIndex.setWidget(self.notesTree)
+        self.dockIndex.setWidget(self.notesTab)
         self.dockSearch.setObjectName("Search")
         self.dockSearch.setWidget(self.searchTab)
         self.dockToc.setObjectName("TOC")
@@ -337,6 +352,9 @@ class MikiWindow(QMainWindow):
         if len(notes) != 0:
             item = self.notesTree.pageToItem(notes[0])
             self.notesTree.setCurrentItem(item)
+
+    def openFuncWrapper(self):
+        self.openFunction(self.quickNoteNav.text())()
 
     def setupWhoosh(self):
         # Initialize whoosh index, make sure notePath/.indexdir exists
