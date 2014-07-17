@@ -71,7 +71,7 @@ class MikiHighlighter(QSyntaxHighlighter):
         color[12] = QColor("#204A87")
         font[12] = QFont(None, baseFontSize, -1)
         # 13: blockquotes and lists -  > or - or *
-        regexp[13] = r'(^>+)|(^- )|(^\* )'
+        regexp[13] = r'(^>+)|(^(?:    |\t)*- )|(^(?:    |\t)*\* )'
         color[13] = QColor("#F57900")
         font[13] = QFont(None, baseFontSize, -1)
         # 14: fence - ``` or ~~~
