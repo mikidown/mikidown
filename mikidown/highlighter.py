@@ -103,6 +103,9 @@ class MikiHighlighter(QSyntaxHighlighter):
         self.math_block = re.compile(r"^(?:\${2}).*$")
         self.math_format = QTextCharFormat()
         self.math_format.setFont(math_font)
+        
+        self.settext_h1 = re.compile('^=+$')
+        self.settext_h2 = re.compile('^-+$')
 
 
     def highlightSpellcheck(self, text):
@@ -125,26 +128,39 @@ class MikiHighlighter(QSyntaxHighlighter):
                 self.setFormat(
                     match.start(), match.end() - match.start(), p[1])
 
-        # escape highlights in fenced_block
-        m = self.fenced_block.match(text)
-        m2 = self.math_block.match(text)
-        self.setCurrentBlockState(0)
-        if self.previousBlockState() > 1:
-            if m:
-                self.setCurrentBlockState(1)
-            elif m2:
-                self.setCurrentBlockState(2)
-        elif self.previousBlockState() == 1:
-            if m:
-                self.setCurrentBlockState(0)
-            else:
-                self.setCurrentBlockState(1)
-                self.setFormat(0, len(text), self.fenced_format)
-        elif self.previousBlockState() == 2:
-            if m2:
-                self.setCurrentBlockState(0)
-            else:
-                self.setCurrentBlockState(2)
-                self.setFormat(0, len(text), self.math_format)
+        if self.settext_h1.match(self.currentBlock().next().text()) and text != '':
+            self.setFormat(0, len(text), self.patterns[1][1])
+            self.setCurrentBlockState(3)
+        elif self.settext_h2.match(self.currentBlock().next().text()) and text != '':
+            self.setFormat(0, len(text), self.patterns[2][1])
+            self.setCurrentBlockState(4)
+        elif self.previousBlockState() == 3:
+            self.setFormat(0, len(text), self.patterns[1][1])
+            self.setCurrentBlockState(0)
+        elif self.previousBlockState() == 4:
+            self.setFormat(0, len(text), self.patterns[2][1])
+            self.setCurrentBlockState(0)
+        else:
+            # escape highlights in fenced_block
+            m = self.fenced_block.match(text)
+            m2 = self.math_block.match(text)
+            self.setCurrentBlockState(0)
+            if self.previousBlockState() > 1:
+                if m:
+                    self.setCurrentBlockState(1)
+                elif m2:
+                    self.setCurrentBlockState(2)
+            elif self.previousBlockState() == 1:
+                if m:
+                    self.setCurrentBlockState(0)
+                else:
+                    self.setCurrentBlockState(1)
+                    self.setFormat(0, len(text), self.fenced_format)
+            elif self.previousBlockState() == 2:
+                if m2:
+                    self.setCurrentBlockState(0)
+                else:
+                    self.setCurrentBlockState(2)
+                    self.setFormat(0, len(text), self.math_format)
         self.highlightSpellcheck(text)
 
