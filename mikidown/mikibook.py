@@ -5,9 +5,10 @@ Notebook management module.
 import os
 
 from PyQt4.QtCore import Qt, QDir, QFile, QSettings, QSize
-from PyQt4.QtGui import (QAbstractItemDelegate, QAbstractItemView, QColor, QDialog, QDialogButtonBox, QFileDialog, QFont, QGridLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QPen, QPushButton, QStyle)
+from PyQt4.QtGui import (QAbstractItemDelegate, QAbstractItemView, QColor, QDialog, QDialogButtonBox, QFileDialog, QFont, QGridLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QPen, QPushButton, QStyle, QVBoxLayout, QTabWidget, QWidget)
 
 import mikidown
+from .utils import allMDExtensions
 from .config import Setting, readListFromSettings, writeListToSettings
 
 
@@ -49,9 +50,130 @@ class ListDelegate(QAbstractItemDelegate):
     def sizeHint(self, option, index):
         return QSize(200, 40)
 
+class NotebookSettingsDialog(QDialog):
+    """GUI for adjusting notebook settings"""
+    def __init__(self, parent=None):
+        super(NotebookSettingsDialog, self).__init__(parent)
+        #widgets for tab 1
+        self.mdExts = QListWidget()
+        self.mjEdit = QLineEdit()
+        self.moveUp = QPushButton('<<')
+        self.moveDown = QPushButton('>>')
+        
+        #widgets for tab 2
+        self.fExtEdit = QLineEdit()
+        self.attImgEdit = QLineEdit()
+        self.attDocEdit = QLineEdit()
+        # mandatory button box
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
+                                          QDialogButtonBox.Cancel)
+        
+        #tab panels
+        tabs = QTabWidget()
+        markupTab = QWidget()
+        fileExtsTab = QWidget()
+        tabs.addTab(markupTab, "Markdown")
+        tabs.addTab(fileExtsTab, "File extensions")
+        
+        #initialization functions
+        self.initExtList()
+        self.mdExts.setDragDropMode(QAbstractItemView.InternalMove)
+        self.mjEdit.setText(self.parent().settings.mathjax)
+        self.attImgEdit.setText(', '.join(self.parent().settings.attachmentImage))
+        self.attDocEdit.setText(', '.join(self.parent().settings.attachmentDocument))
+        self.fExtEdit.setText(self.parent().settings.fileExt)
+        
+        #set up tab 1
+        layout=QGridLayout(markupTab)
+        layout.addWidget(QLabel("Markdown extensions"),0,0,1,2)
+        layout.addWidget(self.mdExts,1,0,1,2)
+        layout.addWidget(self.moveUp,2,0,1,1)
+        layout.addWidget(self.moveDown,2,1,1,1)
+        layout.addWidget(QLabel("MathJax Location"),3,0,1,1)
+        layout.addWidget(self.mjEdit,3,1,1,1)
+        
+        #set up tab 2
+        layout=QGridLayout(fileExtsTab)
+        layout.addWidget(QLabel("Note file extension"),0,0,1,1)
+        layout.addWidget(QLabel("Image file extension"),1,0,1,1)
+        layout.addWidget(QLabel("Document file extension"),2,0,1,1)
+        layout.addWidget(self.fExtEdit,0,1,1,1)
+        layout.addWidget(self.attImgEdit,1,1,1,1)
+        layout.addWidget(self.attDocEdit,2,1,1,1)
+        
+        #put it together
+        vlayout = QVBoxLayout(self)
+        vlayout.addWidget(tabs)
+        vlayout.addWidget(self.buttonBox)
+
+        #setup signal handlers
+        self.moveUp.clicked.connect(self.moveItemUp)
+        self.moveDown.clicked.connect(self.moveItemDown)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+    def initExtList(self):
+        extset=set(self.parent().settings.extensions)
+        #for easier performance in checking
+        for ext in self.parent().settings.extensions:
+            item = QListWidgetItem(ext, self.mdExts)
+            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+            item.setCheckState(Qt.Checked)
+
+        for ext in allMDExtensions():
+            if ext in extset: continue
+            item = QListWidgetItem(ext, self.mdExts)
+            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+            item.setCheckState(Qt.Unchecked)
+            #self.mdExts.addItem(item)
+
+    def moveItemUp(self):
+        item = self.mdExts.currentItem()
+        row = self.mdExts.currentRow()
+        if row != 0:
+            # self.mdExts.removeItemWidget(item)
+            self.mdExts.takeItem(row)
+            self.mdExts.insertItem(row-1, item)
+            self.mdExts.setCurrentRow(row-1)
+
+    def moveItemDown(self):
+        item = self.mdExts.currentItem()
+        row = self.mdExts.currentRow()
+        count = self.mdExts.count()
+        if row != count-1:
+            self.mdExts.takeItem(row)
+            self.mdExts.insertItem(row+1, item)
+            self.mdExts.setCurrentRow(row+1)
+
+
+    def accept(self):
+        #write to settings first
+        msettings = self.parent().settings
+        nbsettings = msettings.qsettings
+        
+        nbsettings.setValue('mathJax', self.mjEdit.text())
+        extlist = []
+        for i in range(self.mdExts.count()):
+            item = self.mdExts.item(i)
+            if item.checkState() == Qt.Checked:
+                extlist.append(item.text())
+        writeListToSettings(nbsettings, 'extensions', extlist)
+        writeListToSettings(nbsettings, 'attachmentImage', self.attImgEdit.text())
+        writeListToSettings(nbsettings, 'attachmentDocument', self.attDocEdit.text())
+        
+        #then to memory
+        msettings.extensions = extlist
+        msettings.mathjax = self.mjEdit.text()
+        msettings.attachmentDocument = readListFromSettings(nbsettings, 'attachmentDocument')
+        msettings.attachmentImage = readListFromSettings(nbsettings, 'attachmentImage')
+        
+        #then make mikidown use these settings NOW
+        curitem=self.parent().notesTree.currentItem()
+        self.parent().currentItemChangedWrapper(curitem, curitem)
+        QDialog.accept(self)
 
 class NotebookListDialog(QDialog):
-    """ Funtions to display, create, remove, modify notebookList """
+    """ Functions to display, create, remove, modify notebookList """
 
     def __init__(self, parent=None):
         super(NotebookListDialog, self).__init__(parent)

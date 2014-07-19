@@ -240,8 +240,11 @@ class MikiEdit(QTextEdit):
             Previously `convert` was used, but it doens't work with fenced_code
         '''
         htmltext = self.toPlainText()
-        return markdown.markdown(jscript_tpl.format(self.settings.mathjax)+
-                                 '\n'+htmltext, self.settings.extensions)
+        if 'asciimathml' in self.settings.extensions:
+            stuff=jscript_tpl.format(self.settings.mathjax)+'\n'
+        else:
+            stuff=''
+        return markdown.markdown(stuff+htmltext, self.settings.extensions)
         # md = markdown.Markdown(extensions)
         # return md.convert(htmltext)
 

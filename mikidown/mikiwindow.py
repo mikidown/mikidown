@@ -19,7 +19,7 @@ from whoosh.qparser import QueryParser, RegexPlugin
 import mikidown.mikidown_rc
 from .slashpleter import SlashPleter
 from .config import __appname__, __version__
-from .mikibook import NotebookListDialog
+from .mikibook import NotebookListDialog, NotebookSettingsDialog
 from .mikitree import MikiTree, TocTree
 from .mikiedit import MikiEdit
 from .mikiview import MikiView
@@ -118,6 +118,9 @@ class MikiWindow(QMainWindow):
 
         actionImportPage = self.act(self.tr('&Import Page...'), self.importPage)
         self.actions.update(importPage=actionImportPage)
+
+        actionNBSettings = self.act(self.tr('Notebook Set&tings...'), self.notebookSettings)
+        self.actions.update(NBSettings=actionNBSettings)
 
         actionOpenNotebook = self.act(self.tr('&Open Notebook...'),
             self.openNotebook, QKeySequence.Open)
@@ -283,6 +286,7 @@ class MikiWindow(QMainWindow):
         # menuFile
         menuFile.addAction(self.actions['newPage'])
         menuFile.addAction(self.actions['newSubpage'])
+        menuFile.addAction(self.actions['NBSettings'])
         menuFile.addAction(self.actions['importPage'])
         menuFile.addAction(self.actions['openNotebook'])
         menuFile.addAction(self.actions['reIndex'])
@@ -560,6 +564,11 @@ class MikiWindow(QMainWindow):
 
     def openNotebook(self):
         dialog = NotebookListDialog(self)
+        if dialog.exec_():
+            pass
+
+    def notebookSettings(self):
+        dialog = NotebookSettingsDialog(self)
         if dialog.exec_():
             pass
 

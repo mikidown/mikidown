@@ -1,6 +1,6 @@
 import os
 import re
-from markdown.extensions import __path__
+from markdown.extensions import __path__ as extpath
 import pkgutil
 from markdown.extensions.headerid import slugify, unique
 from PyQt4.QtCore import Qt, QFile, QRect
@@ -79,7 +79,7 @@ def allMDExtensions():
     exts=[]
     for m in pkgutil.iter_modules(path=extpath):
         exts.append(m[1])
-    for m in pkgutil.iter_modules:
+    for m in pkgutil.iter_modules():
         if m[1].startswith('mdx_'):
             exts.append(m[1][4:])
     return exts
