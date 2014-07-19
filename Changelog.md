@@ -21,6 +21,7 @@ http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML
 
 After following these instructions, this text //should// be processed with mathjax:
 $$ sqrt 1^2^3^4 $$
+
 ### Disabling asciimathml
 
 1. in notebookPath/notebook.conf, look for the line that says "extensions =". Remove asciimathml from it.
