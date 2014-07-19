@@ -70,8 +70,8 @@ class MikiHighlighter(QSyntaxHighlighter):
         regexp[12] = r'!?\[[^\[\]]*\]'
         color[12] = QColor("#204A87")
         font[12] = QFont(None, baseFontSize, -1)
-        # 13: blockquotes and lists -  > or - or *
-        regexp[13] = r'(^>+)|(^(?:    |\t)*- )|(^(?:    |\t)*\* )'
+        # 13: blockquotes and lists -  > or - or * or 0.
+        regexp[13] = r'(^>+)|(^(?:    |\t)*[0-9]+\. )|(^(?:    |\t)*- )|(^(?:    |\t)*\* )'
         color[13] = QColor("#F57900")
         font[13] = QFont(None, baseFontSize, -1)
         # 14: fence - ``` or ~~~
@@ -127,16 +127,10 @@ class MikiHighlighter(QSyntaxHighlighter):
             for match in p[0].finditer(text):
                 self.setFormat(
                     match.start(), match.end() - match.start(), p[1])
-
+        
+        print(self.previousBlockState(), text)
         if text == '' and self.currentBlock().next().text() != '':
             self.setCurrentBlockState(5)
-        elif self.previousBlockState() == 5:
-            if self.settext_h1.match(self.currentBlock().next().text()) and text != '':
-                self.setFormat(0, len(text), self.patterns[1][1])
-                self.setCurrentBlockState(3)
-            elif self.settext_h2.match(self.currentBlock().next().text()) and text != '':
-                self.setFormat(0, len(text), self.patterns[2][1])
-                self.setCurrentBlockState(4)
         elif self.previousBlockState() == 3:
             self.setFormat(0, len(text), self.patterns[1][1])
             self.setCurrentBlockState(0)
@@ -148,8 +142,7 @@ class MikiHighlighter(QSyntaxHighlighter):
             m = self.fenced_block.match(text)
             m2 = self.math_block.match(text)
             self.setCurrentBlockState(0)
-
-            if self.previousBlockState() < 1:
+            if self.previousBlockState() not in (1,2):
                 if m:
                     self.setCurrentBlockState(1)
                 elif m2:
@@ -166,5 +159,12 @@ class MikiHighlighter(QSyntaxHighlighter):
                 else:
                     self.setCurrentBlockState(2)
                     self.setFormat(0, len(text), self.math_format)
+            else:
+                if self.settext_h1.match(self.currentBlock().next().text()) and text != '':
+                    self.setFormat(0, len(text), self.patterns[1][1])
+                    self.setCurrentBlockState(3)
+                elif self.settext_h2.match(self.currentBlock().next().text()) and text != '':
+                    self.setFormat(0, len(text), self.patterns[2][1])
+                    self.setCurrentBlockState(4)
         self.highlightSpellcheck(text)
 
