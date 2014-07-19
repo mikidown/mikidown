@@ -20,7 +20,10 @@ http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML
 3. Type away some asciimathml. The script pointed to in mathJax should auto-process the MathML elements spat out by asciimathml.
 
 After following these instructions, this text //should// be processed with mathjax:
-$$ sqrt 1^2^3^4 $$
+
+$$
+sqrt 1^2^3^4
+$$
 
 ### Disabling asciimathml
 
