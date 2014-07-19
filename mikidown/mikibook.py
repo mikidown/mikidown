@@ -327,6 +327,7 @@ class Mikibook():
 
     # ~/.config/mikidown/mikidown.conf
     settings = QSettings('mikidown', 'mikidown')
+    lockpath = os.path.join(os.path.dirname(settings.fileName()),'lock')
 
     @staticmethod
     def read():
