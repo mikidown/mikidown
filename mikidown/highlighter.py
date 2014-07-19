@@ -18,7 +18,8 @@ class MikiHighlighter(QSyntaxHighlighter):
         font = [0]*NUM
         color = [0]*NUM
         # 0: html tags - <pre></pre>
-        regexp[0] = '</?[^>]+>'
+        # less naive html regex
+        regexp[0] = r'</?\w+((\s+\w+(\s*=\s*(?:".*?"|\'.*?\'|[^\'">\s]+))?)+\s*|\s*)/?>'
         font[0] = QFont("monospace", baseFontSize, -1)
         color[0] = QColor("#A40000")
         # 1: h1 - #
@@ -62,7 +63,9 @@ class MikiHighlighter(QSyntaxHighlighter):
         color[10] = QColor("#F57900")
         font[10] = QFont(None, baseFontSize, -1, True)
         # 11: links - (links) after [] or links after []:
-        regexp[11] = r'(?<=(\]\())[^\(\)]*(?=\))'
+        regexp[11] = (r'(?<=(\]\())[^\(\)]*(?=\))|'
+                    '(<https?://[^>]+>)|'
+                    '(<[^ >]+@[^ >]+>)')
         font[11] = QFont(None, baseFontSize, -1, True)
         font[11].setUnderline(True)
         #.setUnderlineColor("#204A87")
@@ -103,7 +106,7 @@ class MikiHighlighter(QSyntaxHighlighter):
         self.math_block = re.compile(r"^(?:\${2}).*$")
         self.math_format = QTextCharFormat()
         self.math_format.setFont(math_font)
-        
+
         self.settext_h1 = re.compile('^=+$')
         self.settext_h2 = re.compile('^-+$')
 
@@ -127,8 +130,7 @@ class MikiHighlighter(QSyntaxHighlighter):
             for match in p[0].finditer(text):
                 self.setFormat(
                     match.start(), match.end() - match.start(), p[1])
-        
-        print(self.previousBlockState(), text)
+
         if text == '' and self.currentBlock().next().text() != '':
             self.setCurrentBlockState(5)
         elif self.previousBlockState() == 3:
