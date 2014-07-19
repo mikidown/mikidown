@@ -241,7 +241,7 @@ class MikiEdit(QTextEdit):
         '''
         htmltext = self.toPlainText()
         if 'asciimathml' in self.settings.extensions:
-            stuff=jscript_tpl.format(self.settings.mathjax)+'\n'
+            stuff=jscript_tpl.format(self.settings.mathjax)
         else:
             stuff=''
         return markdown.markdown(stuff+htmltext, self.settings.extensions)
