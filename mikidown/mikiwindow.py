@@ -724,12 +724,7 @@ class MikiWindow(QMainWindow):
                 term = r.highlights("content")
                 results.append([title, path, term])
 
-            html = """
-                    <style>
-                        body { font-size: 14px; }
-                        .path { font-size: 12px; color: #009933; }
-                    </style>
-                   """
+            html = ""
             for title, path, hi in results:
                 html += ("<p><a href='" + path + "'>" + title +
                          "</a><br/><span class='path'>" +

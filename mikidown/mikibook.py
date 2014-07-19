@@ -365,12 +365,18 @@ class Mikibook():
         QDir().mkpath(os.path.join(notebookPath, "notes"))
         QDir().mkpath(os.path.join(notebookPath, "css"))
         cssFile = os.path.join(notebookPath, "css", "notebook.css")
+        searchCssFile = os.path.join(notebookPath, "css", "search-window.css")
         cssTemplate = "/usr/share/mikidown/notebook.css"
+        searchCssTemplate = "/usr/share/mikidown/search-window.css"
         if not os.path.exists(cssTemplate):
             cssTemplate = os.path.join(
                 os.path.dirname(__file__), "notebook.css")
+        if not os.path.exists(searchCssTemplate):
+            searchCssTemplate = os.path.join(
+                os.path.dirname(__file__), "search-window.css")
         # If //cssFile// already exists, copy() returns false!
         QFile.copy(cssTemplate, cssFile)
+        QFile.copy(searchCssTemplate, searchCssFile)
 
     @staticmethod
     def remove(name, path):
