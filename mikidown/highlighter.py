@@ -128,12 +128,15 @@ class MikiHighlighter(QSyntaxHighlighter):
                 self.setFormat(
                     match.start(), match.end() - match.start(), p[1])
 
-        if self.settext_h1.match(self.currentBlock().next().text()) and text != '':
-            self.setFormat(0, len(text), self.patterns[1][1])
-            self.setCurrentBlockState(3)
-        elif self.settext_h2.match(self.currentBlock().next().text()) and text != '':
-            self.setFormat(0, len(text), self.patterns[2][1])
-            self.setCurrentBlockState(4)
+        if text == '' and self.currentBlock().next().text() != '':
+            self.setCurrentBlockState(5)
+        elif self.previousBlockState() == 5:
+            if self.settext_h1.match(self.currentBlock().next().text()) and text != '':
+                self.setFormat(0, len(text), self.patterns[1][1])
+                self.setCurrentBlockState(3)
+            elif self.settext_h2.match(self.currentBlock().next().text()) and text != '':
+                self.setFormat(0, len(text), self.patterns[2][1])
+                self.setCurrentBlockState(4)
         elif self.previousBlockState() == 3:
             self.setFormat(0, len(text), self.patterns[1][1])
             self.setCurrentBlockState(0)
