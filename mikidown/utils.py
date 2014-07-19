@@ -1,5 +1,7 @@
 import os
 import re
+from markdown.extensions import __path__
+import pkgutil
 from markdown.extensions.headerid import slugify, unique
 from PyQt4.QtCore import Qt, QFile, QRect
 from PyQt4.QtGui import (QDialog, QDialogButtonBox, QGridLayout, QIcon, QLabel, QLineEdit, QMessageBox, QPainter, QPixmap)
@@ -72,6 +74,15 @@ class LineEditDialog(QDialog):
                 break
         if acceptable:
             QDialog.accept(self)
+
+def allMDExtensions():
+    exts=[]
+    for m in pkgutil.iter_modules(path=extpath):
+        exts.append(m[1])
+    for m in pkgutil.iter_modules:
+        if m[1].startswith('mdx_'):
+            exts.append(m[1][4:])
+    return exts
 
 def parseHeaders(source):
     """ Parse headers to construct Table Of Contents
