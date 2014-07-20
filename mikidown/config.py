@@ -27,7 +27,7 @@ class Setting():
         cssPath = os.path.join(self.notebookPath, "css")
         self.cssfile = os.path.join(cssPath, "notebook.css")
         self.searchcssfile = os.path.join(cssPath, "search-window.css")
-        self.qsettings = QSettings(self.configfile, QSettings.NativeFormat)
+        self.qsettings = QSettings(self.configfile, QSettings.IniFormat)
 
         if os.path.exists(self.configfile):
             self.extensions = readListFromSettings(self.qsettings,

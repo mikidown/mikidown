@@ -288,7 +288,7 @@ class NewNotebookDlg(QDialog):
         nameLabel.setBuddy(self.nameEditor)
         self.pathEditor = QLineEdit()
         # self.pathEditor.setText('~/mikidown')
-        self.pathEditor.setText(os.environ['HOME']+'/mikinotes')
+        self.pathEditor.setText(os.path.expanduser('~').replace(os.sep,'/')+'/mikinotes')
         pathLabel = QLabel('Path:')
         pathLabel.setBuddy(self.pathEditor)
         browse = QPushButton('Browse')
@@ -326,8 +326,8 @@ class NewNotebookDlg(QDialog):
 class Mikibook():
 
     # ~/.config/mikidown/mikidown.conf
-    settings = QSettings('mikidown', 'mikidown')
-    lockpath = os.path.join(os.path.dirname(settings.fileName()),'lock')
+    settings = QSettings(QSettings.IniFormat, QSettings.UserScope, 'mikidown', 'mikidown')
+    lockpath = os.path.join(os.path.dirname(settings.fileName()),'lock').replace(os.sep,'/')
 
     @staticmethod
     def read():
