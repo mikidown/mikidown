@@ -33,6 +33,8 @@ setup(
     description = 'A note taking application, featuring markdown syntax',
     author = 'rnons',
     author_email = 'remotenonsense@gmail.com',
+    maintainer='ShadowKyogre',
+    maintainer_email='shadowkyogre.public@gmail.com'
     url = 'https://github.com/rnons/mikidown',
     scripts=['mikidown.py'],
     packages=['mikidown'],
