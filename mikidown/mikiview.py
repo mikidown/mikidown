@@ -14,7 +14,8 @@ class MikiView(QWebView):
         self.settings().clearMemoryCaches()
         self.notePath = parent.settings.notePath
         self.settings().setUserStyleSheetUrl(
-            QUrl.fromLocalFile(self.parent.settings.cssfile))
+            QUrl('file://'+self.parent.settings.cssfile))
+        print(QUrl('file://'+self.parent.settings.cssfile))
         self.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
 
         self.page().linkClicked.connect(self.linkClicked)

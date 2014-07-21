@@ -362,19 +362,21 @@ class Mikibook():
         """
 
         # QDir().mkpath will create all necessary parent directories
-        QDir().mkpath(os.path.join(notebookPath, "notes"))
-        QDir().mkpath(os.path.join(notebookPath, "css"))
-        cssFile = os.path.join(notebookPath, "css", "notebook.css")
-        searchCssFile = os.path.join(notebookPath, "css", "search-window.css")
+        QDir().mkpath(os.path.join(notebookPath, "notes").replace(os.sep,'/'))
+        QDir().mkpath(os.path.join(notebookPath, "css").replace(os.sep,'/'))
+        cssFile = os.path.join(notebookPath, "css", "notebook.css").replace(os.sep,'/')
+        searchCssFile = os.path.join(notebookPath, "css", "search-window.css").replace(os.sep,'/')
         cssTemplate = "/usr/share/mikidown/notebook.css"
         searchCssTemplate = "/usr/share/mikidown/search-window.css"
         if not os.path.exists(cssTemplate):
             cssTemplate = os.path.join(
-                os.path.dirname(__file__), "notebook.css")
+                os.path.dirname(__file__), "css", "sphinx.css").replace(os.sep,'/')
         if not os.path.exists(searchCssTemplate):
             searchCssTemplate = os.path.join(
-                os.path.dirname(__file__), "search-window.css")
+                os.path.dirname(__file__), "css" , "search-window.css").replace(os.sep,'/')
         # If //cssFile// already exists, copy() returns false!
+        print(cssTemplate)
+        print(searchCssTemplate)
         QFile.copy(cssTemplate, cssFile)
         QFile.copy(searchCssTemplate, searchCssFile)
 
