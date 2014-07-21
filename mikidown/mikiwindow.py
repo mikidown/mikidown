@@ -20,7 +20,7 @@ from whoosh.qparser import QueryParser, RegexPlugin
 import mikidown.mikidown_rc
 from .slashpleter import SlashPleter
 from .config import __appname__, __version__
-from .mikibook import NotebookListDialog, NotebookSettingsDialog
+from .mikibook import NotebookListDialog, NotebookSettingsDialog, Mikibook, MikidownCfgDialog
 from .mikitree import MikiTree, TocTree
 from .mikiedit import MikiEdit
 from .mikiview import MikiView
@@ -122,6 +122,9 @@ class MikiWindow(QMainWindow):
 
         actionNBSettings = self.act(self.tr('Notebook Set&tings...'), self.notebookSettings)
         self.actions.update(NBSettings=actionNBSettings)
+
+        actionMDSettings = self.act(self.tr('&Mikidown Settings...'), self.mikidownSettings)
+        self.actions.update(MDSettings=actionMDSettings)
 
         actionOpenNotebook = self.act(self.tr('&Open Notebook...'),
             self.openNotebook, QKeySequence.Open)
@@ -288,6 +291,7 @@ class MikiWindow(QMainWindow):
         menuFile.addAction(self.actions['newPage'])
         menuFile.addAction(self.actions['newSubpage'])
         menuFile.addAction(self.actions['NBSettings'])
+        menuFile.addAction(self.actions['MDSettings'])
         menuFile.addAction(self.actions['importPage'])
         menuFile.addAction(self.actions['openNotebook'])
         menuFile.addAction(self.actions['reIndex'])
@@ -573,6 +577,12 @@ class MikiWindow(QMainWindow):
         if dialog.exec_():
             pass
 
+    def mikidownSettings(self):
+        dialog = MikidownCfgDialog(self)
+        if dialog.exec_():
+            pass
+
+
     def reIndex(self):
         """ Whoosh index breaks for unknown reasons (sometimes) """
         shutil.rmtree(self.settings.indexdir)
@@ -775,9 +785,9 @@ class MikiWindow(QMainWindow):
                 notes.remove(f)
         notes.insert(0, name)
 
-        # TODO: move this NUM to configuration
-        if len(notes) > 20:
-            del notes[20:]
+        recent_notes_n = Mikibook.settings.value('recentNotesNumber',type=int, defaultValue=20)
+        if len(notes) > recent_notes_n:
+            del notes[recent_notes_n:]
         self.settings.updateRecentViewedNotes(notes)
 
     def updateRecentViewedNotes(self):

@@ -8,7 +8,7 @@ from PyQt4.QtCore import Qt, QDir, QFile, QSettings, QSize
 from PyQt4.QtGui import (QAbstractItemDelegate, QAbstractItemView, QColor, QDialog, QDialogButtonBox, 
                          QFileDialog, QFont, QGridLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem,
                          QPen, QPushButton, QStyle, QVBoxLayout, QTabWidget, QWidget, QBrush, QTreeWidget,
-                         QTreeWidgetItem)
+                         QTreeWidgetItem, QSpinBox)
 
 import mikidown
 from .utils import allMDExtensions
@@ -390,9 +390,29 @@ class NewNotebookDlg(QDialog):
     def closeEvent(self, event):
         event.accept()
 
+class MikidownCfgDialog(QDialog):
+    def __init__(self, parent=None):
+        super(MikidownCfgDialog, self).__init__(parent)
+        #tab = QWidget()
+        #tab2 = QWidget()
+        self.recentNotesCount = QSpinBox()
+        recent_notes_n = Mikibook.settings.value('recentNotesNumber',type=int, defaultValue=20)
+        self.recentNotesCount.setValue(recent_notes_n)
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
+                                          QDialogButtonBox.Cancel)
+
+        layout = QGridLayout(self)
+        layout.addWidget(QLabel("# of recently viewed notes to keep"),0,0,1,1)
+        layout.addWidget(self.recentNotesCount,0,1,1,1)
+        layout.addWidget(self.buttonBox,1,0,1,2)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+    def accept(self):
+        Mikibook.settings.setValue('recentNotesNumber', self.recentNotesCount.value())
+        QDialog.accept(self)
 
 class Mikibook():
-
     # ~/.config/mikidown/mikidown.conf
     settings = QSettings(QSettings.IniFormat, QSettings.UserScope, 'mikidown', 'mikidown')
     lockpath = os.path.join(os.path.dirname(settings.fileName()),'lock').replace(os.sep,'/')
