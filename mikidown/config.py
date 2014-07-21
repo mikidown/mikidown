@@ -40,6 +40,7 @@ class Setting():
             self.geometry = self.qsettings.value("geometry")
             self.windowstate = self.qsettings.value("windowstate")
             self.mathjax = self.qsettings.value('mathJax')
+            self.extcfg = self.qsettings.value('extensionsConfig', defaultValue={})
         else:
             self.extensions = []
             self.fileExt = ""
@@ -49,6 +50,9 @@ class Setting():
             self.geometry = None
             self.windowstate = None
             self.mathjax = ''
+            self.extcfg = {}
+
+        self.faulty_exts=[]
 
         # Default enabled python-markdown extensions.
         # http://pythonhosted.org/Markdown/extensions/index.html
@@ -72,10 +76,12 @@ class Setting():
                      print('Found invalid extension', e.name[4:], ', temporarily disabling.')
                      print('If you want to permanently disable this, just hit OK in the Notebook Settings dialog')
                      self.extensions.remove(e.name[4:])
+                     self.faulty_exts.append(e.name[4:])
                  else:
                      print('Found invalid extension', e.name, ', temporarily disabling.')
                      print('If you want to permanently disable this, just hit OK in the Notebook Settings dialog')
                      self.extensions.remove(e.name)
+                     self.faulty_exts.append(e.name)
              else:
                  break
 

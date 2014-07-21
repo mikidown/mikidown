@@ -3,9 +3,12 @@ Notebook management module.
 """
 
 import os
-
+from copy import deepcopy
 from PyQt4.QtCore import Qt, QDir, QFile, QSettings, QSize
-from PyQt4.QtGui import (QAbstractItemDelegate, QAbstractItemView, QColor, QDialog, QDialogButtonBox, QFileDialog, QFont, QGridLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QPen, QPushButton, QStyle, QVBoxLayout, QTabWidget, QWidget)
+from PyQt4.QtGui import (QAbstractItemDelegate, QAbstractItemView, QColor, QDialog, QDialogButtonBox, 
+                         QFileDialog, QFont, QGridLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem,
+                         QPen, QPushButton, QStyle, QVBoxLayout, QTabWidget, QWidget, QBrush, QTreeWidget,
+                         QTreeWidgetItem)
 
 import mikidown
 from .utils import allMDExtensions
@@ -50,6 +53,49 @@ class ListDelegate(QAbstractItemDelegate):
     def sizeHint(self, option, index):
         return QSize(200, 40)
 
+class NotebookExtSettingsDialog(QDialog):
+    def __init__(self, parent=None, cfg_list=[]):
+        super(NotebookExtSettingsDialog, self).__init__(parent)
+        self.extCfgEdit = QTreeWidget()
+        self.extCfgEdit.setHeaderLabels(['Property', 'Value'])
+        self.addRow = QPushButton('+')
+        self.removeRow = QPushButton('-')
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
+                                          QDialogButtonBox.Cancel)
+
+        layout = QGridLayout(self)
+        layout.addWidget(self.extCfgEdit,0,0,1,2)
+        layout.addWidget(self.addRow,1,0,1,1)
+        layout.addWidget(self.removeRow,1,1,1,1)
+        layout.addWidget(self.buttonBox,2,0,1,2)
+        self.initCfgPanel(cfg_list)
+
+        self.addRow.clicked.connect(self.actionAdd)
+        self.removeRow.clicked.connect(self.actionRemove)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+    def initCfgPanel(self, cfg_list):
+        for item in cfg_list:
+            self.actionAdd(prop_name=item[0], prop_val=item[1])
+
+    def actionRemove(self):
+        item = self.extCfgEdit.currentItem()
+        row = self.extCfgEdit.indexOfTopLevelItem(item)
+        self.extCfgEdit.takeTopLevelItem(row)
+
+    def actionAdd(self, checked=False, prop_name='', prop_val=''):
+        item = QTreeWidgetItem(self.extCfgEdit, [prop_name, prop_val])
+        item.setFlags(item.flags()|Qt.ItemIsEditable)
+        #self.extCfgEdit.addTopLevelItem(item)
+
+    def configToList(self):
+        items = []
+        for i in range(self.extCfgEdit.topLevelItemCount()):
+            witem = self.extCfgEdit.topLevelItem(i)
+            items.append((witem.text(0), witem.text(1)))
+        return items
+
 class NotebookSettingsDialog(QDialog):
     """GUI for adjusting notebook settings"""
     def __init__(self, parent=None):
@@ -59,6 +105,8 @@ class NotebookSettingsDialog(QDialog):
         self.mjEdit = QLineEdit()
         self.moveUp = QPushButton('<<')
         self.moveDown = QPushButton('>>')
+        self.configureExtension = QPushButton('Edit Settings for this extension')
+        self.tmpdict = deepcopy(self.parent().settings.extcfg)
         
         #widgets for tab 2
         self.fExtEdit = QLineEdit()
@@ -85,12 +133,13 @@ class NotebookSettingsDialog(QDialog):
         
         #set up tab 1
         layout=QGridLayout(markupTab)
-        layout.addWidget(QLabel("Markdown extensions"),0,0,1,2)
-        layout.addWidget(self.mdExts,1,0,1,2)
+        layout.addWidget(QLabel("Markdown extensions"),0,0,1,4)
+        layout.addWidget(self.mdExts,1,0,1,4)
         layout.addWidget(self.moveUp,2,0,1,1)
         layout.addWidget(self.moveDown,2,1,1,1)
+        layout.addWidget(self.configureExtension,2,2,1,2)
         layout.addWidget(QLabel("MathJax Location"),3,0,1,1)
-        layout.addWidget(self.mjEdit,3,1,1,1)
+        layout.addWidget(self.mjEdit,3,1,1,3)
         
         #set up tab 2
         layout=QGridLayout(fileExtsTab)
@@ -108,9 +157,19 @@ class NotebookSettingsDialog(QDialog):
 
         #setup signal handlers
         self.moveUp.clicked.connect(self.moveItemUp)
+        self.configureExtension.clicked.connect(self.configExt)
         self.moveDown.clicked.connect(self.moveItemDown)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
+
+    def configExt(self, ext=None):
+        if ext is None:
+            ext = self.currentItem().text()
+        cfg = self.tmpdict.get(ext,[])
+        dialog = NotebookExtSettingsDialog(cfg_list=cfg)
+        done = dialog.exec()
+        if done:
+            self.tmpdict[ext] = dialog.configToList()
 
     def initExtList(self):
         extset=set(self.parent().settings.extensions)
@@ -118,6 +177,13 @@ class NotebookSettingsDialog(QDialog):
         for ext in self.parent().settings.extensions:
             item = QListWidgetItem(ext, self.mdExts)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+            item.setCheckState(Qt.Checked)
+
+        for ext in self.parent().settings.faulty_exts:
+            item = QListWidgetItem(ext, self.mdExts)
+            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+            item.setBackground(QBrush(QColor('red')))
+            item.setForeground(QBrush(QColor('black')))
             item.setCheckState(Qt.Checked)
 
         for ext in allMDExtensions():
@@ -160,12 +226,14 @@ class NotebookSettingsDialog(QDialog):
         writeListToSettings(nbsettings, 'extensions', extlist)
         writeListToSettings(nbsettings, 'attachmentImage', self.attImgEdit.text())
         writeListToSettings(nbsettings, 'attachmentDocument', self.attDocEdit.text())
+        nbsettings.setValue('extensionsConfig',self.tmpdict)
         
         #then to memory
         msettings.extensions = extlist
         msettings.mathjax = self.mjEdit.text()
         msettings.attachmentDocument = readListFromSettings(nbsettings, 'attachmentDocument')
         msettings.attachmentImage = readListFromSettings(nbsettings, 'attachmentImage')
+        msettings.extcfg.update(self.tmpdict)
         
         #then make mikidown use these settings NOW
         curitem=self.parent().notesTree.currentItem()
