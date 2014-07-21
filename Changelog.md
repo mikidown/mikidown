@@ -9,6 +9,8 @@
 - A few more fixes for setext header syntax highlighting.
 - Numbered lists are included in the syntax highlighting.
 - Search results can now be styled.
+- Sort lines doesn't require the user to fully select lines for them to be sorted.
+- The number of recently viewed notes can be adjusted by the user in the Mikidown settings dialog.
 
 ## Version 0.3.2
 
