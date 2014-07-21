@@ -19,7 +19,6 @@ class MikiSearch(QWebView):
         self.flag = False
         self.link = None
         self.setMouseTracking(True)
-        print(self.parent.settings.searchcssfile)
         self.settings().setUserStyleSheetUrl(
                         QUrl('file://'+self.parent.settings.searchcssfile))
         print(QUrl('file://'+self.parent.settings.searchcssfile))

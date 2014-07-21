@@ -2,6 +2,7 @@ import os
 
 from PyQt4.QtCore import QDir, QFile, QSettings
 from whoosh import fields
+import markdown
 
 
 __appname__ = 'mikidown'
@@ -63,6 +64,20 @@ class Setting():
                  , 'asciimathml'
                  ]
             writeListToSettings(self.qsettings, "extensions", self.extensions)
+        while True:
+             try:
+                 markdown.markdown("",extensions=self.extensions)
+             except ImportError as e:
+                 if e.name.startswith('mdx_'):
+                     print('Found invalid extension', e.name[4:], ', temporarily disabling.')
+                     print('If you want to permanently disable this, just hit OK in the Notebook Settings dialog')
+                     self.extensions.remove(e.name[4:])
+                 else:
+                     print('Found invalid extension', e.name, ', temporarily disabling.')
+                     print('If you want to permanently disable this, just hit OK in the Notebook Settings dialog')
+                     self.extensions.remove(e.name)
+             else:
+                 break
 
         # Default file extension name
         if not self.fileExt:
