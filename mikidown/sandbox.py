@@ -11,7 +11,7 @@ from .config import Setting
 class Sandbox():
 
     def __init__(self):
-        path = os.path.join(os.getcwd(), "test_notebook")
+        path = os.path.join(os.getcwd(), "test_notebook").replace(os.sep, '/')
         Mikibook.initialise("test", path)
         settings = Setting([["test", path]])
         self.window = MikiWindow(settings)

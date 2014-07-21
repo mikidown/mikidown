@@ -2,7 +2,7 @@ import argparse
 import os
 import re
 import sys
-#import signal
+import signal
 
 from PyQt4.QtCore import QSettings
 from PyQt4.QtGui import QApplication, QIcon, QMessageBox
@@ -62,7 +62,7 @@ def main():
         notebooks = Mikibook.read()
 
     if len(notebooks) != 0:
-        """
+        #"""
         if os.path.exists(Mikibook.lockpath) and args.command != 'index':
             ret = QMessageBox.question(None, "mikidown - lock file exists", ("It looks like the lock file for "
                 "mikidown already exists. Is mikidown currently running? "
@@ -76,7 +76,7 @@ def main():
         else:
             print("Applying single instance per user lock.")
             lock_fh = os.open(Mikibook.lockpath, os.O_CREAT | os.O_EXCL | os.O_RDWR)
-        """
+        #"""
         settings = Setting(notebooks)
         # Initialize application and main window.
         icon = QIcon(":/icons/mikidown.svg")
@@ -87,22 +87,22 @@ def main():
         tray = MikiTray(icon, window)
         tray.show()
 
-        """
+        #"""
         def cleanup(signum, frame):
             #we need to do this to remove the lock at the end
             app.closeAllWindows()
 
         if args.command:
             signal.signal(signal.SIGTERM, cleanup)
-        """
+        #"""
         exit_code = app.exec_()
 
-        """
+        #"""
         print("Removing single instance per user lock.")
         if os.path.exists(Mikibook.lockpath) and args.command != 'index':
             os.close(lock_fh)
             os.remove(Mikibook.lockpath)
-        """
+        #"""
         sys.exit(exit_code)
 
 if __name__ == '__main__':

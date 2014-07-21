@@ -19,14 +19,14 @@ class Setting():
 
         self.notebookName = notebooks[0][0]
         self.notebookPath = notebooks[0][1]
-        self.notePath = os.path.join(self.notebookPath, "notes")
-        self.htmlPath = os.path.join(self.notebookPath, "html", "notes")
-        self.indexdir = os.path.join(self.notePath, ".indexdir")
-        self.attachmentPath = os.path.join(self.notebookPath, "attachments")
-        self.configfile = os.path.join(self.notebookPath, "notebook.conf")
-        cssPath = os.path.join(self.notebookPath, "css")
-        self.cssfile = os.path.join(cssPath, "notebook.css")
-        self.searchcssfile = os.path.join(cssPath, "search-window.css")
+        self.notePath = os.path.join(self.notebookPath, "notes").replace(os.sep, '/')
+        self.htmlPath = os.path.join(self.notebookPath, "html", "notes").replace(os.sep, '/')
+        self.indexdir = os.path.join(self.notePath, ".indexdir").replace(os.sep, '/')
+        self.attachmentPath = os.path.join(self.notebookPath, "attachments").replace(os.sep, '/')
+        self.configfile = os.path.join(self.notebookPath, "notebook.conf").replace(os.sep, '/')
+        cssPath = os.path.join(self.notebookPath, "css").replace(os.sep, '/')
+        self.cssfile = os.path.join(cssPath, "notebook.css").replace(os.sep, '/')
+        self.searchcssfile = os.path.join(cssPath, "search-window.css").replace(os.sep, '/')
         self.qsettings = QSettings(self.configfile, QSettings.IniFormat)
 
         if os.path.exists(self.configfile):
@@ -92,17 +92,17 @@ class Setting():
             fileList = notebookDir.entryList(['*.md', '*.mkd', '*.markdown'])
             notebookDir.mkdir('notes')
             for d in dirList + fileList:
-                notebookDir.rename(d, os.path.join('notes', d))
+                notebookDir.rename(d, os.path.join('notes', d).replace(os.sep, '/'))
 
             # remove .indexdir folder
-            oldIndexDir = QDir(os.path.join(self.notebookPath, '.indexdir'))
+            oldIndexDir = QDir(os.path.join(self.notebookPath, '.indexdir'.replace(os.sep, '/')))
             indexFileList = oldIndexDir.entryList()
             for f in indexFileList:
                 oldIndexDir.remove(f)
             notebookDir.rmdir('.indexdir')
 
             # rename notes.css to css/notebook.css
-            oldCssFile = os.path.join(self.notebookPath, 'notes.css')
+            oldCssFile = os.path.join(self.notebookPath, 'notes.css').replace(os.sep, '/')
             QDir().mkpath(cssPath)
             if os.path.exists(oldCssFile):
                 QFile.rename(oldCssFile, self.cssfile)

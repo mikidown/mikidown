@@ -1,4 +1,5 @@
 import os
+from threading import Thread
 from multiprocessing import Process
 from PyQt4.QtCore import Qt, QDir, QFile, QFileInfo, QMimeData, QIODevice, QTextStream, QUrl
 from PyQt4.QtGui import QAction, QCursor, QFileDialog, QFont, QTextCursor, QTextEdit, QMessageBox
@@ -104,7 +105,7 @@ class MikiEdit(QTextEdit):
                 url = qurl.toString()
                 filename, extension = os.path.splitext(url)
                 filename = os.path.basename(filename)
-                newFilePath = os.path.join(attDir, filename + extension)
+                newFilePath = os.path.join(attDir, filename + extension).replace(os.sep, '/')
                 relativeFilePath = newFilePath.replace(self.settings.notebookPath, "..")
                 attachments = self.settings.attachmentImage + self.settings.attachmentDocument
 
@@ -141,7 +142,7 @@ class MikiEdit(QTextEdit):
                 fileName = dialog.editor.text()
                 if not QFileInfo(fileName).suffix():
                     fileName += '.jpg'
-                filePath = os.path.join(attDir, fileName)
+                filePath = os.path.join(attDir, fileName).replace(os.sep, '/')
                 img.save(filePath)
                 relativeFilePath = filePath.replace(self.settings.notebookPath, "..")
                 text = "![%s](%s)" % (fileName, relativeFilePath)
@@ -159,7 +160,7 @@ class MikiEdit(QTextEdit):
         attDir = self.parent.notesTree.itemToAttachmentDir(item)
         filename, extension = os.path.splitext(filePath)
         filename = os.path.basename(filename)
-        newFilePath = os.path.join(attDir, filename + extension)
+        newFilePath = os.path.join(attDir, filename + extension).replace(os.sep, '/')
         relativeFilePath = newFilePath.replace(self.settings.notebookPath, "..")
         QFile.copy(filePath, newFilePath)
         self.parent.updateAttachmentView()
@@ -233,7 +234,7 @@ class MikiEdit(QTextEdit):
                 self.document().setModified(False)
 
                 # Fork a process to update index, which benefit responsiveness.
-                Process(target=self.updateIndex).start()
+                Thread(target=self.updateIndex).start()
 
     def toHtml(self):
         '''markdown.Markdown.convert v.s. markdown.markdown

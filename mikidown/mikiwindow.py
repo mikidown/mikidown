@@ -4,6 +4,7 @@ The mainwindow module.
 import os
 import shutil
 from multiprocessing import Process
+from threading import Thread
 
 from PyQt4.QtCore import (Qt, QDir, QFile, QFileInfo, QIODevice,
                           QPoint, QSize, QTextStream, QUrl)
@@ -369,7 +370,7 @@ class MikiWindow(QMainWindow):
             QDir().mkpath(indexdir)
             self.ix = create_in(indexdir, self.settings.schema)
             # Fork a process to update index, which benefit responsiveness.
-            p = Process(target=self.whoosh_index, args=())
+            p = Thread(target=self.whoosh_index, args=())
             p.start()
 
 
@@ -705,7 +706,7 @@ class MikiWindow(QMainWindow):
         if not pattern:
             return
         results = []
-
+        print("Searching using", pattern)
         with self.ix.searcher() as searcher:
             matches = []
             for f in ["title", "path", "content"]:
@@ -730,15 +731,17 @@ class MikiWindow(QMainWindow):
                          "</a><br/><span class='path'>" +
                          path + "</span><br/>" + hi + "</p>")
             self.searchView.setHtml(html)
+            print("Finished searching", pattern)
 
     def whoosh_index(self):
         it = QTreeWidgetItemIterator(
             self.notesTree, QTreeWidgetItemIterator.All)
+        print("Starting complete indexing.")
         writer = self.ix.writer()
         while it.value():
             treeItem = it.value()
             name = self.notesTree.itemToPage(treeItem)
-            path = os.path.join(self.notesTree.pageToFile(name))
+            path = os.path.join(self.notesTree.pageToFile(name)).replace(os.sep, '/')
             print(path)
             fileobj = open(path, 'r')
             content = fileobj.read()
@@ -747,6 +750,7 @@ class MikiWindow(QMainWindow):
                 path=name, title=parseTitle(content, name), content=content)
             it += 1
         writer.commit()
+        print("Finished completely reindexing.")
 
     def listItemChanged(self, row):
         if row != -1:
@@ -837,14 +841,14 @@ class MikiWindow(QMainWindow):
         readmeFile = '/usr/share/mikidown/README.mkd'
         if not os.path.exists(readmeFile):
             readmeFile = os.path.join(
-                os.path.dirname(os.path.dirname(__file__)), 'README.mkd')
+                os.path.dirname(os.path.dirname(__file__)), 'README.mkd').replace(os.sep, '/')
         self.importPageCore(readmeFile)
 
     def changelogHelp(self):
         changeLog = "/usr/share/mikidown/Changelog.md"
         if not os.path.exists(changeLog):
             changeLog = os.path.join(
-                os.path.dirname(os.path.dirname(__file__)), 'Changelog.md')
+                os.path.dirname(os.path.dirname(__file__)), 'Changelog.md').replace(os.sep, '/')
         self.importPageCore(changeLog)
 
     def keyPressEvent(self, event):

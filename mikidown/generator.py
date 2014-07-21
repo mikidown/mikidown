@@ -5,6 +5,7 @@ import os
 import sys
 import shutil
 from multiprocessing import Process
+from threading import Thread
 from PyQt4.QtCore import QDir, QFile, QFileSystemWatcher, QIODevice, QSettings, QTextStream
 from PyQt4.QtGui import QApplication
 import markdown
@@ -16,10 +17,10 @@ class Generator():
 
     def __init__(self, notebookPath):
         self.notebookPath = notebookPath
-        self.notepath = os.path.join(notebookPath, "notes")
-        self.sitepath = os.path.join(notebookPath, "_site")
-        self.htmlpath = os.path.join(notebookPath, "_site/notes")
-        self.configfile = os.path.join(self.notebookPath, "notebook.conf")
+        self.notepath = os.path.join(notebookPath, "notes").replace(os.sep, '/')
+        self.sitepath = os.path.join(notebookPath, "_site").replace(os.sep, '/')
+        self.htmlpath = os.path.join(notebookPath, "_site/notes").replace(os.sep, '/')
+        self.configfile = os.path.join(self.notebookPath, "notebook.conf").replace(os.sep, '/')
         self.qsettings = QSettings(self.configfile, QSettings.NativeFormat)
         self.extName = ['.md', '.mkd', '.markdown']
         if os.path.exists(self.configfile):
@@ -88,7 +89,7 @@ class Generator():
         sys.exit(app.exec_())
 
     def preview(self, port=3131):
-        processWatcher = Process(target=self.regenerate)
+        processWatcher = Thread(target=self.regenerate)
         processWatcher.start()
         self.generate()
 

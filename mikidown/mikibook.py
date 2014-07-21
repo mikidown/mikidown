@@ -312,7 +312,7 @@ class NewNotebookDlg(QDialog):
         buttonBox.rejected.connect(self.reject)
 
     def browse(self):
-        default = os.environ['HOME']
+        default = os.path.expanduser('~')
         path = QFileDialog.getExistingDirectory(self,
                                                 "Select Folder",
                                                 default,
