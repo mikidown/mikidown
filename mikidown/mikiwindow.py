@@ -680,14 +680,19 @@ class MikiWindow(QMainWindow):
 
     def sortLines(self):
         ''' sort selected lines
-            Currently, have to select whole lines. (ToFix)
             TODO: second sort reverse the order
         '''
         cursor = self.notesEdit.textCursor()
+        start = cursor.selectionStart()
+        end = cursor.selectionEnd()
+        cursor.setPosition(start)
+        cursor.movePosition(QTextCursor.StartOfLine)
+        cursor.setPosition(end, mode=QTextCursor.KeepAnchor)
+        cursor.movePosition(QTextCursor.EndOfLine, mode=QTextCursor.KeepAnchor)
         text = cursor.selectedText()
         lines = text.split('\u2029')      # '\u2029' is the line break
         sortedLines = sorted(lines)
-        self.notesEdit.insertPlainText('\n'.join(sortedLines))
+        cursor.insertText('\n'.join(sortedLines))
 
     def notesEditInFocus(self, e):
         if e.gotFocus:
