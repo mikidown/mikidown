@@ -1,5 +1,15 @@
 # Mikidown Changelogs
 
+## Version 0.3.3
+- Windows compatibility was added with making sure there's no path funkiness under Windows and swapping out forking processes for threads...because for some reason, Windows can't do the os.fork.
+- markdown extensions that the user doesn't have, but has listed in their mikidown notebook config are temporarily disabled and marked in red.
+- There's a GUI for configuring the markdown extensions. Just click "Edit Settings for this extension" after selecting an extension to configure.
+- Single instance per user to prevent weirdness with notes. I'm currently trying to figure out how to raise the already existing window if there is one in a cross-platform manner.
+- Improvements to the HTML tag detection. Now you can properly distinguish <https://github.com/rnons/mikidown> from <i>I am a block of html stuff!</i>.
+- A few more fixes for setext header highlighting.
+- Numbered lists are included in the highlighting.
+- Search results can now be styled.
+
 ## Version 0.3.2
 
 - asciimathml markdown extensions is supported. If you don't have it grab it from [here [AUR]](https://aur.archlinux.org/packages/python-asciimathml-git) or [here [github]](https://github.com/mtahmed/python-asciimathml)
