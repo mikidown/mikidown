@@ -462,13 +462,32 @@ class Mikibook():
     @staticmethod
     def read():
         """ Read notebook list from config file """
-        return readListFromSettings(Mikibook.settings, 'notebookList')
+        version = Mikibook.settings.value("version", defaultValue=None)
+        if not version: #before 0.3.4, since we're migrating the notebooklist to be plaintext
+            Mikibook.nbListMigration()
+        items = []
+        size = Mikibook.settings.beginReadArray("notebookList")
+        for i in range(size):
+            Mikibook.settings.setArrayIndex(i)
+            items.append((Mikibook.settings.value('name', type=str),
+                        Mikibook.settings.value('path', type=str)))
+        Mikibook.settings.endArray()
+        return items
+
+    @staticmethod
+    def nbListMigration():
+        books = readListFromSettings(Mikibook.settings, 'notebookList')
+        Mikibook.write(books)
 
     @staticmethod
     def write(notebooks):
         """ Write notebook list to config file """
-        return writeListToSettings(
-            Mikibook.settings, 'notebookList', notebooks)
+        Mikibook.settings.beginWriteArray("notebookList")
+        for i, val in enumerate(notebooks):
+            Mikibook.settings.setArrayIndex(i)
+            Mikibook.settings.setValue('name', val[0])
+            Mikibook.settings.setValue('path', val[1])
+        Mikibook.settings.endArray()
 
     @staticmethod
     def create():
@@ -481,7 +500,6 @@ class Mikibook():
 
             notebooks = Mikibook.read()
             notebooks.append([notebookName, notebookPath])
-            # TODO: make mikidown.conf become plain text
             Mikibook.write(notebooks)
 
     @staticmethod

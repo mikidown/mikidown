@@ -95,6 +95,7 @@ class MikiWindow(QMainWindow):
         if self.settings.version < __version__:
             self.changelogHelp()
             self.settings.qsettings.setValue("version", __version__)
+            Mikibook.settings.setValue("version", __version__)
 
 
     def setupActions(self):
