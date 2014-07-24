@@ -3,6 +3,7 @@ import re
 from PyQt4.QtGui import QSyntaxHighlighter, QColor, QFont, QTextCharFormat
 from PyQt4.QtCore import Qt
 from .mdx_strkundr import DEL_RE, INS_RE, STRONG_RE, EMPH_RE
+from .mikibook import Mikibook
 
 
 class MikiHighlighter(QSyntaxHighlighter):
@@ -17,38 +18,39 @@ class MikiHighlighter(QSyntaxHighlighter):
         regexp = [0] * NUM
         font = [0]*NUM
         color = [0]*NUM
+        color_settings = Mikibook.highlighterColors()
         # 0: html tags - <pre></pre>
         # less naive html regex
         regexp[0] = r'</?\w+((\s+\w+(\s*=\s*(?:".*?"|\'.*?\'|[^\'">\s]+))?)+\s*|\s*)/?>'
         font[0] = QFont("monospace", baseFontSize, -1)
-        color[0] = QColor("#A40000")
+        color[0] = QColor(color_settings[0])
         # 1: h1 - #
         regexp[1] = '^#[^#]+'
-        color[1] = QColor("#4E9A06")
+        color[1] = QColor(color_settings[1])
         font[1] = QFont("decorative", 2*baseFontSize, QFont.Bold)
         # 2: h2 - ##
         regexp[2] = '^##[^#]+'
-        color[2] = QColor("#4E9A06")
+        color[2] = QColor(color_settings[2])
         font[2] = QFont("serif", 5.0/3*baseFontSize, QFont.Bold)
         # 3: h3 - ###
         regexp[3] = '^###[^#]+'
-        color[3] = QColor("#4E9A06")
+        color[3] = QColor(color_settings[3])
         font[3] = QFont("serif", 4.0/3*baseFontSize, QFont.Bold)
         # 4: h4 and more - ####
         regexp[4] = '^####.+'
-        color[4] = QColor("#4E9A06")
+        color[4] = QColor(color_settings[4])
         font[4] = QFont("serif", baseFontSize, QFont.Bold)
         # 5: html symbols - &gt;
         regexp[5] = '&[^; ].+;'
-        color[5] = QColor("#A40000")
+        color[5] = QColor(color_settings[5])
         font[5] = QFont("monospace", baseFontSize, -1)
         # 6: html comments - <!-- -->
         regexp[6] = '<!--.+-->'
-        color[6] = QColor("#888A85")
+        color[6] = QColor(color_settings[6])
         font[6] = QFont(None, baseFontSize, -1)
         # 7: delete - ~~delete~~
         regexp[7] = DEL_RE
-        color[7] = QColor("#888A85")
+        color[7] = QColor(color_settings[7])
         font[7] = QFont(None, baseFontSize, -1)
         # 8: insert - __insert__
         regexp[8] = INS_RE
@@ -56,11 +58,11 @@ class MikiHighlighter(QSyntaxHighlighter):
         font[8].setUnderline(True)
         # 9: strong - **strong**
         regexp[9] = STRONG_RE
-        color[9] = QColor("#F57900")
+        color[9] = QColor(color_settings[9])
         font[9] = QFont(None, baseFontSize, QFont.Bold)
         # 10: emphasis - //emphasis//
         regexp[10] = EMPH_RE
-        color[10] = QColor("#F57900")
+        color[10] = QColor(color_settings[10])
         font[10] = QFont(None, baseFontSize, -1, True)
         # 11: links - (links) after [] or links after []:
         regexp[11] = (r'(?<=(\]\())[^\(\)]*(?=\))|'
@@ -71,20 +73,20 @@ class MikiHighlighter(QSyntaxHighlighter):
         #.setUnderlineColor("#204A87")
         # 12: link/image references - [] or ![]
         regexp[12] = r'!?\[[^\[\]]*\]'
-        color[12] = QColor("#204A87")
+        color[12] = QColor(color_settings[12])
         font[12] = QFont(None, baseFontSize, -1)
         # 13: blockquotes and lists -  > or - or * or 0.
         regexp[13] = r'(^>+)|(^(?:    |\t)*[0-9]+\. )|(^(?:    |\t)*- )|(^(?:    |\t)*\* )'
-        color[13] = QColor("#F57900")
+        color[13] = QColor(color_settings[13])
         font[13] = QFont(None, baseFontSize, -1)
         # 14: fence - ``` or ~~~
         regexp[14] = '^(?:~{3,}|`{3,}).*$'
-        color[14] = QColor("#F57900")
+        color[14] = QColor(color_settings[14])
         font[14] = QFont(None, baseFontSize, QFont.Bold)
 
         # 15: math - $$
         regexp[15] = r'^(?:\${2}).*$'
-        color[15] = QColor("#F5006E")
+        color[15] = QColor(color_settings[15])
         font[15] = QFont(None, baseFontSize, QFont.Bold)
 
         for i in range(NUM):

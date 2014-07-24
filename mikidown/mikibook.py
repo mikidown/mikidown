@@ -390,6 +390,10 @@ class NewNotebookDlg(QDialog):
     def closeEvent(self, event):
         event.accept()
 
+class MikidownHighlightCfgWidget(QWidget):
+    def __init__(self, parent=None):
+        super(MikidownHighlightCfgWidget, self).__init__(parent)
+
 class MikidownCfgDialog(QDialog):
     def __init__(self, parent=None):
         super(MikidownCfgDialog, self).__init__(parent)
@@ -416,6 +420,44 @@ class Mikibook():
     # ~/.config/mikidown/mikidown.conf
     settings = QSettings(QSettings.IniFormat, QSettings.UserScope, 'mikidown', 'mikidown')
     lockpath = os.path.join(os.path.dirname(settings.fileName()),'lock').replace(os.sep,'/')
+
+    @staticmethod
+    def highlighterColors():
+        items = []
+        defaults = [ '#A40000',
+                    "#4E9A06",
+                    "#4E9A06",
+                    "#4E9A06",
+                    "#4E9A06",
+                    "#A40000",
+                    "#ff0037", #italic, not used
+                    "#888A85",
+                    "#888A85",
+                    "#F57900",
+                    "#F57900",
+                    "#204A87", #underline color, not used atm
+                    "#204A87",
+                    "#F57900",
+                    "#F57900",
+                    "#F5006E"]
+        size = Mikibook.settings.beginReadArray('highlighting')
+        if size == 0:
+            Mikibook.settings.endArray()
+            Mikibook.setHighlighterColors(defaults)
+            size = Mikibook.settings.beginReadArray('highlighting')
+        for i in range(16):
+            Mikibook.settings.setArrayIndex(i)
+            items.append(Mikibook.settings.value('color', defaultValue=defaults[i], type=str))
+        Mikibook.settings.endArray()
+        return items
+
+    @staticmethod
+    def setHighlighterColors(items):
+        Mikibook.settings.beginWriteArray('highlighting')
+        for i,val in enumerate(items):
+            Mikibook.settings.setArrayIndex(i)
+            Mikibook.settings.setValue('color', val)
+        Mikibook.settings.endArray()
 
     @staticmethod
     def read():
