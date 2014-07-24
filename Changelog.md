@@ -1,5 +1,9 @@
 # Mikidown Changelogs
 
+## Version 0.3.4
+- The mikidown.conf file now stores its notebooklist as pure plain text. That means you can add notebooks by editing the Ini file and it'll be able to detect them.
+- The colors for mikidown markdown highlighting can be configured. There's currently no GUI for it.
+
 ## Version 0.3.3
 - Windows compatibility was added with making sure there's no path funkiness under Windows and swapping out forking processes for threads...because for some reason, Windows can't do the os.fork.
 - markdown extensions that the user doesn't have, but has listed in their mikidown notebook config are temporarily disabled and marked in red.
