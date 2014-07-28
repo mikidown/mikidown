@@ -726,10 +726,11 @@ class MikiWindow(QMainWindow):
         with self.ix.searcher() as searcher:
             matches = []
             queryp = QueryParser("content", self.ix.schema)
-            queryp.add_plugin(RegexPlugin())
+            #allow escaped qutoes when regex searching
+			queryp.add_plugin(RegexPlugin(expr=r'r"(?P<text>[^"\\]*(\\.[^"\\]*)*)"'))
             # ~~r"pattern" is the desired regex term format~~ Don't autoforce regexing
             query = queryp.parse(pattern)
-            print("durp durp", query)
+            #print("durp durp", query)
             ms = searcher.search(query, limit=None) # default limit is 10!
             for m in ms:
                 #if not m in matches:
