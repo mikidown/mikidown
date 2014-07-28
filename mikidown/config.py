@@ -16,7 +16,8 @@ class Setting():
         self.schema = fields.Schema(
             path = fields.TEXT(stored=True),
             title = fields.TEXT(stored=True),
-            content = fields.TEXT(stored=True))
+            content = fields.TEXT(stored=True),
+            tags = fields.KEYWORD(commas=True))
 
         self.notebookName = notebooks[0][0]
         self.notebookPath = notebooks[0][1]
@@ -83,6 +84,7 @@ class Setting():
                      self.extensions.remove(e.name)
                      self.faulty_exts.append(e.name)
              else:
+                 self.md = markdown.Markdown(self.extensions)
                  break
 
         # Default file extension name

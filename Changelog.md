@@ -5,6 +5,7 @@
 - The colors for mikidown markdown highlighting can be configured. There's currently no GUI for it.
 - Don't force regex searching for all of the fields. Instead, allow the user to decide that. Not specifying a field defaults to searching the contents of notes. Individual fields can also be searched by typing {field_name}:expression or things like that. Surrounding expression with r"" turns on regexing for that field during search.
 - Searching escaped quotes in regex searching is enabled.
+- Tagging is enabled, but isn't forced. You'll need to turn on the python markdown's built in meta extension so mikidown knows what tags to give mikidown the tags you want. tags can be added by adding tags:{tag},{tag},... to the top of your note. Be sure to have a blank line between this and your actual note content. Tags can also be searched with that same syntax OR by entering tag:tagname tag:tagname2 and so on.
 
 ## Version 0.3.3
 - Windows compatibility was added with making sure there's no path funkiness under Windows and swapping out forking processes for threads...because for some reason, Windows can't do the os.fork.

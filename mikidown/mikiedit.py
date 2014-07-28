@@ -8,7 +8,7 @@ import markdown
 from whoosh.index import open_dir
 import html2text
 
-from .utils import LineEditDialog, parseTitle, jscript_tpl
+from .utils import LineEditDialog, parseTitle, JSCRIPT_TPL, METADATA_CHECKER
 
 class MikiEdit(QTextEdit):
 
@@ -47,16 +47,24 @@ class MikiEdit(QTextEdit):
 
 
     def updateIndex(self):
-            ''' Update whoosh index, which cost much computing resource '''
-            page = self.parent.notesTree.currentPage()
-            content = self.toPlainText()
-            try:
-                writer = self.ix.writer()
+        ''' Update whoosh index, which cost much computing resource '''
+        page = self.parent.notesTree.currentPage()
+        content = self.toPlainText()        
+        try:
+            writer = self.ix.writer()
+            if METADATA_CHECKER.match(content) and 'meta' in self.settings.extensions:
+                no_metadata_content = METADATA_CHECKER.sub("", content).lstrip()
+                self.settings.md.reset().convert(content)
                 writer.update_document(
-                    path=page, title=parseTitle(content, page), content=content)
+                    path=page, title=parseTitle(content, page), content=no_metadata_content,
+                    tags=','.join(self.settings.md.Meta.get('tags', [])).strip())
                 writer.commit()
-            except:
-                print("Whoosh commit failed.")
+            else:
+                writer.update_document(
+                    path=page, title=parseTitle(content, page), content=content, tags='')
+                writer.commit()
+        except:
+            print("Whoosh commit failed.")
 
     def downloadFinished(self, reply):
         if reply.error():
@@ -238,14 +246,15 @@ class MikiEdit(QTextEdit):
 
     def toHtml(self):
         '''markdown.Markdown.convert v.s. markdown.markdown
-            Previously `convert` was used, but it doens't work with fenced_code
+            ~~Previously `convert` was used, but it doens't work with fenced_code~~
+			fixed that by calling markdown.Markdown.reset before each conversion
         '''
         htmltext = self.toPlainText()
         if 'asciimathml' in self.settings.extensions:
-            stuff=jscript_tpl.format(self.settings.mathjax)
+            stuff=JSCRIPT_TPL.format(self.settings.mathjax)
         else:
             stuff=''
-        return markdown.markdown(stuff+htmltext, self.settings.extensions)
+        return self.settings.md.reset().convert(stuff+htmltext)
         # md = markdown.Markdown(extensions)
         # return md.convert(htmltext)
 

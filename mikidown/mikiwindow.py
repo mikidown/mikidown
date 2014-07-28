@@ -27,7 +27,7 @@ from .mikiview import MikiView
 from .mikisearch import MikiSearch
 from .attachment import AttachmentView
 from .highlighter import MikiHighlighter
-from .utils import LineEditDialog, ViewedNoteIcon, parseHeaders, parseTitle
+from .utils import LineEditDialog, ViewedNoteIcon, parseHeaders, parseTitle, METADATA_CHECKER
 
 
 class MikiWindow(QMainWindow):
@@ -727,7 +727,7 @@ class MikiWindow(QMainWindow):
             matches = []
             queryp = QueryParser("content", self.ix.schema)
             #allow escaped qutoes when regex searching
-			queryp.add_plugin(RegexPlugin(expr=r'r"(?P<text>[^"\\]*(\\.[^"\\]*)*)"'))
+            queryp.add_plugin(RegexPlugin(expr=r'r"(?P<text>[^"\\]*(\\.[^"\\]*)*)"'))
             # ~~r"pattern" is the desired regex term format~~ Don't autoforce regexing
             query = queryp.parse(pattern)
             #print("durp durp", query)
@@ -760,11 +760,18 @@ class MikiWindow(QMainWindow):
             name = self.notesTree.itemToPage(treeItem)
             path = os.path.join(self.notesTree.pageToFile(name)).replace(os.sep, '/')
             print(path)
-            fileobj = open(path, 'r')
+            fileobj = open(path, 'r', encoding='utf-8')
             content = fileobj.read()
             fileobj.close()
-            writer.add_document(
-                path=name, title=parseTitle(content, name), content=content)
+            if METADATA_CHECKER.match(content) and 'meta' in self.settings.extensions:
+                no_metadata_content = METADATA_CHECKER.sub("", content).lstrip()
+                self.settings.md.reset().convert(content)
+                writer.update_document(
+                    path=name, title=parseTitle(content, name), content=no_metadata_content,
+                    tags=','.join(self.settings.md.Meta.get('tags', [])).strip())
+            else:
+                writer.add_document(path=name, title=parseTitle(content, name), content=content, tags='')
+           
             it += 1
         writer.commit()
         print("Finished completely reindexing.")

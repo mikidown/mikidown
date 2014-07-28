@@ -10,7 +10,7 @@ from PyQt4.QtCore import QDir, QFile, QFileSystemWatcher, QIODevice, QSettings, 
 from PyQt4.QtGui import QApplication
 import markdown
 from .config import readListFromSettings
-from .utils import jscript_tpl
+from .utils import JSCRIPT_TPL
 
 
 class Generator():
@@ -164,8 +164,8 @@ class Generator():
         savestream << "<header>" + self.breadcrumb(page) + "</header>"
         # Note content
         if 'asciimathml' in self.md.registeredExtensions:
-            savestream << jscript_tpl.format(self.qsettings.value('mathJax'))
-        savestream << self.md.convert(QTextStream(note).readAll())
+            savestream << JSCRIPT_TPL.format(self.qsettings.value('mathJax'))
+        savestream << self.md.reset().convert(QTextStream(note).readAll())
         savestream << "</html>"
         note.close()
         html.close()

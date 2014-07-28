@@ -3,6 +3,7 @@ Notebook management module.
 """
 
 import os
+import markdown
 from copy import deepcopy
 from PyQt4.QtCore import Qt, QDir, QFile, QSettings, QSize
 from PyQt4.QtGui import (QAbstractItemDelegate, QAbstractItemView, QColor, QDialog, QDialogButtonBox, 
@@ -233,6 +234,7 @@ class NotebookSettingsDialog(QDialog):
         msettings.mathjax = self.mjEdit.text()
         msettings.attachmentDocument = readListFromSettings(nbsettings, 'attachmentDocument')
         msettings.attachmentImage = readListFromSettings(nbsettings, 'attachmentImage')
+        msettings.md = markdown.Markdown(msettings.extensions)
         msettings.extcfg.update(self.tmpdict)
         
         #then make mikidown use these settings NOW
