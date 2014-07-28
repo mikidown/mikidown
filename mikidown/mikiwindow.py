@@ -725,15 +725,15 @@ class MikiWindow(QMainWindow):
         print("Searching using", pattern)
         with self.ix.searcher() as searcher:
             matches = []
-            for f in ["title", "path", "content"]:
-                queryp = QueryParser(f, self.ix.schema)
-                queryp.add_plugin(RegexPlugin())
-                # r"pattern" is the desired regex term format
-                query = queryp.parse('r"' + pattern + '"')
-                ms = searcher.search(query, limit=None) # default limit is 10!
-                for m in ms:
-                    if not m in matches:
-                        matches.append(m)
+            queryp = QueryParser("content", self.ix.schema)
+            queryp.add_plugin(RegexPlugin())
+            # ~~r"pattern" is the desired regex term format~~ Don't autoforce regexing
+            query = queryp.parse(pattern)
+            print("durp durp", query)
+            ms = searcher.search(query, limit=None) # default limit is 10!
+            for m in ms:
+                #if not m in matches:
+                matches.append(m)
 
             for r in matches:
                 title = r['title']

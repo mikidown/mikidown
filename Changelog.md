@@ -3,6 +3,7 @@
 ## Version 0.3.4
 - The mikidown.conf file now stores its notebooklist as pure plain text. That means you can add notebooks by editing the Ini file and it'll be able to detect them.
 - The colors for mikidown markdown highlighting can be configured. There's currently no GUI for it.
+- Don't force regex searching for all of the fields. Instead, allow the user to decide that. Not specifying a field defaults to searching the contents of notes. Individual fields can also be searched by typing {field_name}:expression or things like that. Surrounding expression with r"" turns on regexing for that field during search.
 
 ## Version 0.3.3
 - Windows compatibility was added with making sure there's no path funkiness under Windows and swapping out forking processes for threads...because for some reason, Windows can't do the os.fork.
