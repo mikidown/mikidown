@@ -53,7 +53,7 @@ class MikiEdit(QTextEdit):
         try:
             writer = self.ix.writer()
             if METADATA_CHECKER.match(content) and 'meta' in self.settings.extensions:
-                no_metadata_content = METADATA_CHECKER.sub("", content).lstrip()
+                no_metadata_content = METADATA_CHECKER.sub("", content, count=1).lstrip()
                 self.settings.md.reset().convert(content)
                 writer.update_document(
                     path=page, title=parseTitle(content, page), content=no_metadata_content,

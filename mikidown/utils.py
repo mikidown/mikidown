@@ -7,7 +7,7 @@ from PyQt4.QtCore import Qt, QFile, QRect
 from PyQt4.QtGui import (QDialog, QDialogButtonBox, QGridLayout, QIcon, QLabel, QLineEdit, QMessageBox, QPainter, QPixmap)
 
 JSCRIPT_TPL = '<script type="text/javascript" src="{}"></script>\n'
-METADATA_CHECKER = re.compile(r'((?:^[^:]+:.*)(?:\n {4,}.*)*)+')
+METADATA_CHECKER = re.compile(r'((?: {0,3}[\w\-]+:.*)(?:(?:\n {4,}.+)|(?:\n {0,3}[\w\-]+:.*))*)')
 
 class ViewedNoteIcon(QIcon):
     def __init__(self, num, parent=None):

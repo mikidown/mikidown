@@ -764,7 +764,7 @@ class MikiWindow(QMainWindow):
             content = fileobj.read()
             fileobj.close()
             if METADATA_CHECKER.match(content) and 'meta' in self.settings.extensions:
-                no_metadata_content = METADATA_CHECKER.sub("", content).lstrip()
+                no_metadata_content = METADATA_CHECKER.sub("", content, count=1).lstrip()
                 self.settings.md.reset().convert(content)
                 writer.update_document(
                     path=name, title=parseTitle(content, name), content=no_metadata_content,
