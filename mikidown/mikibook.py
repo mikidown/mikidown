@@ -24,15 +24,13 @@ class ListDelegate(QAbstractItemDelegate):
 
     def paint(self, painter, option, index):
         r = option.rect
-        fontPen = QPen(QColor.fromRgb(51, 51, 51), 1, Qt.SolidLine)
 
         if option.state & QStyle.State_Selected:
-            painter.setBrush(Qt.cyan)
-            painter.drawRect(r)
+            painter.fillRect(r, self.parent().palette().highlight())
+            fontPen = QPen(self.parent().palette().highlightedText(), 1, Qt.SolidLine)
         else:
-            painter.setBrush(
-                Qt.white if (index.row() % 2) == 0 else QColor(252, 252, 252))
-            painter.drawRect(r)
+            painter.fillRect(r, self.parent().palette().base())
+            fontPen = QPen(self.parent().palette().text(), 1, Qt.SolidLine)
 
         painter.setPen(fontPen)
 
@@ -42,14 +40,19 @@ class ListDelegate(QAbstractItemDelegate):
         imageSpace = 10
         # notebook name
         r = option.rect.adjusted(imageSpace, 0, -10, -20)
-        painter.setFont(QFont('Lucida Grande', 10, QFont.Bold))
-        painter.drawText(r.left(), r.top(
-        ), r.width(), r.height(), Qt.AlignBottom|Qt.AlignLeft, name)
+        name_font = QFont(self.parent().font())
+        name_font.setPointSize(10)
+        name_font.setBold(True)
+        painter.setFont(name_font)
+        painter.drawText(r.left(), r.top(), r.width(), r.height(), 
+                         Qt.AlignBottom|Qt.AlignLeft, name)
         # notebook path
+        path_font = QFont(self.parent().font())
+        path_font.setPointSize(8)
         r = option.rect.adjusted(imageSpace, 20, -10, 0)
-        painter.setFont(QFont('Lucida Grande', 8, QFont.Normal))
-        painter.drawText(
-            r.left(), r.top(), r.width(), r.height(), Qt.AlignLeft, path)
+        painter.setFont(path_font)
+        painter.drawText(r.left(), r.top(), r.width(), r.height(), 
+                         Qt.AlignLeft, path)
 
     def sizeHint(self, option, index):
         return QSize(200, 40)
