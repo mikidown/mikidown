@@ -41,7 +41,7 @@ class Setting():
             self.geometry = self.qsettings.value("geometry")
             self.windowstate = self.qsettings.value("windowstate")
             self.mathjax = self.qsettings.value('mathJax')
-            self.extcfg = self.qsettings.value('extensionsConfig', defaultValue={})
+            self.extcfg = self.qsettings.value('extensionsConfig',  defaultValue={})
         else:
             self.extensions = []
             self.fileExt = ""
@@ -84,7 +84,7 @@ class Setting():
                      self.extensions.remove(e.name)
                      self.faulty_exts.append(e.name)
              else:
-                 self.md = markdown.Markdown(self.extensions)
+                 self.md = markdown.Markdown(self.extensions, extension_configs=self.extcfg)
                  break
 
         # Default file extension name

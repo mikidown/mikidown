@@ -166,9 +166,9 @@ class NotebookSettingsDialog(QDialog):
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
 
-    def configExt(self, ext=None):
+    def configExt(self, checked=False, ext=None):
         if ext is None:
-            ext = self.currentItem().text()
+            ext = self.mdExts.currentItem().text()
         cfg = self.tmpdict.get(ext,[])
         dialog = NotebookExtSettingsDialog(cfg_list=cfg)
         done = dialog.exec()
@@ -237,8 +237,8 @@ class NotebookSettingsDialog(QDialog):
         msettings.mathjax = self.mjEdit.text()
         msettings.attachmentDocument = readListFromSettings(nbsettings, 'attachmentDocument')
         msettings.attachmentImage = readListFromSettings(nbsettings, 'attachmentImage')
-        msettings.md = markdown.Markdown(msettings.extensions)
         msettings.extcfg.update(self.tmpdict)
+        msettings.md = markdown.Markdown(msettings.extensions, extension_configs=msettings.extcfg)
         
         #then make mikidown use these settings NOW
         curitem=self.parent().notesTree.currentItem()

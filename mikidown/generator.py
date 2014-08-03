@@ -27,10 +27,11 @@ class Generator():
             extensions = readListFromSettings(self.qsettings,
                                                    "extensions")
             defExt = self.qsettings.value("fileExt")
+            extCfg = self.qsettings.value("extensionsConfig")
             if defExt in self.extName:
                 self.extName.remove(defExt)
                 self.extName.insert(0, defExt)
-                self.md = markdown.Markdown(extensions)
+                self.md = markdown.Markdown(extensions, extension_configs=extcfg)
         else:
             print("ERROR: Not a valid mikidown notebook folder")
             sys.exit(1)
