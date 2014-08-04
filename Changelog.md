@@ -1,6 +1,11 @@
 # Mikidown Changelogs
 
 ## Version 0.3.4
+- the markdown extension configuration is also in plain text
+- On that note, I also remembered to put in the markdown extension configuration in the mikidown render code this time
+- Fixed a bug were the markdown extension configuration wasn't being saved correctly
+- markdown extension configuration can now be used in the site generator
+- The Notebook list uses system colors
 - The mikidown.conf file now stores its notebooklist as pure plain text. That means you can add notebooks by editing the Ini file and it'll be able to detect them.
 - The colors for mikidown markdown highlighting can be configured. There's currently no GUI for it.
 - Don't force regex searching for all of the fields. Instead, allow the user to decide that. Not specifying a field defaults to searching the contents of notes. Individual fields can also be searched by typing {field_name}:expression or things like that. Surrounding expression with r"" turns on regexing for that field during search.
