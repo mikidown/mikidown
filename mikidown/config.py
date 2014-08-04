@@ -6,7 +6,7 @@ import markdown
 
 
 __appname__ = 'mikidown'
-__version__ = '0.3.4'
+__version__ = '0.3.4' # we should really change this to a tuple
 
 class Setting():
 
@@ -41,7 +41,11 @@ class Setting():
             self.geometry = self.qsettings.value("geometry")
             self.windowstate = self.qsettings.value("windowstate")
             self.mathjax = self.qsettings.value('mathJax')
-            self.extcfg = self.qsettings.value('extensionsConfig',  defaultValue={})
+            if 'extensionsConfig' not in set(self.qsettings.childGroups()):
+                self.extcfg = self.qsettings.value('extensionsConfig',  defaultValue={})
+                writeDictToSettings(self.qsettings, 'extensionsConfig', self.extcfg)
+            else:
+                self.extcfg = readDictFromSettings(self.qsettings, 'extensionsConfig')
         else:
             self.extensions = []
             self.fileExt = ""
@@ -163,3 +167,25 @@ def writeListToSettings(settings, key, value):
         settings.setValue(key, value)
     else:
         settings.remove(key)
+
+def readDictFromSettings(settings, key):
+    data={}
+    settings.beginGroup(key)
+    for k in settings.childGroups():
+        settings.beginGroup(k)
+        key_data = []
+        for k2 in settings.childKeys():
+            key_data.append((k2, settings.value(k2)))
+        settings.endGroup()
+        data[k]=key_data
+    settings.endGroup()
+    return data
+
+def writeDictToSettings(settings, key, value):
+    settings.beginGroup(key)
+    for k in value.keys():
+        settings.beginGroup(k)
+        for v in value[k]:
+            settings.setValue(v[0], v[1])
+        settings.endGroup()
+    settings.endGroup()

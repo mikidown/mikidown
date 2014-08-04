@@ -13,7 +13,7 @@ from PyQt4.QtGui import (QAbstractItemDelegate, QAbstractItemView, QColor, QDial
 
 import mikidown
 from .utils import allMDExtensions
-from .config import Setting, readListFromSettings, writeListToSettings
+from .config import Setting, readListFromSettings, writeListToSettings, writeDictToSettings
 
 
 class ListDelegate(QAbstractItemDelegate):
@@ -230,7 +230,7 @@ class NotebookSettingsDialog(QDialog):
         writeListToSettings(nbsettings, 'extensions', extlist)
         writeListToSettings(nbsettings, 'attachmentImage', self.attImgEdit.text())
         writeListToSettings(nbsettings, 'attachmentDocument', self.attDocEdit.text())
-        nbsettings.setValue('extensionsConfig',self.tmpdict)
+        writeDictToSettings(nbsettings, 'extensionsConfig', self.tmpdict)
         
         #then to memory
         msettings.extensions = extlist
