@@ -228,8 +228,8 @@ class NotebookSettingsDialog(QDialog):
             if item.checkState() == Qt.Checked:
                 extlist.append(item.text())
         writeListToSettings(nbsettings, 'extensions', extlist)
-        writeListToSettings(nbsettings, 'attachmentImage', self.attImgEdit.text())
-        writeListToSettings(nbsettings, 'attachmentDocument', self.attDocEdit.text())
+        writeListToSettings(nbsettings, 'attachmentImage', self.attImgEdit.text().split(", "))
+        writeListToSettings(nbsettings, 'attachmentDocument', self.attDocEdit.text().split(", "))
         writeDictToSettings(nbsettings, 'extensionsConfig', self.tmpdict)
         
         #then to memory
