@@ -41,6 +41,7 @@ class Sandbox():
         self.window.notesEdit.setText("# head1\n\n"
                                       "## head2\n"
                                       "[subpageOne](pageOne/subpageOne)")
+        self.window.notesEdit.document().setModified() #isn't flagged as modified if programatically changed
         self.window.saveCurrentNote()
         self.window.notesView.updateView()
 
@@ -56,6 +57,7 @@ class Sandbox():
 
     def pageLink(self):
         self.window.notesEdit.setText("[head2](pageTwo#head2)")
+        self.window.notesEdit.document().setModified() #isn't flagged as modified if programatically changed
         self.window.saveCurrentNote()
         self.window.notesView.updateView()
 
