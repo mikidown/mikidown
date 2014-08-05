@@ -30,6 +30,9 @@ class AttachmentItemDelegate(QStyledItemDelegate):
         # Scale to height, align center horizontally, align bottom vertically.
         if img.height() > self.thumbHeight:
             img = img.scaledToHeight(self.thumbHeight, Qt.SmoothTransformation)
+        if img.width() > self.thumbHeight:
+            img = img.scaledToWidth(self.thumbHeight, 
+                    Qt.SmoothTransformation)
         imgLeft = (self.width - img.width()) / 2
         imgTop = self.thumbHeight - img.height()
         painter.drawPixmap(r.left()+imgLeft, r.top()+imgTop, img)
@@ -43,11 +46,11 @@ class AttachmentItemDelegate(QStyledItemDelegate):
             rect = bdRect
 
         if option.state & QStyle.State_Selected:
-            painter.setBrush(Qt.darkBlue)
+            painter.setBrush(self.parent().palette().highlight())
             painter.drawRoundedRect(rect, 5, 5)
-            pen = QPen(QColor.fromRgb(255, 255, 255), 1, Qt.SolidLine)
+            pen = QPen(self.parent().palette().highlightedText(), 1, Qt.SolidLine)
         else:
-            pen = QPen(QColor.fromRgb(51, 51, 51), 1, Qt.SolidLine)
+            pen = QPen(self.parent().palette().text(), 1, Qt.SolidLine)
 
         painter.setPen(pen)
         painter.drawText(rect, flag, fileName)
