@@ -170,6 +170,8 @@ class MikiEdit(QTextEdit):
         filename = os.path.basename(filename)
         newFilePath = os.path.join(attDir, filename + extension).replace(os.sep, '/')
         relativeFilePath = newFilePath.replace(self.settings.notebookPath, "..")
+        if not os.path.exists(attDir):
+            os.makedirs(attDir)
         QFile.copy(filePath, newFilePath)
         self.parent.updateAttachmentView()
         if fileType == self.imageFilter:
@@ -179,7 +181,7 @@ class MikiEdit(QTextEdit):
         self.insertPlainText(text)
 
     def insertAttachmentWrapper(self):
-        (filePath, fileType) = QFileDialog.getSaveFileNameAndFilter(
+        (filePath, fileType) = QFileDialog.getOpenFileNameAndFilter(
             self, self.tr('Insert attachment'), '',
             self.imageFilter + ";;" + self.documentFilter)
         if filePath == "":
@@ -247,7 +249,7 @@ class MikiEdit(QTextEdit):
     def toHtml(self):
         '''markdown.Markdown.convert v.s. markdown.markdown
             ~~Previously `convert` was used, but it doens't work with fenced_code~~
-			fixed that by calling markdown.Markdown.reset before each conversion
+            fixed that by calling markdown.Markdown.reset before each conversion
         '''
         htmltext = self.toPlainText()
         if 'asciimathml' in self.settings.extensions:
