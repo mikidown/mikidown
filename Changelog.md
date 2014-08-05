@@ -1,5 +1,13 @@
 # Mikidown Changelogs
 
+## Version 0.3.5
+- Fix a bug where there was an assault of commas in the attachmentImage and attachmentDocument settings for a mikidown notebook folder if that was edited via a dialog
+- Create the attachment directory for a note if it doesn't exist
+- Make attachment view use system colors
+- Make attachment view scrollable horizontally
+- Make attachment view's thumbnail not overflow out of the widget
+- python-html2text is now an optional dependency
+
 ## Version 0.3.4
 - the markdown extension configuration is also in plain text
 - On that note, I also remembered to put in the markdown extension configuration in the mikidown render code this time
