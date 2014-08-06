@@ -144,7 +144,7 @@ class MikiTree(QTreeWidget):
         self.newPageCore(item, name)
 
     def newPageCore(self, item, newPageName):
-        pagePath = os.path.join(self.notePath, self.itemToPage(item))
+        pagePath = os.path.join(self.notePath, self.itemToPage(item)).replace(os.sep, '/')
         if not newPageName:
             dialog = LineEditDialog(pagePath, self)
             if dialog.exec_():
@@ -152,7 +152,7 @@ class MikiTree(QTreeWidget):
         if newPageName:
             if hasattr(item, 'text'):
                 pagePath = os.path.join(self.notePath,
-                                        pagePath + '/')
+                                        pagePath + '/').replace(os.sep, '/')
             if not QDir(pagePath).exists():
                 QDir(self.notePath).mkdir(pagePath)
             fileName = pagePath + newPageName + self.settings.fileExt
