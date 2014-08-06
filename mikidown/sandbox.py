@@ -66,7 +66,7 @@ class Sandbox():
 
         element = self.window.notesView.page(
         ).mainFrame().findFirstElement("a")
-        element.evaluateJavaScript("this.click()")
+        element.evaluateJavaScript("var evObj = document.createEvent('MouseEvents');evObj.initEvent( 'click', true, true );this.dispatchEvent(evObj);")
 
         noteName = self.window.notesTree.currentItem().text(0)
         assert(noteName == "pageTwo")
