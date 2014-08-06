@@ -49,9 +49,12 @@ class Sandbox():
         elemCol = self.window.notesView.page(
         ).mainFrame().findAllElements("a")
         element = elemCol.at(2)
-        element.evaluateJavaScript("this.click()")
+        # see http://stackoverflow.com/questions/1219880/how-to-follow-a-link-in-qwebkit
+        # for more info
+        element.evaluateJavaScript("var evObj = document.createEvent('MouseEvents');evObj.initEvent( 'click', true, true );this.dispatchEvent(evObj);")
 
         noteName = self.window.notesTree.currentItem().text(0)
+
         assert(noteName == "subpageOne")
         print("...setText works")
 
