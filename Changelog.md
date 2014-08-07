@@ -7,6 +7,7 @@
 - Make attachment view scrollable horizontally
 - Make attachment view's thumbnail not overflow out of the widget
 - python-html2text is now an optional dependency
+- Some attempts at fixing the sandbox. Link testing works, but cleaning up the sandbox under Windows doesn't work.
 
 ## Version 0.3.4
 - the markdown extension configuration is also in plain text
