@@ -16,6 +16,7 @@ from PyQt4.QtGui import (qApp, QAction, QCheckBox, QDesktopWidget, QDialog,
 from PyQt4.QtWebKit import QWebPage
 from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser, RegexPlugin
+from whoosh.writing import AsyncWriter
 
 import mikidown.mikidown_rc
 from .slashpleter import SlashPleter
@@ -754,7 +755,8 @@ class MikiWindow(QMainWindow):
         it = QTreeWidgetItemIterator(
             self.notesTree, QTreeWidgetItemIterator.All)
         print("Starting complete indexing.")
-        writer = self.ix.writer()
+        #writer = self.ix.writer()
+        writer = AsyncWriter(self.ix)
         while it.value():
             treeItem = it.value()
             name = self.notesTree.itemToPage(treeItem)
@@ -898,6 +900,10 @@ class MikiWindow(QMainWindow):
                        and dockwidgets
         """
         self.saveCurrentNote()
+        self.ix.close()
+        self.notesEdit.ix.close()
+        if hasattr(self.notesTree, 'ix'):
+            self.notesTree.ix.close()
         self.settings.saveGeometry(self.saveGeometry())
         self.settings.saveWindowState(self.saveState())
         event.accept()

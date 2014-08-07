@@ -6,6 +6,7 @@ from PyQt4.QtGui import QAction, QCursor, QFileDialog, QFont, QTextCursor, QText
 from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkRequest
 import markdown
 from whoosh.index import open_dir
+from whoosh.writing import AsyncWriter
 try:
     import html2text
     HAS_HTML2TEXT=True # let's make this user configurable later?
@@ -55,7 +56,8 @@ class MikiEdit(QTextEdit):
         page = self.parent.notesTree.currentPage()
         content = self.toPlainText()        
         try:
-            writer = self.ix.writer()
+            #writer = self.ix.writer()
+            writer = AsyncWriter(self.ix)
             if METADATA_CHECKER.match(content) and 'meta' in self.settings.extensions:
                 no_metadata_content = METADATA_CHECKER.sub("", content, count=1).lstrip()
                 self.settings.md.reset().convert(content)
@@ -229,7 +231,12 @@ class MikiEdit(QTextEdit):
             self.insertPlainText('    ')
         else:
             QTextEdit.keyPressEvent(self, event)
-
+    '''
+    def closeEvent(self, event):
+        self.ix.close()
+        print('closed idx')
+        event.accept()
+    '''
     def save(self, item):
         pageName = self.parent.notesTree.itemToPage(item)
         filePath = self.parent.notesTree.itemToFile(item)
@@ -252,6 +259,7 @@ class MikiEdit(QTextEdit):
 
                 # Fork a process to update index, which benefit responsiveness.
                 Thread(target=self.updateIndex).start()
+
 
     def toHtml(self):
         '''markdown.Markdown.convert v.s. markdown.markdown
