@@ -12,6 +12,7 @@ from PyQt4.QtCore import Qt, QDir, QFile, QIODevice, QSize, QTextStream
 from PyQt4.QtGui import (QAbstractItemView, QCursor, QMenu, QMessageBox, QTreeWidget, QTreeWidgetItem)
 from whoosh.index import open_dir
 from whoosh.qparser import QueryParser
+from whoosh.writing import AsyncWriter
 
 from .config import Setting
 from .utils import LineEditDialog
@@ -179,9 +180,11 @@ class MikiTree(QTreeWidget):
             content = fileobj.read()
             fileobj.close()
             self.ix = open_dir(self.settings.indexdir)
-            writer = self.ix.writer()
+            #writer = self.ix.writer()
+            writer = AsyncWriter(self.ix)
             writer.add_document(path=pagePath+newPageName, content=content)
             writer.commit()
+            #self.ix.close()
 
     def dropEvent(self, event):
         """ A note is related to four parts:
@@ -290,10 +293,12 @@ class MikiTree(QTreeWidget):
         pagePath = self.itemToPage(item)
         self.ix = open_dir(self.settings.indexdir)
         query = QueryParser('path', self.ix.schema).parse(pagePath)
-        writer = self.ix.writer()
+        #writer = self.ix.writer()
+        writer = AsyncWriter(self.ix)
         n = writer.delete_by_query(query)
         # n = writer.delete_by_term('path', pagePath)
         writer.commit()
+        #self.ix.close()
         b = QDir(self.notePath).remove(self.pageToFile(pagePath))
         parent = item.parent()
         parentPage = self.itemToPage(parent)
