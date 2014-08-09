@@ -271,7 +271,7 @@ class MikiEdit(QTextEdit):
             stuff=JSCRIPT_TPL.format(self.settings.mathjax)
         else:
             stuff=''
-        return self.settings.md.reset().convert(stuff+htmltext)
+        return self.settings.md.reset().convert(htmltext)+stuff
         # md = markdown.Markdown(extensions)
         # return md.convert(htmltext)
 
