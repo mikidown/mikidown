@@ -12,6 +12,8 @@ class Sandbox():
 
     def __init__(self):
         path = os.path.join(os.getcwd(), "test_notebook").replace(os.sep, '/')
+        if os.path.exists(path):
+            shutil.rmtree(path)
         Mikibook.initialise("test", path)
         settings = Setting([["test", path]])
         self.window = MikiWindow(settings)
@@ -87,6 +89,5 @@ class Sandbox():
         """ When quitting mikidown, the whooshProcess may take time to finish.
         Terminate whooshProcess to ensure shutil.rmtree success.
         """
-
         shutil.rmtree("test_notebook")
         print("...Cleaned up")
