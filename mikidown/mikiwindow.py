@@ -28,6 +28,7 @@ from .mikiview import MikiView
 from .mikisearch import MikiSearch
 from .attachment import AttachmentView
 from .highlighter import MikiHighlighter
+from .findreplacedialog import FindReplaceDialog
 from .utils import LineEditDialog, ViewedNoteIcon, parseHeaders, parseTitle, METADATA_CHECKER
 
 
@@ -180,6 +181,10 @@ class MikiWindow(QMainWindow):
             self.findBar.setVisible, QKeySequence.Find, True)
         self.actions.update(findText=actionFindText)
 
+        actionFindRepl = self.act(self.tr('Find and Replace'),
+                FindReplaceDialog(self.notesEdit).open, QKeySequence.Replace)
+        self.actions.update(findRepl=actionFindRepl)
+
         actionFind = self.act(self.tr('Next'),
             self.findText, QKeySequence.FindNext)
         self.actions.update(find=actionFind)
@@ -312,6 +317,7 @@ class MikiWindow(QMainWindow):
         menuEdit.addAction(self.actions['undo'])
         menuEdit.addAction(self.actions['redo'])
         menuEdit.addAction(self.actions['findText'])
+        menuEdit.addAction(self.actions['findRepl'])
         menuEdit.addSeparator()
         menuEdit.addAction(self.actions['sortLines'])
         menuEdit.addAction(self.actions['insertImage'])
