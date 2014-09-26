@@ -41,5 +41,5 @@ class HeaderLinkExtension(Extension):
         md.treeprocessors.add('headerlink', self.processor, '>headerid')
 
 
-def makeExtension(configs=None):
+def makeExtension(configs={}):
     return HeaderLinkExtension(configs=configs)
