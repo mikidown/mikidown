@@ -470,6 +470,7 @@ class Mikibook():
         version = Mikibook.settings.value("version", defaultValue=None)
         if not version: #before 0.3.4, since we're migrating the notebooklist to be plaintext
             Mikibook.nbListMigration()
+            Mikibook.settings.setValue("version", "0") #dummy value until mikiwindow properly sets this
         items = []
         size = Mikibook.settings.beginReadArray("notebookList")
         for i in range(size):
@@ -481,18 +482,20 @@ class Mikibook():
 
     @staticmethod
     def nbListMigration():
+        #print("nbListMigration")
         books = readListFromSettings(Mikibook.settings, 'notebookList')
         Mikibook.write(books)
 
     @staticmethod
     def write(notebooks):
-        """ Write notebook list to config file """
+        """ Write notebook list to config file """ 
         Mikibook.settings.beginWriteArray("notebookList")
         for i, val in enumerate(notebooks):
             Mikibook.settings.setArrayIndex(i)
             Mikibook.settings.setValue('name', val[0])
             Mikibook.settings.setValue('path', val[1])
         Mikibook.settings.endArray()
+        #print("Mikibook.write:", Mikibook.settings.value("notebookList/size"))
 
     @staticmethod
     def create():
@@ -504,8 +507,10 @@ class Mikibook():
             Mikibook.initialise(notebookName, notebookPath)
 
             notebooks = Mikibook.read()
+            #print("Mikibook.create -> .read:",notebooks)
             notebooks.append([notebookName, notebookPath])
             Mikibook.write(notebooks)
+            #print("Mikibook.create -> .read(2):", Mikibook.read())
 
     @staticmethod
     def initialise(notebookName, notebookPath):
