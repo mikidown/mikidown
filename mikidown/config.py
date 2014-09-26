@@ -70,23 +70,25 @@ class Setting():
                  , 'headerid'        # add id to headers
                  , 'headerlink'      # add anchor to headers
                  , 'footnotes'
-                 , 'asciimathml'
+                 , 'mdx_asciimathml'
                  ]
             writeListToSettings(self.qsettings, "extensions", self.extensions)
+
         while True:
+             print(self.extensions)
              try:
                  markdown.markdown("",extensions=self.extensions)
              except ImportError as e:
-                 if e.name.startswith('mdx_'):
-                     print('Found invalid extension', e.name[4:], ', temporarily disabling.')
-                     print('If you want to permanently disable this, just hit OK in the Notebook Settings dialog')
-                     self.extensions.remove(e.name[4:])
-                     self.faulty_exts.append(e.name[4:])
-                 else:
-                     print('Found invalid extension', e.name, ', temporarily disabling.')
-                     print('If you want to permanently disable this, just hit OK in the Notebook Settings dialog')
-                     self.extensions.remove(e.name)
-                     self.faulty_exts.append(e.name)
+                 #if e.name.startswith('mdx_'):
+                 #    print('Found invalid extension', e.name[4:], ', temporarily disabling.')
+                 #    print('If you want to permanently disable this, just hit OK in the Notebook Settings dialog')
+                 #    self.extensions.remove(e.name[4:])
+                 #    self.faulty_exts.append(e.name[4:])
+                 #else:
+                 print('Found invalid extension', e.name, ', temporarily disabling.')
+                 print('If you want to permanently disable this, just hit OK in the Notebook Settings dialog')
+                 self.extensions.remove(e.name)
+                 self.faulty_exts.append(e.name)
              else:
                  self.md = markdown.Markdown(self.extensions, extension_configs=self.extcfg)
                  break
