@@ -68,10 +68,10 @@ def main():
                 "mikidown already exists. Is mikidown currently running? "
                 "Click no to remove the lock file before rerunning mikidown."), buttons=QMessageBox.Yes|QMessageBox.No)
             if ret == QMessageBox.Yes:
+                sys.exit(1)
+            else:
                 os.remove(Mikibook.lockpath)
                 sys.exit(0)
-            else:
-                sys.exit(1)
             exit_code = app.exec_()
         else:
             print("Applying single instance per user lock.")
