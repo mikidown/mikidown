@@ -1,5 +1,13 @@
 # Mikidown Changelogs
 
+## Version 0.3.6
+- Fix a confusing UI issue regarding single instance locking (clicking yes for saying mikidown's running would remove the lock, clicking no for saying mikidown's running would just quit it)
+- When performing the check for nbListMigration, set a dummy version value until mikiwindow gets a chance to properly update the version strings.
+- When performing the check to show the Changelog, also check the Mikibook settings string since that now also has version metadata on it.
+- Make the makeExtensions config keyword have a default value of an empty dictionary because of python-markdown 2.5 details
+- Instead of asciimathml as part of the default list, put mdx_asciimathml. Trying to import it without the mdx_ prefix through markdown
+will result in asciimathml not being enabled.
+
 ## Version 0.3.5
 - Fix a bug where there was an assault of commas in the attachmentImage and attachmentDocument settings for a mikidown notebook folder if that was edited via a dialog
 - Create the attachment directory for a note if it doesn't exist

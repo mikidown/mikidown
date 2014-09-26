@@ -6,7 +6,7 @@ import markdown
 
 
 __appname__ = 'mikidown'
-__version__ = '0.3.5' # we should really change this to a tuple
+__version__ = '0.3.6' # we should really change this to a tuple
 
 class Setting():
 
