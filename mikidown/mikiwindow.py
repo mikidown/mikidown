@@ -94,7 +94,7 @@ class MikiWindow(QMainWindow):
         self.setupMainWindow()
 
         # show changelogs after upgrade mikidown
-        if self.settings.version < __version__:
+        if self.settings.version < __version__ or Mikibook.settings.value("version", defaultValue="0") < __version__:
             self.changelogHelp()
             self.settings.qsettings.setValue("version", __version__)
             Mikibook.settings.setValue("version", __version__)
