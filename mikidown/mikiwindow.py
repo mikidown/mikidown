@@ -71,7 +71,7 @@ class MikiWindow(QMainWindow):
 
         self.notesEdit = MikiEdit(self)
         self.notesEdit.setObjectName("notesEdit")
-        MikiHighlighter(self.notesEdit)
+        self.loadHighlighter()
         self.notesView = MikiView(self)
 
         self.findBar = QToolBar(self.tr('Find'), self)
@@ -99,6 +99,9 @@ class MikiWindow(QMainWindow):
             self.settings.qsettings.setValue("version", __version__)
             Mikibook.settings.setValue("version", __version__)
 
+
+    def loadHighlighter(self):
+        MikiHighlighter(self.notesEdit)
 
     def setupActions(self):
 

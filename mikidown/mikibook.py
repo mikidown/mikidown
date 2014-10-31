@@ -398,6 +398,17 @@ class NewNotebookDlg(QDialog):
 class MikidownHighlightCfgWidget(QWidget):
     def __init__(self, parent=None):
         super(MikidownHighlightCfgWidget, self).__init__(parent)
+        layout = QGridLayout(self)
+        colors = Mikibook.highlighterColors()
+        for i in range(16):
+            layout.addWidget(QLabel(Mikibook.highlighter_labels[i]),i,0,1,1)
+            layout.addWidget(QLineEdit(colors[i]),i,1,1,1)
+
+    def configToList(self):
+        items=[]
+        for i in range(16):
+            items.append(self.layout().itemAtPosition(i,1).widget().text())
+        return items
 
 class MikidownCfgDialog(QDialog):
     def __init__(self, parent=None):
@@ -409,22 +420,32 @@ class MikidownCfgDialog(QDialog):
         self.recentNotesCount.setValue(recent_notes_n)
         self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
                                           QDialogButtonBox.Cancel)
+        self.hltCfg = MikidownHighlightCfgWidget(parent=self)
 
         layout = QGridLayout(self)
         layout.addWidget(QLabel("# of recently viewed notes to keep"),0,0,1,1)
         layout.addWidget(self.recentNotesCount,0,1,1,1)
-        layout.addWidget(self.buttonBox,1,0,1,2)
+        layout.addWidget(self.hltCfg,1,0,1,2)
+        layout.addWidget(self.buttonBox,2,0,1,2)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
 
     def accept(self):
         Mikibook.settings.setValue('recentNotesNumber', self.recentNotesCount.value())
+        Mikibook.setHighlighterColors(self.hltCfg.configToList())
+
+        #then make mikidown use these settings NOW
+        self.parent().loadHighlighter()
         QDialog.accept(self)
 
 class Mikibook():
     # ~/.config/mikidown/mikidown.conf
     settings = QSettings(QSettings.IniFormat, QSettings.UserScope, 'mikidown', 'mikidown')
     lockpath = os.path.join(os.path.dirname(settings.fileName()),'lock').replace(os.sep,'/')
+    highlighter_labels = ['HTML Tags', '1<sup>st</sup> LVL headers', '2<sup>nd</sup> LVL headers',
+                         '3<sup>rd</sup> LVL headers', '4<sup>th</sup> and lower LVL headers',
+                         'HTML Symbols','HTML comments','Strikethrough','Underline','Bold', 'Italics',
+                         'Links', 'Links and images', 'Block Quotes','Fenced Code','Math']
 
     @staticmethod
     def highlighterColors():
