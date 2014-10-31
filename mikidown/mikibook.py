@@ -9,9 +9,15 @@ from PyQt4.QtCore import Qt, QDir, QFile, QSettings, QSize
 from PyQt4.QtGui import (QAbstractItemDelegate, QAbstractItemView, QColor, QDialog, QDialogButtonBox, 
                          QFileDialog, QFont, QGridLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem,
                          QPen, QPushButton, QStyle, QVBoxLayout, QTabWidget, QWidget, QBrush, QTreeWidget,
-                         QTreeWidgetItem, QSpinBox)
+                         QTreeWidgetItem, QSpinBox, QScrollArea)
 
 import mikidown
+try:
+    import slickpicker
+    BETTER_COLOR_PICKER=True
+except ImportError as e:
+    print("Can't find slickpicker, falling back to QLineEdit for editing mikidown colors")
+    BETTER_COLOR_PICKER=False
 from .utils import allMDExtensions
 from .config import Setting, readListFromSettings, writeListToSettings, writeDictToSettings
 
@@ -402,12 +408,18 @@ class MikidownHighlightCfgWidget(QWidget):
         colors = Mikibook.highlighterColors()
         for i in range(16):
             layout.addWidget(QLabel(Mikibook.highlighter_labels[i]),i,0,1,1)
-            layout.addWidget(QLineEdit(colors[i]),i,1,1,1)
+            if BETTER_COLOR_PICKER:
+                layout.addWidget(slickpicker.QColorEdit(colors[i]),i,1,1,1)
+            else:
+                layout.addWidget(QLineEdit(colors[i]),i,1,1,1)
 
     def configToList(self):
         items=[]
         for i in range(16):
-            items.append(self.layout().itemAtPosition(i,1).widget().text())
+            if BETTER_COLOR_PICKER:
+                items.append(self.layout().itemAtPosition(i,1).widget().lineEdit.text())
+            else:
+                items.append(self.layout().itemAtPosition(i,1).widget().text())
         return items
 
 class MikidownCfgDialog(QDialog):
@@ -425,7 +437,9 @@ class MikidownCfgDialog(QDialog):
         layout = QGridLayout(self)
         layout.addWidget(QLabel("# of recently viewed notes to keep"),0,0,1,1)
         layout.addWidget(self.recentNotesCount,0,1,1,1)
-        layout.addWidget(self.hltCfg,1,0,1,2)
+        qs = QScrollArea(self)
+        qs.setWidget(self.hltCfg)
+        layout.addWidget(qs,1,0,1,2)
         layout.addWidget(self.buttonBox,2,0,1,2)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
