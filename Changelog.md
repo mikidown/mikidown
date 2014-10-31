@@ -1,5 +1,11 @@
 # Mikidown Changelogs
 
+## Version 0.3.7
+- Added a GUI to configure the syntax highlighting
+- Fixed a big where invalid modules for markdown extensions weren't being picked up properly
+- Fix asciimathml detection in the mikidown/generator.py
+- Optional slickpicker integration for better color picking
+
 ## Version 0.3.6
 - Fix a confusing UI issue regarding single instance locking (clicking yes for saying mikidown's running would remove the lock, clicking no for saying mikidown's running would just quit it)
 - When performing the check for nbListMigration, set a dummy version value until mikiwindow gets a chance to properly update the version strings.
