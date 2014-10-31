@@ -30,8 +30,10 @@ Run mikidown without installing
 - PyQt
 - python-markdown
 - python-whoosh
-- python-html2text 
+- python-html2text ( Optional for HTML to markdown conversion, otherwise, formatted text is pasted as HTML )
+- python-asciimathml ( Optional for asciimathml support )
 - python-pyenchant ( Optional for spell checking )
+- slickpicker ( Optional for better color picking for mikidown highlighting colors )
 
 ## Beautiful notes powered by markdown
 
