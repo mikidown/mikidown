@@ -1,7 +1,8 @@
 import os
 import re
-from markdown.extensions import __path__ as extpath
 import pkgutil
+
+from markdown.extensions import __path__ as extpath
 from markdown.extensions.headerid import slugify, unique
 from PyQt4.QtCore import Qt, QFile, QRect
 from PyQt4.QtGui import (QDialog, QDialogButtonBox, QGridLayout, QIcon, QLabel, QLineEdit, QMessageBox, QPainter, QPixmap)
@@ -82,7 +83,12 @@ def allMDExtensions():
         exts.append(m[1])
     for m in pkgutil.iter_modules():
         if m[1].startswith('mdx_'):
-            exts.append(m[1][4:])
+            if pkgutil.find_loader(m[1][4:]) is None:
+                #prefer the non-prefixed listing if there's no conflicting module
+                exts.append(m[1][4:])
+            else:
+                #otherwise, prefer it if the user specifies the whole name
+                exts.append(m[1])
     return exts
 
 def parseHeaders(source):

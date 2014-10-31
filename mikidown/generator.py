@@ -9,7 +9,7 @@ from threading import Thread
 from PyQt4.QtCore import QDir, QFile, QFileSystemWatcher, QIODevice, QSettings, QTextStream
 from PyQt4.QtGui import QApplication
 import markdown
-from .config import readListFromSettings
+from .config import readListFromSettings, readDictFromSettings
 from .utils import JSCRIPT_TPL
 
 
@@ -27,11 +27,12 @@ class Generator():
             extensions = readListFromSettings(self.qsettings,
                                                    "extensions")
             defExt = self.qsettings.value("fileExt")
-            extCfg = self.qsettings.value("extensionsConfig")
+            extCfg = readDictFromSettings(self.qsettings, "extensionsConfig")
             if defExt in self.extName:
                 self.extName.remove(defExt)
                 self.extName.insert(0, defExt)
-                self.md = markdown.Markdown(extensions, extension_configs=extcfg)
+                self.exts = extensions
+                self.md = markdown.Markdown(extensions, extension_configs=extCfg)
         else:
             print("ERROR: Not a valid mikidown notebook folder")
             sys.exit(1)
@@ -164,7 +165,7 @@ class Generator():
                       '</head>'
         savestream << "<header>" + self.breadcrumb(page) + "</header>"
         # Note content
-        if 'asciimathml' in self.md.registeredExtensions:
+        if 'mdx_asciimathml' in self.exts:
             savestream << JSCRIPT_TPL.format(self.qsettings.value('mathJax'))
         savestream << self.md.reset().convert(QTextStream(note).readAll())
         savestream << "</html>"

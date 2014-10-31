@@ -1,9 +1,10 @@
 import os
-
+import re
 from PyQt4.QtCore import QDir, QFile, QSettings
 from whoosh import fields
 import markdown
 
+NOT_EXT = re.compile(r"Failed to initiate extension '([^']+)': 'module' object has no attribute 'makeExtension'")
 
 __appname__ = 'mikidown'
 __version__ = '0.3.6' # we should really change this to a tuple
@@ -78,17 +79,24 @@ class Setting():
              print(self.extensions)
              try:
                  markdown.markdown("",extensions=self.extensions)
+             except AttributeError as e:
+                 remove_this = NOT_EXT.findall(e.args[0])[0]
+                 if remove_this in self.extensions:
+                     print("Found invalid markdown extension",remove_this,". Please consider removing it.")
+                     print('If you want to permanently disable this, just hit OK in the Notebook Settings dialog')
+                     self.extensions.remove(remove_this)
+                     self.faulty_exts.append(remove_this)
              except ImportError as e:
-                 #if e.name.startswith('mdx_'):
-                 #    print('Found invalid extension', e.name[4:], ', temporarily disabling.')
-                 #    print('If you want to permanently disable this, just hit OK in the Notebook Settings dialog')
-                 #    self.extensions.remove(e.name[4:])
-                 #    self.faulty_exts.append(e.name[4:])
-                 #else:
-                 print('Found invalid extension', e.name, ', temporarily disabling.')
-                 print('If you want to permanently disable this, just hit OK in the Notebook Settings dialog')
-                 self.extensions.remove(e.name)
-                 self.faulty_exts.append(e.name)
+                 if e.name.startswith('mdx_') and e.name[4:] in self.extensions:
+                     print('Found missing markdown extension', e.name[4:], ', temporarily disabling.')
+                     print('If you want to permanently disable this, just hit OK in the Notebook Settings dialog')
+                     self.extensions.remove(e.name[4:])
+                     self.faulty_exts.append(e.name[4:])
+                 elif e.name in self.extensions:
+                     print('Found missing markdown extension', e.name, ', temporarily disabling.')
+                     print('If you want to permanently disable this, just hit OK in the Notebook Settings dialog')
+                     self.extensions.remove(e.name)
+                     self.faulty_exts.append(e.name)
              else:
                  self.md = markdown.Markdown(self.extensions, extension_configs=self.extcfg)
                  break
