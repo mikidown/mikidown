@@ -14,6 +14,7 @@ except ImportError:
     HAS_HTML2TEXT=False
 
 from .utils import LineEditDialog, parseTitle, JSCRIPT_TPL, METADATA_CHECKER
+from .mikibook import Mikibook
 
 class MikiEdit(QTextEdit):
 
@@ -224,11 +225,11 @@ class MikiEdit(QTextEdit):
         popup_menu.exec_(event.globalPos())
 
     def keyPressEvent(self, event):
-        """ for Qt.Key_Tab, expand as 4 spaces
+        """ for Qt.Key_Tab, expand as 4 spaces (if expandTab is enabled)
             for other keys, use default implementation
         """
-        if event.key() == Qt.Key_Tab:
-            self.insertPlainText('    ')
+        if event.key() == Qt.Key_Tab and Mikibook.settings.value('tabInsertsSpaces', type=bool, defaultValue=True):
+            self.insertPlainText(' '*Mikibook.settings.value('tabWidth', type=int, defaultValue=4)) # use the tabWidth for tabstop!
         else:
             QTextEdit.keyPressEvent(self, event)
     '''

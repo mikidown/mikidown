@@ -12,7 +12,7 @@ from PyQt4.QtGui import (qApp, QAction, QCheckBox, QDesktopWidget, QDialog,
     QDockWidget, QFileDialog, QIcon, QLabel, QLineEdit, QMainWindow, QMenuBar,
     QMessageBox, QKeySequence, QPrintDialog, QPrinter, QStatusBar, QSplitter,
     QTabWidget, QTextCursor, QTextDocument, QToolBar, QTreeWidgetItem,
-    QTreeWidgetItemIterator, QVBoxLayout, QWidget)
+    QTreeWidgetItemIterator, QVBoxLayout, QWidget, QFontMetrics)
 from PyQt4.QtWebKit import QWebPage
 from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser, RegexPlugin
@@ -101,7 +101,10 @@ class MikiWindow(QMainWindow):
 
 
     def loadHighlighter(self):
-        MikiHighlighter(self.notesEdit)
+        h = MikiHighlighter(self.notesEdit)
+        tw = Mikibook.settings.value('tabWidth', type=int, defaultValue=4)
+        qfm = QFontMetrics(h.patterns[0][1].font())
+        self.notesEdit.setTabStopWidth(tw * qfm.width(' '))
 
     def setupActions(self):
 

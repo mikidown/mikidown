@@ -9,7 +9,7 @@ from PyQt4.QtCore import Qt, QDir, QFile, QSettings, QSize
 from PyQt4.QtGui import (QAbstractItemDelegate, QAbstractItemView, QColor, QDialog, QDialogButtonBox, 
                          QFileDialog, QFont, QGridLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem,
                          QPen, QPushButton, QStyle, QVBoxLayout, QTabWidget, QWidget, QBrush, QTreeWidget,
-                         QTreeWidgetItem, QSpinBox, QScrollArea)
+                         QTreeWidgetItem, QSpinBox, QScrollArea, QCheckBox)
 
 import mikidown
 try:
@@ -433,19 +433,38 @@ class MikidownCfgDialog(QDialog):
         self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
                                           QDialogButtonBox.Cancel)
         self.hltCfg = MikidownHighlightCfgWidget(parent=self)
+        self.tabWidth = QSpinBox(self)
+        self.tabWidth.setRange(2, 8)
+        self.tabWidth.setSingleStep(2)
+        self.tabWidth.setValue(Mikibook.settings.value('tabWidth', type=int, defaultValue=4))
+
+        self.tabToSpaces = QCheckBox(self)
+        if Mikibook.settings.value('tabInsertsSpaces', type=bool, defaultValue=True):
+            self.tabToSpaces.setCheckState(Qt.Checked)
+        else:
+            self.tabToSpaces.setCheckState(Qt.Unchecked)
 
         layout = QGridLayout(self)
         layout.addWidget(QLabel("# of recently viewed notes to keep"),0,0,1,1)
         layout.addWidget(self.recentNotesCount,0,1,1,1)
         qs = QScrollArea(self)
         qs.setWidget(self.hltCfg)
-        layout.addWidget(qs,1,0,1,2)
-        layout.addWidget(self.buttonBox,2,0,1,2)
+        layout.addWidget(QLabel("Tabs expand to spaces?"), 2, 0, 1, 1)
+        layout.addWidget(self.tabToSpaces, 2, 1, 1, 1)
+        layout.addWidget(QLabel("Tab width"), 3, 0, 1, 1)
+        layout.addWidget(self.tabWidth, 3, 1, 1, 1)
+        layout.addWidget(qs,4,0,1,2)
+        layout.addWidget(self.buttonBox,5,0,1,2)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
 
     def accept(self):
         Mikibook.settings.setValue('recentNotesNumber', self.recentNotesCount.value())
+        Mikibook.settings.setValue('tabWidth', self.tabWidth.value())
+        if self.tabToSpaces.isChecked():
+            Mikibook.settings.setValue('tabInsertsSpaces', True)
+        else:
+            Mikibook.settings.setValue('tabInsertsSpaces', False)
         Mikibook.setHighlighterColors(self.hltCfg.configToList())
 
         #then make mikidown use these settings NOW
