@@ -9,7 +9,7 @@ from PyQt4.QtCore import Qt, QDir, QFile, QSettings, QSize
 from PyQt4.QtGui import (QAbstractItemDelegate, QAbstractItemView, QColor, QDialog, QDialogButtonBox, 
                          QFileDialog, QFont, QGridLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem,
                          QPen, QPushButton, QStyle, QVBoxLayout, QTabWidget, QWidget, QBrush, QTreeWidget,
-                         QTreeWidgetItem, QSpinBox, QScrollArea, QCheckBox)
+                         QTreeWidgetItem, QSpinBox, QScrollArea, QCheckBox, QIcon)
 
 import mikidown
 try:
@@ -436,6 +436,8 @@ class MikidownCfgDialog(QDialog):
         self.tabWidth = QSpinBox(self)
         self.tabWidth.setRange(2, 8)
         self.tabWidth.setSingleStep(2)
+        self.iconTheme = QLineEdit(self)
+        self.iconTheme.setText(Mikibook.settings.value('iconTheme', QIcon.themeName()))
         self.tabWidth.setValue(Mikibook.settings.value('tabWidth', type=int, defaultValue=4))
 
         self.tabToSpaces = QCheckBox(self)
@@ -453,19 +455,23 @@ class MikidownCfgDialog(QDialog):
         layout.addWidget(self.tabToSpaces, 2, 1, 1, 1)
         layout.addWidget(QLabel("Tab width"), 3, 0, 1, 1)
         layout.addWidget(self.tabWidth, 3, 1, 1, 1)
-        layout.addWidget(qs,4,0,1,2)
-        layout.addWidget(self.buttonBox,5,0,1,2)
+        layout.addWidget(QLabel("Icon Theme"),4,0,1,1)
+        layout.addWidget(self.iconTheme,4,1,1,1)
+        layout.addWidget(qs,5,0,1,2)
+        layout.addWidget(self.buttonBox,6,0,1,2)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
 
     def accept(self):
         Mikibook.settings.setValue('recentNotesNumber', self.recentNotesCount.value())
         Mikibook.settings.setValue('tabWidth', self.tabWidth.value())
+        Mikibook.settings.setValue('iconTheme', self.iconTheme.text())
         if self.tabToSpaces.isChecked():
             Mikibook.settings.setValue('tabInsertsSpaces', True)
         else:
             Mikibook.settings.setValue('tabInsertsSpaces', False)
         Mikibook.setHighlighterColors(self.hltCfg.configToList())
+        QIcon.setThemeName(self.iconTheme.text())
 
         #then make mikidown use these settings NOW
         self.parent().loadHighlighter()
