@@ -212,12 +212,14 @@ class MikiWindow(QMainWindow):
         self.actions.update(insertImage=actionInsertImage)
 
         # actions in menuView
+        QIcon.setThemeName(Mikibook.settings.value('iconTheme', QIcon.themeName()))
+        #print(QIcon.themeName())
         actionEdit = self.act(self.tr('Edit'), self.edit, 'Ctrl+E',
-            True, QIcon(':/icons/edit.svg'), 'Edit mode (Ctrl+E)')
+            True, QIcon.fromTheme('document-edit'), 'Edit mode (Ctrl+E)')
         self.actions.update(edit=actionEdit)
 
         actionSplit = self.act(self.tr('Split'), self.liveView, 'Ctrl+R',
-            True, QIcon(':/icons/split.svg'), 'Split mode (Ctrl+R)')
+            True, QIcon.fromTheme('view-split-left-right'), 'Split mode (Ctrl+R)')
         self.actions.update(split=actionSplit)
 
         actionFlipEditAndView = self.act(self.tr('Flip Edit and View'),
@@ -346,7 +348,7 @@ class MikiWindow(QMainWindow):
 
         toolBar = QToolBar(self.tr("toolbar"), self)
         toolBar.setObjectName("toolbar")       # needed in saveState()
-        toolBar.setIconSize(QSize(16, 16))
+        #toolBar.setIconSize(QSize(16, 16))
         toolBar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self.addToolBar(Qt.TopToolBarArea, toolBar)
         toolBar.addAction(self.actions['edit'])
