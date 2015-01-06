@@ -22,7 +22,7 @@ class Monolithic(unittest.TestCase):
         print("\nStep 0: create notebook")
 
         path = os.path.join(os.getcwd(), "test_notebook")
-        Mikibook.add("test", path)
+        Mikibook.initialise("test", path)
         settings = Setting([["test", path]])
         self.window = MikiWindow(settings)
         self.window.show()
@@ -67,7 +67,7 @@ class Monolithic(unittest.TestCase):
 
         element = self.window.notesView.page(
         ).mainFrame().findFirstElement("a")
-        element.evaluateJavaScript("this.click()")
+        element.evaluateJavaScript("var evObj = document.createEvent('MouseEvents');evObj.initEvent( 'click', true, true );this.dispatchEvent(evObj);")
 
         noteName = self.window.notesTree.currentItem().text(0)
         self.assertEqual(noteName, "pageTwo")
