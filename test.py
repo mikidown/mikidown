@@ -53,7 +53,7 @@ class Monolithic(unittest.TestCase):
         element = elemCol.at(2)
         print(self.window.notesView.page().mainFrame().toHtml())
         print(element.attribute("href"))
-        element.evaluateJavaScript("this.click()")
+        element.evaluateJavaScript("var evObj = document.createEvent('MouseEvents');evObj.initEvent( 'click', true, true );this.dispatchEvent(evObj);")
 
         noteName = self.window.notesTree.currentItem().text(0)
         self.assertEqual(noteName, "subpageOne")
