@@ -85,7 +85,7 @@ class Monolithic(unittest.TestCase):
 
     def step5(self):
         print("\nLast step: clean up")
-		shutil.rmtree("test_notebook")
+        shutil.rmtree("test_notebook")
 
     def steps(self):
         for name in sorted(dir(self)):
