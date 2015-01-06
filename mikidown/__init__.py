@@ -40,7 +40,7 @@ def main():
     elif args.command == 'sandbox':
         app = QApplication(sys.argv)
         translator = QTranslator()
-        tpath = "translations/mikidown_{}.ts".format(QLocale.system().name())
+        tpath = "translations/mikidown_{}.qm".format(QLocale.system().name())
         full_tpath = os.path.join("/usr/share/mikidown", tpath).replace(os.sep, "/")
         if not os.path.exists(full_tpath):
             full_tpath = os.path.join(os.path.dirname(__file__), tpath).replace(os.sep,'/')
@@ -61,7 +61,8 @@ def main():
     # Otherwise, Mikibook.create() won't function.
     app = QApplication(sys.argv)
     translator = QTranslator()
-    tpath = "translations/mikidown_{}.ts".format(QLocale.system().name())
+    tpath = "translations/mikidown_{}.qm".format(QLocale.system().name())
+    print(tpath)
     full_tpath = os.path.join("/usr/share/mikidown", tpath).replace(os.sep, "/")
     if not os.path.exists(full_tpath):
         full_tpath = os.path.join(os.path.dirname(__file__), tpath).replace(os.sep,'/')
