@@ -11,6 +11,7 @@ import mikidown
 from mikidown.mikiwindow import MikiWindow
 from mikidown.mikibook import Mikibook
 from mikidown.config import Setting
+import shutil
 
 app = QApplication(sys.argv)
 # app.exec_()
@@ -84,15 +85,7 @@ class Monolithic(unittest.TestCase):
 
     def step5(self):
         print("\nLast step: clean up")
-
-        for i in glob.glob("test_notebook/whooshindex/*"):
-            os.remove(i)
-        os.rmdir("test_notebook/whooshindex")
-        #os.remove("test_notebook/notes.css")
-        #os.remove("test_notebook/notebook.conf")
-        for i in glob.glob("test_notebook/*"):
-            os.remove(i)
-        os.rmdir("test_notebook")
+		shutil.rmtree("test_notebook")
 
     def steps(self):
         for name in sorted(dir(self)):
