@@ -1,6 +1,7 @@
 TRANSLATIONS = locale/mikidown_fr.ts \
  locale/mikidown_es.ts \
- locale/mikidown_de.ts
+ locale/mikidown_de.ts \
+ locale/mikidown_pt_BR.ts
 CODECFORTR = UTF-8
 SOURCES = mikidown/attachment.py \
  mikidown/config.py \
