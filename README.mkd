@@ -1,5 +1,8 @@
 # Mikidown
 
+Master build status: [![master Build Status](https://travis-ci.org/ShadowKyogre/mikidown.svg?branch=master)](https://travis-ci.org/ShadowKyogre/mikidown)
+Develop build status: [![develop Build Status](https://travis-ci.org/ShadowKyogre/mikidown.svg?branch=develop)](https://travis-ci.org/ShadowKyogre/mikidown)
+
 Mikidown is a note taking application with markdown support.
 
 > Mikidown was inspired by [Zim] and based on [ReText]. The logo is derived from [markdown-mark].
