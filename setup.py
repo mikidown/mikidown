@@ -1,11 +1,29 @@
 from distutils import log
 from distutils.core import setup
-from distutils.command.build import build
+from distutils.command.build import build, sdist
 from distutils.command.install_scripts import install_scripts
 import glob
 import sys
+from subprocess import check_call
 
 from mikidown.config import __version__
+
+# http://sourceforge.net/p/retext/git/ci/master/tree/setup.py
+def build_translations():
+    print('running build_translations')
+    error = None
+    for ts_file in glob(join('locale', '*.ts')):
+        try:
+            check_call(('lrelease-qt4', ts_file))
+        except Exception as e:
+            error = e
+    if error:
+        print('Failed to build translations:', error) 
+
+class retext_sdist(sdist):
+    def run(self):
+        build_translations()
+        sdist.run(self)
 
 class miki_build(build):
     def run(self):
@@ -17,6 +35,8 @@ class miki_build(build):
             print('ERROR: mikidown needs python >= 3.0', file=sys.stderr)
             sys.exit(1)
         build.run(self)
+        if not glob.glob(os.path.join('locale', '*.qm')):
+            build_translations()
 
 class miki_install_scripts(install_scripts):
     def run(self):
@@ -44,6 +64,7 @@ setup(
                 ('share/mikidown/css', glob.glob("mikidown/css/*")), 
                 ('share/icons/hicolor/scalable/apps', ['mikidown/icons/mikidown.svg']), 
                 ('share/applications', ['mikidown.desktop'])
+                ('share/mikidown/locale', glob.glob("locale/*.qm"))
                 ],
     requires=['PyQt', 'markdown', 'whoosh'],
     install_requires=['Markdown >= 2.3.1', 'Whoosh >= 2.5.2'],
