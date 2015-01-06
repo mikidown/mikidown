@@ -260,8 +260,8 @@ class NotebookListDialog(QDialog):
         self.notebookList = QListWidget()
         self.moveUp = QPushButton('<<')
         self.moveDown = QPushButton('>>')
-        self.add = QPushButton('Add')
-        self.remove = QPushButton('Remove')
+        self.add = QPushButton(self.tr('Add'))
+        self.remove = QPushButton(self.tr('Remove'))
         self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
                                           QDialogButtonBox.Cancel)
         self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
@@ -358,19 +358,19 @@ class NotebookListDialog(QDialog):
 class NewNotebookDlg(QDialog):
     def __init__(self, parent=None):
         super(NewNotebookDlg, self).__init__(parent)
-        self.setWindowTitle('Add Notebook - mikidown')
-        tipLabel = QLabel('Choose a name and folder for your notebook.' +
-                          '\nThe folder can be an existing notebook folder.')
+        self.setWindowTitle(self.tr('Add Notebook - mikidown'))
+        tipLabel = QLabel(self.tr('Choose a name and folder for your notebook.') +
+                          self.tr('\nThe folder can be an existing notebook folder.'))
         self.nameEditor = QLineEdit()
-        self.nameEditor.setText('Notes')
-        nameLabel = QLabel('Name:')
+        self.nameEditor.setText(self.tr('Notes'))
+        nameLabel = QLabel(self.tr('Name:'))
         nameLabel.setBuddy(self.nameEditor)
         self.pathEditor = QLineEdit()
         # self.pathEditor.setText('~/mikidown')
         self.pathEditor.setText(os.path.expanduser('~').replace(os.sep,'/')+'/mikinotes')
-        pathLabel = QLabel('Path:')
+        pathLabel = QLabel(self.tr('Path:'))
         pathLabel.setBuddy(self.pathEditor)
-        browse = QPushButton('Browse')
+        browse = QPushButton(self.tr('Browse'))
         buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
                                      QDialogButtonBox.Cancel)
 
