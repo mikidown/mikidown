@@ -1,5 +1,12 @@
 # Mikidown Changelogs
 
+## Version 0.3.8
+- Do not use the custom icons since they could reduce accessibility with different themes
+- Add a textbox for the user to manually specify the icon theme if mikidown doesn't pick it up
+- Update Travis CI test.py and .travis.yml so it works again.
+- Prepared user facing strings for translations
+- Prepared mikidown for translation via [Transifex](https://www.transifex.com/projects/p/mikidown/resources/)
+
 ## Version 0.3.7
 - Added a GUI to configure the syntax highlighting
 - Fixed a big where invalid modules for markdown extensions weren't being picked up properly
