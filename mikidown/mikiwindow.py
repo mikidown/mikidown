@@ -110,9 +110,9 @@ class MikiWindow(QMainWindow):
 
         # Global Actions
         actTabIndex = self.act(self.tr('Switch to Index Tab'),
-            lambda: self.raiseDock(self.dockIndex), 'Ctrl+Shift+I')
+            lambda: self.raiseDock(self.dockIndex), self.tr('Ctrl+Shift+I'))
         actTabSearch = self.act(self.tr('Switch to Search Tab'),
-            lambda: self.raiseDock(self.dockSearch), 'Ctrl+Shift+F')
+            lambda: self.raiseDock(self.dockSearch), self.tr('Ctrl+Shift+F'))
         self.addAction(actTabIndex)
         self.addAction(actTabSearch)
 
@@ -123,7 +123,7 @@ class MikiWindow(QMainWindow):
         self.actions.update(newPage=actionNewPage)
 
         actionNewSubpage = self.act(self.tr('New Sub&page...'),
-            self.notesTree.newSubpage, 'Ctrl+Shift+N')
+            self.notesTree.newSubpage, self.tr('Ctrl+Shift+N'))
         self.actions.update(newSubpage=actionNewSubpage)
 
         actionImportPage = self.act(self.tr('&Import Page...'), self.importPage)
@@ -203,23 +203,23 @@ class MikiWindow(QMainWindow):
         self.actions.update(sortLines=actionSortLines)
 
         actionQuickNav = self.act(self.tr("&Quick Open Note"),
-                        self.quickNoteNav.setFocus, 'Ctrl+G')
+                        self.quickNoteNav.setFocus, self.tr('Ctrl+G'))
         self.addAction(actionQuickNav)
 
         actionInsertImage = self.act(self.tr('&Insert Attachment'),
-            self.notesEdit.insertAttachmentWrapper, 'Ctrl+I')
+            self.notesEdit.insertAttachmentWrapper, self.tr('Ctrl+I'))
         actionInsertImage.setEnabled(False)
         self.actions.update(insertImage=actionInsertImage)
 
         # actions in menuView
         QIcon.setThemeName(Mikibook.settings.value('iconTheme', QIcon.themeName()))
         #print(QIcon.themeName())
-        actionEdit = self.act(self.tr('Edit'), self.edit, 'Ctrl+E',
-            True, QIcon.fromTheme('document-edit'), 'Edit mode (Ctrl+E)')
+        actionEdit = self.act(self.tr('Edit'), self.edit, self.tr('Ctrl+E'),
+            True, QIcon.fromTheme('document-edit'), self.tr('Edit mode (Ctrl+E)'))
         self.actions.update(edit=actionEdit)
 
-        actionSplit = self.act(self.tr('Split'), self.liveView, 'Ctrl+R',
-            True, QIcon.fromTheme('view-split-left-right'), 'Split mode (Ctrl+R)')
+        actionSplit = self.act(self.tr('Split'), self.liveView, self.tr('Ctrl+R'),
+            True, QIcon.fromTheme('view-split-left-right'), self.tr('Split mode (Ctrl+R)'))
         self.actions.update(split=actionSplit)
 
         actionFlipEditAndView = self.act(self.tr('Flip Edit and View'),
