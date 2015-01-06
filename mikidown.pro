@@ -1,4 +1,4 @@
-TRANSLATIONS = translations/mikidown_en.ts
+TRANSLATIONS = translations/mikidown_en_US.ts
 CODECFORTR = UTF-8
 SOURCES = mikidown/attachment.py \
  mikidown/config.py \
