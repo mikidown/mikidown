@@ -83,8 +83,8 @@ class AttachmentView(QListView):
         menu = QMenu()
         indice = self.selectedIndexes()
         if len(indice):
-            menu.addAction("Insert into note", self.insert)
-            menu.addAction("Delete", self.delete)
+            menu.addAction(self.tr("Insert into note"), self.insert)
+            menu.addAction(self.tr("Delete"), self.delete)
         else:
             pass
         menu.exec_(event.globalPos())

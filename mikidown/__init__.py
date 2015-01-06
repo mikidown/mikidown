@@ -4,7 +4,7 @@ import re
 import sys
 import signal
 
-from PyQt4.QtCore import QSettings
+from PyQt4.QtCore import QSettings, QTranslator, QLocale
 from PyQt4.QtGui import QApplication, QIcon, QMessageBox
 
 import mikidown.mikidown_rc
@@ -39,6 +39,13 @@ def main():
         sys.exit(0)
     elif args.command == 'sandbox':
         app = QApplication(sys.argv)
+        translator = QTranslator()
+        tpath = "translations/mikidown_{}.ts".format(QLocale.system().name())
+        full_tpath = os.path.join("/usr/share/mikidown", tpath).replace(os.sep, "/")
+        if not os.path.exists(full_tpath):
+            full_tpath = os.path.join(os.path.dirname(__file__), tpath).replace(os.sep,'/')
+        translator.load(full_tpath)
+        app.installTranslator(translator)
         sandbox = Sandbox()
         app.aboutToQuit.connect(sandbox.cleanUp)
         sys.exit(app.exec_())
@@ -53,6 +60,13 @@ def main():
     # Instantiate a QApplication first.
     # Otherwise, Mikibook.create() won't function.
     app = QApplication(sys.argv)
+    translator = QTranslator()
+    tpath = "translations/mikidown_{}.ts".format(QLocale.system().name())
+    full_tpath = os.path.join("/usr/share/mikidown", tpath).replace(os.sep, "/")
+    if not os.path.exists(full_tpath):
+        full_tpath = os.path.join(os.path.dirname(__file__), tpath).replace(os.sep,'/')
+    translator.load(full_tpath)
+    app.installTranslator(translator)
     print(sys.argv)
 
     # Read notebookList, open the first notebook.

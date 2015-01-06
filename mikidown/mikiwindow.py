@@ -59,18 +59,18 @@ class MikiWindow(QMainWindow):
         self.viewedListActions = []
         self.noteSplitter = QSplitter(Qt.Horizontal)
 
-        self.dockIndex = QDockWidget("Index")
-        self.dockSearch = QDockWidget("Search")
+        self.dockIndex = QDockWidget(self.tr("Index"))
+        self.dockSearch = QDockWidget(self.tr("Search"))
         self.searchEdit = QLineEdit()
         self.searchView = MikiSearch(self)
         self.searchTab = QWidget()
-        self.dockToc = QDockWidget("TOC")
+        self.dockToc = QDockWidget(self.tr("TOC"))
         self.tocTree = TocTree()
-        self.dockAttachment = QDockWidget("Attachment")
+        self.dockAttachment = QDockWidget(self.tr("Attachment"))
         self.attachmentView = AttachmentView(self)
 
         self.notesEdit = MikiEdit(self)
-        self.notesEdit.setObjectName("notesEdit")
+        self.notesEdit.setObjectName(self.tr("notesEdit"))
         self.loadHighlighter()
         self.notesView = MikiView(self)
 

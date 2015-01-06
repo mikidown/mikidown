@@ -115,7 +115,7 @@ class NotebookSettingsDialog(QDialog):
         self.mjEdit = QLineEdit()
         self.moveUp = QPushButton('<<')
         self.moveDown = QPushButton('>>')
-        self.configureExtension = QPushButton('Edit Settings for this extension')
+        self.configureExtension = QPushButton(self.tr('Edit Settings for this extension'))
         self.tmpdict = deepcopy(self.parent().settings.extcfg)
         
         #widgets for tab 2
@@ -143,19 +143,19 @@ class NotebookSettingsDialog(QDialog):
         
         #set up tab 1
         layout=QGridLayout(markupTab)
-        layout.addWidget(QLabel("Markdown extensions"),0,0,1,4)
+        layout.addWidget(QLabel(self.tr("Markdown extensions")),0,0,1,4)
         layout.addWidget(self.mdExts,1,0,1,4)
         layout.addWidget(self.moveUp,2,0,1,1)
         layout.addWidget(self.moveDown,2,1,1,1)
         layout.addWidget(self.configureExtension,2,2,1,2)
-        layout.addWidget(QLabel("MathJax Location"),3,0,1,1)
+        layout.addWidget(QLabel(self.tr("MathJax Location")),3,0,1,1)
         layout.addWidget(self.mjEdit,3,1,1,3)
         
         #set up tab 2
         layout=QGridLayout(fileExtsTab)
-        layout.addWidget(QLabel("Note file extension"),0,0,1,1)
-        layout.addWidget(QLabel("Image file extension"),1,0,1,1)
-        layout.addWidget(QLabel("Document file extension"),2,0,1,1)
+        layout.addWidget(QLabel(self.tr("Note file extension")),0,0,1,1)
+        layout.addWidget(QLabel(self.tr("Image file extension")),1,0,1,1)
+        layout.addWidget(QLabel(self.tr("Document file extension")),2,0,1,1)
         layout.addWidget(self.fExtEdit,0,1,1,1)
         layout.addWidget(self.attImgEdit,1,1,1,1)
         layout.addWidget(self.attDocEdit,2,1,1,1)
@@ -447,15 +447,15 @@ class MikidownCfgDialog(QDialog):
             self.tabToSpaces.setCheckState(Qt.Unchecked)
 
         layout = QGridLayout(self)
-        layout.addWidget(QLabel("# of recently viewed notes to keep"),0,0,1,1)
+        layout.addWidget(QLabel(self.tr("# of recently viewed notes to keep")),0,0,1,1)
         layout.addWidget(self.recentNotesCount,0,1,1,1)
         qs = QScrollArea(self)
         qs.setWidget(self.hltCfg)
-        layout.addWidget(QLabel("Tabs expand to spaces?"), 2, 0, 1, 1)
+        layout.addWidget(QLabel(self.tr("Tabs expand to spaces?")), 2, 0, 1, 1)
         layout.addWidget(self.tabToSpaces, 2, 1, 1, 1)
-        layout.addWidget(QLabel("Tab width"), 3, 0, 1, 1)
+        layout.addWidget(QLabel(self.tr("Tab width")), 3, 0, 1, 1)
         layout.addWidget(self.tabWidth, 3, 1, 1, 1)
-        layout.addWidget(QLabel("Icon Theme"),4,0,1,1)
+        layout.addWidget(QLabel(self.tr("Icon Theme")),4,0,1,1)
         layout.addWidget(self.iconTheme,4,1,1,1)
         layout.addWidget(qs,5,0,1,2)
         layout.addWidget(self.buttonBox,6,0,1,2)
