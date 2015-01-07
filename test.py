@@ -11,6 +11,7 @@ import mikidown
 from mikidown.mikiwindow import MikiWindow
 from mikidown.mikibook import Mikibook
 from mikidown.config import Setting
+from mikidown.utils import allMDExtensions, JSCRIPT_TPL
 import shutil
 
 app = QApplication(sys.argv)
@@ -24,8 +25,8 @@ class Monolithic(unittest.TestCase):
 
         path = os.path.join(os.getcwd(), "test_notebook")
         Mikibook.initialise("test", path)
-        settings = Setting([["test", path]])
-        self.window = MikiWindow(settings)
+        self.settings = Setting([["test", path]])
+        self.window = MikiWindow(self.settings)
         self.window.show()
 
     def step1(self):
@@ -84,6 +85,22 @@ class Monolithic(unittest.TestCase):
         self.window.notesTree.delPage(item)
 
     def step5(self):
+        print("Step 5: extension detection check")
+        print("    Checking available modules first...")
+        exts = allMDExtensions()
+        if 'asciimathml' in exts:
+            print("    asciimathml should be enabled in defaults since we found it")
+            self.assertTrue('asciimathml' in self.settings.extensions)
+            print("    did we auto-attach the configured javascript too?")
+            self.assertTrue(JSCRIPT_TPL.format(self.settings.mathjax)[:-1] in self.window.notesView.page().mainFrame().toHtml())
+        else:
+            print("    asciimathml should not be enabled in defaults since we found it")
+            self.assertFalse('asciimathml' in self.settings.extensions)
+            print("    did we not auto-attach the configured javascript too?")
+            self.assertFalse(JSCRIPT_TPL.format(self.settings.mathjax)[:-1] in self.window.notesView.page().mainFrame().toHtml())
+        #print(exts)
+
+    def step6(self):
         print("\nLast step: clean up")
         shutil.rmtree("test_notebook")
 

@@ -165,7 +165,7 @@ class Generator():
                       '</head>'
         savestream << "<header>" + self.breadcrumb(page) + "</header>"
         # Note content
-        if 'mdx_asciimathml' in self.exts:
+        if 'asciimathml' in self.exts:
             savestream << JSCRIPT_TPL.format(self.qsettings.value('mathJax'))
         savestream << self.md.reset().convert(QTextStream(note).readAll())
         savestream << "</html>"

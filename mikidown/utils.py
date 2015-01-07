@@ -2,6 +2,7 @@ import os
 import re
 import pkgutil
 
+import markdown
 from markdown.extensions import __path__ as extpath
 from markdown.extensions.headerid import slugify, unique
 from PyQt4.QtCore import Qt, QFile, QRect
@@ -87,8 +88,13 @@ def allMDExtensions():
                 #prefer the non-prefixed listing if there's no conflicting module
                 exts.append(m[1][4:])
             else:
-                #otherwise, prefer it if the user specifies the whole name
-                exts.append(m[1])
+                #otherwise, prefer nonprefixed it if that really is the module for markdown
+                try:
+                    markdown.markdown("",extensions=[m[1][4:]])
+                except AttributeError:
+                    exts.append(m[1])
+                else:
+                    exts.append(m[1][4:])
     return exts
 
 def parseHeaders(source):

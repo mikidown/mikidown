@@ -268,7 +268,7 @@ class MikiEdit(QTextEdit):
             fixed that by calling markdown.Markdown.reset before each conversion
         '''
         htmltext = self.toPlainText()
-        if 'mdx_asciimathml' in self.settings.extensions:
+        if 'asciimathml' in self.settings.extensions:
             stuff=JSCRIPT_TPL.format(self.settings.mathjax)
         else:
             stuff=''
