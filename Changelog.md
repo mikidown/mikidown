@@ -6,6 +6,8 @@
 - Update Travis CI test.py and .travis.yml so it works again.
 - Prepared user facing strings for translations
 - Prepared mikidown for translation via [Transifex](https://www.transifex.com/projects/p/mikidown/resources/)
+- Added missing markdown extension detection to the unit test for Travis-CI (and for local testing too).
+- Fix the missing markdown extension detection... again.
 
 ## Version 0.3.7
 - Added a GUI to configure the syntax highlighting
