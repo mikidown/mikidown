@@ -13,7 +13,7 @@ Install mikidown with
 
 Run mikidown without installing
 
-    git clone https://github.com/rnons/mikidown.git
+    git clone https://github.com/shadowkyogre/mikidown.git
     cd mikidown
     ./mikidown.py
 
@@ -69,7 +69,7 @@ All python-markdown [extensions] are supported. To enable/disable extension, edi
 
 ## Contributors
 
-[ShadowKyogre] and [more](https://github.com/rnons/mikidown/graphs/contributors)
+[ShadowKyogre] and [more](https://github.com/shadowkyogre/mikidown/graphs/contributors)
 
 [Fork and help] are much appreciated.
 
@@ -77,7 +77,7 @@ All python-markdown [extensions] are supported. To enable/disable extension, edi
 [Zim]: http://zim-wiki.org/
 [ReText]: http://sourceforge.net/p/retext/
 [Markdown Syntax]: http://daringfireball.net/projects/markdown/syntax
-[Fork and help]: https://github.com/rnons/mikidown
+[Fork and help]: https://github.com/shadowkyogre/mikidown
 [ShadowKyogre]: https://github.com/ShadowKyogre
 [extensions]: http://pythonhosted.org/Markdown/extensions/index.html
 
