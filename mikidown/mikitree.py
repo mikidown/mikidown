@@ -112,23 +112,29 @@ class MikiTree(QTreeWidget):
     def currentPage(self):
         return self.itemToPage(self.currentItem())
 
-    def contextMenu(self):
-        """ contextMenu shown when right click the mouse """
+    def mousePressEvent(self, event):
+        if event.button() == Qt.RightButton:
+            return
+        else:
+            QTreeWidget.mousePressEvent(self, event)
 
+    def contextMenu(self, qpoint):
+        """ contextMenu shown when right click the mouse """
+        item = self.itemAt(qpoint)
         menu = QMenu()
         menu.addAction(self.tr("New Page..."), self.newPage)
         menu.addAction(self.tr("New Subpage..."), self.newSubpage)
         menu.addSeparator()
         menu.addAction(self.tr("Collapse This Note Tree"),
-                       lambda item=self.currentItem(): self.recurseCollapse(item))
+                       lambda: self.recurseCollapse(item))
         menu.addAction(self.tr("Uncollapse This Note Tree"),
-                       lambda item=self.currentItem(): self.recurseExpand(item))
+                       lambda: self.recurseExpand(item))
         menu.addAction(self.tr("Collapse All"), self.collapseAll)
         menu.addAction(self.tr("Uncollapse All"), self.expandAll)
         menu.addSeparator()
-        menu.addAction(self.tr('Rename Page...'), self.renamePage)
-        menu.addAction(self.tr("Delete Page"), self.delPageWrapper)
-        menu.exec_(QCursor.pos())
+        menu.addAction(self.tr('Rename Page...'), lambda: self.renamePage(item))
+        menu.addAction(self.tr("Delete Page"), lambda: self.delPage(item))
+        menu.exec_(self.mapToGlobal(qpoint))
 
     def newPage(self, name=None):
         if self.currentItem() is None:
@@ -240,8 +246,7 @@ class MikiTree(QTreeWidget):
             QDir().rename(oldAttDir, newAttDir)
             self.parent.updateAttachmentView()
 
-    def renamePage(self):
-        item = self.currentItem()
+    def renamePage(self, item):
         oldAttDir = self.itemToAttachmentDir(item)
         parent = item.parent()
         parentPage = self.itemToPage(parent)
