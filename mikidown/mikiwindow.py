@@ -38,7 +38,9 @@ class MikiWindow(QMainWindow):
         self.setObjectName("mikiWindow")
         self.settings = settings
         self.notePath = settings.notePath
-
+        lockPath = os.path.join(settings.notebookPath, '.mikidown_lock')
+        if not os.path.exists(lockPath):
+            self.lockPathFH = os.open(lockPath, os.O_CREAT | os.O_EXCL | os.O_RDWR)
         ################ Setup core components ################
         self.notesTree = MikiTree(self)
         self.quickNoteNav = QLineEdit()
@@ -921,3 +923,6 @@ class MikiWindow(QMainWindow):
         self.settings.saveGeometry(self.saveGeometry())
         self.settings.saveWindowState(self.saveState())
         event.accept()
+        os.close(self.lockPathFH)
+        lockPath = os.path.join(self.settings.notebookPath, '.mikidown_lock')
+        os.remove(lockPath)

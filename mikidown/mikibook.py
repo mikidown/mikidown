@@ -9,7 +9,7 @@ from PyQt4.QtCore import Qt, QDir, QFile, QSettings, QSize
 from PyQt4.QtGui import (QAbstractItemDelegate, QAbstractItemView, QColor, QDialog, QDialogButtonBox, 
                          QFileDialog, QFont, QGridLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem,
                          QPen, QPushButton, QStyle, QVBoxLayout, QTabWidget, QWidget, QBrush, QTreeWidget,
-                         QTreeWidgetItem, QSpinBox, QScrollArea, QCheckBox, QIcon)
+                         QTreeWidgetItem, QSpinBox, QScrollArea, QCheckBox, QIcon, QPalette)
 
 import mikidown
 try:
@@ -49,12 +49,16 @@ class ListDelegate(QAbstractItemDelegate):
         name_font = QFont(self.parent().font())
         name_font.setPointSize(10)
         name_font.setBold(True)
+        if index.flags() == Qt.NoItemFlags:
+            name_font.setStrikeOut(True)
         painter.setFont(name_font)
         painter.drawText(r.left(), r.top(), r.width(), r.height(), 
                          Qt.AlignBottom|Qt.AlignLeft, name)
         # notebook path
         path_font = QFont(self.parent().font())
         path_font.setPointSize(8)
+        if index.flags() == Qt.NoItemFlags:
+            path_font.setStrikeOut(True)
         r = option.rect.adjusted(imageSpace, 20, -10, 0)
         painter.setFont(path_font)
         painter.drawText(r.left(), r.top(), r.width(), r.height(), 
@@ -292,6 +296,9 @@ class NotebookListDialog(QDialog):
             item = QListWidgetItem()
             item.setData(Qt.DisplayRole, nb[0])
             item.setData(Qt.UserRole, nb[1])
+            lockPath = os.path.join(nb[1], '.mikidown_lock')
+            if os.path.exists(lockPath):
+                item.setFlags(Qt.NoItemFlags)
             self.notebookList.addItem(item)
 
         self.updateUi(len(notebooks) != 0)
@@ -341,6 +348,7 @@ class NotebookListDialog(QDialog):
     def accept(self):
         notebookPath = self.notebookList.currentItem().data(Qt.UserRole)
         notebookName = self.notebookList.currentItem().data(Qt.DisplayRole)
+
         settings = Setting([[notebookName, notebookPath]])
         window = mikidown.MikiWindow(settings)
         window.show()
