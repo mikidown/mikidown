@@ -337,5 +337,21 @@ class TocTree(QTreeWidget):
     def __init__(self, parent=None):
         super(TocTree, self).__init__(parent)
 
+    def updateToc(self, root, entries):
+        self.clear()
+        item = QTreeWidgetItem(self, [root, '0'])
+        curLevel = 0
+        for (level, h, p, a) in entries:
+            val = [h, str(p), a]
+            if level == curLevel:
+                item = QTreeWidgetItem(item.parent(), val)
+            elif level < curLevel:
+                item = QTreeWidgetItem(item.parent().parent(), val)
+                curLevel = level
+            else:
+                item = QTreeWidgetItem(item, val)
+                curLevel = level
+        self.expandAll()
+
     def sizeHint(self):
         return QSize(200, 0)

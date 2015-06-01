@@ -427,20 +427,7 @@ class MikiWindow(QMainWindow):
             tocTree fields: [hdrText, hdrPosition, hdrAnchor]
         '''
         root = self.notesTree.currentPage()
-        self.tocTree.clear()
-        item = QTreeWidgetItem(self.tocTree, [root, '0'])
-        curLevel = 0
-        for (level, h, p, a) in parseHeaders(self.notesEdit.toPlainText()):
-            val = [h, str(p), a]
-            if level == curLevel:
-                item = QTreeWidgetItem(item.parent(), val)
-            elif level < curLevel:
-                item = QTreeWidgetItem(item.parent().parent(), val)
-                curLevel = level
-            else:
-                item = QTreeWidgetItem(item, val)
-                curLevel = level
-        self.tocTree.expandAll()
+        self.tocTree.updateToc(root, parseHeaders(self.notesEdit.toPlainText()))
 
     def updateAttachmentView(self):
         # Update attachmentView to show corresponding attachments.
