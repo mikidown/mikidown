@@ -335,7 +335,8 @@ class MikiTree(QTreeWidget):
 class TocTree(QTreeWidget):
 
     def __init__(self, parent=None):
-        super(TocTree, self).__init__(parent)
+        super().__init__(parent=parent)
+        self.header().close()
 
     def updateToc(self, root, entries):
         self.clear()

@@ -272,7 +272,6 @@ class MikiWindow(QMainWindow):
         searchLayout.addWidget(self.searchEdit)
         searchLayout.addWidget(self.searchView)
         self.searchTab.setLayout(searchLayout)
-        self.tocTree.header().close()
 
         indexLayout = QVBoxLayout(self.notesTab)
         indexLayout.addWidget(self.quickNoteNav)
