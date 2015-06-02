@@ -36,6 +36,8 @@ class MikiTree(QTreeWidget):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self.customContextMenuRequested.connect(self.contextMenu)
+        self.nvwCallback = lambda item: None
+        self.nvwtCallback = lambda item: None
 
     def itemToPage(self, item):
         """ get item hierarchy from item """
@@ -124,6 +126,8 @@ class MikiTree(QTreeWidget):
         menu = QMenu()
         menu.addAction(self.tr("New Page..."), self.newPage)
         menu.addAction(self.tr("New Subpage..."), self.newSubpage)
+        menu.addAction(self.tr("View separately"), lambda: self.nvwCallback(item))
+        menu.addAction(self.tr("View separately (plain text)"), lambda: self.nvwtCallback(item))
         menu.addSeparator()
         menu.addAction(self.tr("Collapse This Note Tree"),
                        lambda: self.recurseCollapse(item))

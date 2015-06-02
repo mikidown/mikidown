@@ -3,7 +3,7 @@ The mainwindow module.
 """
 import os
 import shutil
-from multiprocessing import Process
+import re
 from threading import Thread
 
 from PyQt4.QtCore import (Qt, QDir, QFile, QFileInfo, QIODevice,
@@ -12,8 +12,8 @@ from PyQt4.QtGui import (qApp, QAction, QCheckBox, QDesktopWidget, QDialog,
     QDockWidget, QFileDialog, QIcon, QLabel, QLineEdit, QMainWindow, QMenuBar,
     QMessageBox, QKeySequence, QPrintDialog, QPrinter, QStatusBar, QSplitter,
     QTabWidget, QTextCursor, QTextDocument, QToolBar, QTreeWidgetItem,
-    QTreeWidgetItemIterator, QVBoxLayout, QWidget, QFontMetrics)
-from PyQt4.QtWebKit import QWebPage
+    QTreeWidgetItemIterator, QVBoxLayout, QWidget, QFontMetrics, QSplitter, QPlainTextEdit, QFont)
+from PyQt4.QtWebKit import QWebPage, QWebView
 from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser, RegexPlugin
 from whoosh.writing import AsyncWriter
@@ -29,8 +29,100 @@ from .mikisearch import MikiSearch
 from .attachment import AttachmentView
 from .highlighter import MikiHighlighter
 from .findreplacedialog import FindReplaceDialog
-from .utils import LineEditDialog, ViewedNoteIcon, parseHeaders, parseTitle, METADATA_CHECKER
+from .utils import LineEditDialog, ViewedNoteIcon, parseHeaders, parseTitle, METADATA_CHECKER, JSCRIPT_TPL
 
+class MikiSepNote(QDockWidget):
+    #This is a static widget! It is not meant to dynamically update
+    def __init__(self, settings, name, filename, plain_text=False, parent=None):
+        super().__init__(parent=parent)
+        splitty = QSplitter(self)
+        self.setWidget(splitty)
+        self.setWindowTitle(os.path.basename(name))
+        self.setFloating(True)
+        self.setAttribute(Qt.WA_DeleteOnClose)
+        self.plain_text = plain_text
+        self.notePath = settings.notePath
+
+        fh = QFile(filename)
+        try:
+            if not fh.open(QIODevice.ReadOnly):
+                raise IOError(fh.errorString())
+        except IOError as e:
+            QMessageBox.warning(self, 'Read Error',
+                                'Failed to open %s: %s' % (filename, e))
+        finally:
+            if fh is not None:
+                noteBody = QTextStream(fh).readAll()
+                fh.close()
+                self.tocw = TocTree(self)
+                splitty.addWidget(self.tocw)
+                self.tocw.updateToc(os.path.basename(name), parseHeaders(noteBody))
+                self.tocw.itemClicked.connect(self.tocNavigate)
+                if plain_text:
+                    note_view = QPlainTextEdit(self)
+                    qfnt = QFont()
+                    qfnt.setFamily('monospace')
+                    note_view.setFont(qfnt)
+                    note_view.setPlainText(noteBody)
+                else:
+                    if 'asciimathml' in settings.extensions:
+                        stuff=JSCRIPT_TPL.format(settings.mathjax)
+                    else:
+                        stuff=''
+                    note_view = QWebView(self)
+                    note_view.setHtml(settings.md.reset().convert(noteBody)+stuff)
+                    note_view.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
+                    note_view.linkClicked.connect(self.linkClicked)
+                    note_view.settings().setUserStyleSheetUrl( 
+                     QUrl('file://'+self.parent().settings.cssfile))
+                self.note_view = note_view
+                splitty.addWidget(note_view)
+
+    def tocNavigate(self, current):
+        ''' works for notesEdit now '''
+        if current is None:
+            return
+        pos = int(current.text(1))
+        if self.plain_text:
+            self.note_view.moveCursor(QTextCursor.End)
+            cur = self.note_view.textCursor()
+            cur.setPosition(pos, QTextCursor.MoveAnchor)
+            self.note_view.setTextCursor(cur)
+            # Move cursor to END first will ensure
+            # header is positioned at the top of visual area.
+            #self.note_view.load(QUrl(link))
+        else:
+            self.note_view.page().mainFrame().scrollToAnchor(current.text(2))
+
+    def findItemByAnchor(self, anchor):
+        return self.tocw.findItems(anchor, Qt.MatchExactly|Qt.MatchRecursive, column=2)
+
+    def linkClicked(self, qurl):
+        name = qurl.toString()
+        http = re.compile('https?://')
+        if http.match(name):                        # external uri
+            QDesktopServices.openUrl(qurl)
+            return
+
+        #"""
+        #self.note_view.load(qurl)
+        name = name.replace('file://', '')
+        name = name.replace(self.notePath, '').split('#')
+        item = self.parent().notesTree.pageToItem(name[0])
+        if not item or item == self.parent().notesTree.currentItem():
+            return
+        else:
+            if self.plain_text:
+                if len(name) == 2:
+                    self.parent().newPlainTextNoteDisplay(item, anchor=name[1])
+                else:
+                    self.parent().newPlainTextNoteDisplay(item)
+            else:
+                if len(name) == 2:
+                    self.parent().newNoteDisplay(item, anchor=name[1])
+                else:
+                    self.parent().newNoteDisplay(item)
+        #"""
 
 class MikiWindow(QMainWindow):
     def __init__(self, settings, parent=None):
@@ -367,6 +459,8 @@ class MikiWindow(QMainWindow):
 
         self.notesTree.currentItemChanged.connect(
             self.currentItemChangedWrapper)
+        self.notesTree.nvwCallback = self.newNoteDisplay
+        self.notesTree.nvwtCallback = self.newPlainTextNoteDisplay
         self.tocTree.itemClicked.connect(self.tocNavigate)
         self.notesEdit.textChanged.connect(self.noteEditted)
 
@@ -378,6 +472,19 @@ class MikiWindow(QMainWindow):
         if len(notes) != 0:
             item = self.notesTree.pageToItem(notes[0])
             self.notesTree.setCurrentItem(item)
+
+    def newNoteDisplay(self, item, anchor=None):
+        msn = MikiSepNote(self.settings, item.text(0), self.notesTree.itemToFile(item), plain_text=False, parent=self)
+        if anchor:
+            msn.note_view.page().mainFrame().scrollToAnchor(anchor)
+        msn.show()
+
+    def newPlainTextNoteDisplay(self, item, anchor=None):
+        msn = MikiSepNote(self.settings, item.text(0), self.notesTree.itemToFile(item), plain_text=True, parent=self)
+        if anchor:
+            item = msn.findItemByAnchor(anchor)[0]
+            msn.tocNavigate(item)
+        msn.show()
 
     def openFuncWrapper(self):
         self.openFunction(self.quickNoteNav.text())()
