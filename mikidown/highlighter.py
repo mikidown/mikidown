@@ -12,7 +12,7 @@ class MikiHighlighter(QSyntaxHighlighter):
 
     def __init__(self, parent=None):
         super(MikiHighlighter, self).__init__(parent)
-        baseFontSize = 12
+        baseFontSize = Mikibook.settings.value('editorFontSize', type=int, defaultValue=12)
         NUM = 16
         self.patterns = []
         regexp = [0] * NUM
@@ -100,7 +100,9 @@ class MikiHighlighter(QSyntaxHighlighter):
         self.speller = parent.speller
 
         fenced_font = QFont("monospace", baseFontSize, -1)
-        self.fenced_block = re.compile("^(?:~{3,}|`{3,}).*$")
+        self.fenced_block = re.compile(r"^(~{3,}|`{3,})[^`~]*(?!\1)$")
+        #regex for block that needs to be continued
+
         self.fenced_format = QTextCharFormat()
         self.fenced_format.setFont(fenced_font)
 
@@ -134,7 +136,8 @@ class MikiHighlighter(QSyntaxHighlighter):
                     match.start(), match.end() - match.start(), p[1])
 
         if text == '' and self.currentBlock().next().text() != '':
-            self.setCurrentBlockState(5)
+            self.setCurrentBlockState(self.previousBlockState()) 
+            #this is turned highlighting back on accidentally, by setting it to 5
         elif self.previousBlockState() == 3:
             self.setFormat(0, len(text), self.patterns[1][1])
             self.setCurrentBlockState(0)
@@ -145,12 +148,23 @@ class MikiHighlighter(QSyntaxHighlighter):
             # escape highlights in fenced_block
             m = self.fenced_block.match(text)
             m2 = self.math_block.match(text)
+            #print(m, m2)
             self.setCurrentBlockState(0)
+
             if self.previousBlockState() not in (1,2):
                 if m:
                     self.setCurrentBlockState(1)
-                elif m2:
+                #checking if an asciimathml block needs to be continued is a lot simpler
+                elif m2 and not (text[m2.start():m2.end()].endswith("$$") and not text == "$$"):
                     self.setCurrentBlockState(2)
+                else:
+                    if self.settext_h1.match(self.currentBlock().next().text()) and text != '':
+                        self.setFormat(0, len(text), self.patterns[1][1])
+                        self.setCurrentBlockState(3)
+                    elif self.settext_h2.match(self.currentBlock().next().text()) and text != '':
+                        self.setFormat(0, len(text), self.patterns[2][1])
+                        self.setCurrentBlockState(4)
+
             elif self.previousBlockState() == 1:
                 if m:
                     self.setCurrentBlockState(0)
@@ -163,12 +177,7 @@ class MikiHighlighter(QSyntaxHighlighter):
                 else:
                     self.setCurrentBlockState(2)
                     self.setFormat(0, len(text), self.math_format)
-            else:
-                if self.settext_h1.match(self.currentBlock().next().text()) and text != '':
-                    self.setFormat(0, len(text), self.patterns[1][1])
-                    self.setCurrentBlockState(3)
-                elif self.settext_h2.match(self.currentBlock().next().text()) and text != '':
-                    self.setFormat(0, len(text), self.patterns[2][1])
-                    self.setCurrentBlockState(4)
+        #print(self.currentBlockState(), text)
+
         self.highlightSpellcheck(text)
 
