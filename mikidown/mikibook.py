@@ -9,7 +9,7 @@ from PyQt4.QtCore import Qt, QDir, QFile, QSettings, QSize
 from PyQt4.QtGui import (QAbstractItemDelegate, QAbstractItemView, QColor, QDialog, QDialogButtonBox, 
                          QFileDialog, QFont, QGridLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem,
                          QPen, QPushButton, QStyle, QVBoxLayout, QTabWidget, QWidget, QBrush, QTreeWidget,
-                         QTreeWidgetItem, QSpinBox, QScrollArea, QCheckBox, QIcon, QPalette)
+                         QTreeWidgetItem, QSpinBox, QScrollArea, QCheckBox, QIcon, QPalette, QFont)
 
 import mikidown
 try:
@@ -20,7 +20,7 @@ except ImportError as e:
     BETTER_COLOR_PICKER=False
 from .utils import allMDExtensions
 from .config import Setting, readListFromSettings, writeListToSettings, writeDictToSettings
-
+from .fontbutton import QFontButton
 
 class ListDelegate(QAbstractItemDelegate):
     """ Customize view and behavior of notebook list """
@@ -446,6 +446,17 @@ class MikidownCfgDialog(QDialog):
         self.tabWidth.setSingleStep(2)
         self.iconTheme = QLineEdit(self)
         self.iconTheme.setText(Mikibook.settings.value('iconTheme', QIcon.themeName()))
+
+        self.editorFont = QFontButton(parent=self)
+        fontval = QFont()
+        fontfam = Mikibook.settings.value('editorFont', defaultValue=None)
+        fontsize = Mikibook.settings.value('editorFontSize', type=int, defaultValue=12)
+        if fontfam is not None:
+            fontval.setFamily(fontfam)
+        fontval.setPointSize(fontsize)
+
+        self.editorFont.font = fontval
+
         self.tabWidth.setValue(Mikibook.settings.value('tabWidth', type=int, defaultValue=4))
 
         self.tabToSpaces = QCheckBox(self)
@@ -457,21 +468,25 @@ class MikidownCfgDialog(QDialog):
         layout = QGridLayout(self)
         layout.addWidget(QLabel(self.tr("# of recently viewed notes to keep")),0,0,1,1)
         layout.addWidget(self.recentNotesCount,0,1,1,1)
+        layout.addWidget(QLabel(self.tr("Editor font")), 1, 0, 1, 1)
+        layout.addWidget(self.editorFont, 1, 1, 1, 1)
         qs = QScrollArea(self)
         qs.setWidget(self.hltCfg)
-        layout.addWidget(QLabel(self.tr("Tabs expand to spaces?")), 2, 0, 1, 1)
-        layout.addWidget(self.tabToSpaces, 2, 1, 1, 1)
-        layout.addWidget(QLabel(self.tr("Tab width")), 3, 0, 1, 1)
-        layout.addWidget(self.tabWidth, 3, 1, 1, 1)
-        layout.addWidget(QLabel(self.tr("Icon Theme")),4,0,1,1)
-        layout.addWidget(self.iconTheme,4,1,1,1)
-        layout.addWidget(qs,5,0,1,2)
-        layout.addWidget(self.buttonBox,6,0,1,2)
+        layout.addWidget(QLabel(self.tr("Tabs expand to spaces?")), 3, 0, 1, 1)
+        layout.addWidget(self.tabToSpaces, 3, 1, 1, 1)
+        layout.addWidget(QLabel(self.tr("Tab width")), 4, 0, 1, 1)
+        layout.addWidget(self.tabWidth, 4, 1, 1, 1)
+        layout.addWidget(QLabel(self.tr("Icon Theme")),5,0,1,1)
+        layout.addWidget(self.iconTheme,5,1,1,1)
+        layout.addWidget(qs,6,0,1,2)
+        layout.addWidget(self.buttonBox,7,0,1,2)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
 
     def accept(self):
         Mikibook.settings.setValue('recentNotesNumber', self.recentNotesCount.value())
+        Mikibook.settings.setValue('editorFont', self.editorFont.font.family())
+        Mikibook.settings.setValue('editorFontSize', self.editorFont.font.pointSize())
         Mikibook.settings.setValue('tabWidth', self.tabWidth.value())
         Mikibook.settings.setValue('iconTheme', self.iconTheme.text())
         if self.tabToSpaces.isChecked():

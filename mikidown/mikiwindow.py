@@ -199,6 +199,13 @@ class MikiWindow(QMainWindow):
         tw = Mikibook.settings.value('tabWidth', type=int, defaultValue=4)
         qfm = QFontMetrics(h.patterns[0][1].font())
         self.notesEdit.setTabStopWidth(tw * qfm.width(' '))
+        fnt = Mikibook.settings.value('editorFont', defaultValue=None)
+        fntsize = Mikibook.settings.value('editorFontSize', type=int, defaultValue=12)
+        if fnt is not None:
+            self.notesEdit.setFontFamily(fnt)
+            self.notesEdit.setFontPointSize(fntsize)
+        print(self.notesEdit.fontFamily())
+        self.notesEdit.repaint()
 
     def setupActions(self):
 
