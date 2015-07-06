@@ -2,7 +2,7 @@ import os
 from threading import Thread
 from multiprocessing import Process
 from PyQt4.QtCore import Qt, QDir, QFile, QFileInfo, QMimeData, QIODevice, QTextStream, QUrl
-from PyQt4.QtGui import QAction, QCursor, QFileDialog, QFont, QTextCursor, QTextEdit, QMessageBox
+from PyQt4.QtGui import QAction, QCursor, QFileDialog, QFont, QTextCursor, QTextEdit, QMessageBox, QKeySequence, QApplication
 from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkRequest
 import markdown
 from whoosh.index import open_dir
@@ -169,7 +169,7 @@ class MikiEdit(QTextEdit):
                 markdown = backToMarkdown.handle(html)
                 super(MikiEdit, self).insertFromMimeData(self.mimeFromText(markdown))
             else:
-                super(MikiEdit, self).insertFromMimeData(self.mimeFromText(html))
+                super(MikiEdit, self).insertFromMimeData(self.mimeFromText(source.text()))
         else:
             super(MikiEdit, self).insertFromMimeData(source)
 
@@ -198,6 +198,13 @@ class MikiEdit(QTextEdit):
             return
         self.insertAttachment(filePath, fileType)
 
+    def insertFromRawHtml(self):
+        qclippy = QApplication.clipboard()
+        if qclippy.mimeData().hasHtml():
+            self.insertFromMimeData(self.mimeFromText(qclippy.mimeData().html()))
+        else:
+            self.insertFromMimeData(qclippy.mimeData())
+
     def contextMenuEvent(self, event):
 
         def correctWord(cursor, word):
@@ -206,6 +213,11 @@ class MikiEdit(QTextEdit):
             return lambda: cursor.insertText(word)
 
         popup_menu = self.createStandardContextMenu()
+        paste_action = popup_menu.actions()[6]
+        paste_formatted_action = QAction("Paste raw HTML", popup_menu)
+        paste_formatted_action.triggered.connect(self.insertFromRawHtml)
+        paste_formatted_action.setShortcut(QKeySequence("Ctrl+Shift+V"))
+        popup_menu.insertAction(paste_action, paste_formatted_action)
 
         # Spellcheck the word under mouse cursor, not self.textCursor
         cursor = self.cursorForPosition(event.pos())
@@ -218,7 +230,7 @@ class MikiEdit(QTextEdit):
                 for word in self.speller.suggest(text)[:10]:
                     action = QAction(word, popup_menu)
                     action.triggered.connect(correctWord(cursor, word))
-                    action.setFont(QFont("sans", weight=QFont.Bold))
+                    action.setFont(QFont(None, weight=QFont.Bold))
                     popup_menu.insertAction(lastAction, action)
                 popup_menu.insertSeparator(lastAction)
 
@@ -228,8 +240,13 @@ class MikiEdit(QTextEdit):
         """ for Qt.Key_Tab, expand as 4 spaces (if expandTab is enabled)
             for other keys, use default implementation
         """
+
+        moddies = QApplication.keyboardModifiers()
+
         if event.key() == Qt.Key_Tab and Mikibook.settings.value('tabInsertsSpaces', type=bool, defaultValue=True):
             self.insertPlainText(' '*Mikibook.settings.value('tabWidth', type=int, defaultValue=4)) # use the tabWidth for tabstop!
+        elif moddies & Qt.ControlModifier and moddies & Qt.ShiftModifier and event.key() == Qt.Key_V:
+            self.insertFromRawHtml()
         else:
             QTextEdit.keyPressEvent(self, event)
     '''
