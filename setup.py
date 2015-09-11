@@ -1,8 +1,12 @@
 from distutils import log
 from distutils.core import setup
-from distutils.command.build import build, sdist
+from distutils.command.build import build
+from distutils.command.sdist import sdist
 from distutils.command.install_scripts import install_scripts
+
+
 import glob
+import os
 import sys
 from subprocess import check_call
 
@@ -12,15 +16,14 @@ from mikidown.config import __version__
 def build_translations():
     print('running build_translations')
     error = None
-    for ts_file in glob(join('locale', '*.ts')):
-        try:
-            check_call(('lrelease-qt4', ts_file))
-        except Exception as e:
-            error = e
+    try:
+        check_call(('lrelease-qt4', 'mikidown.pro'))
+    except Exception as e:
+        error = e
     if error:
         print('Failed to build translations:', error) 
 
-class retext_sdist(sdist):
+class miki_sdist(sdist):
     def run(self):
         build_translations()
         sdist.run(self)
@@ -63,12 +66,13 @@ setup(
                 ('share/mikidown', ['Changelog.md']), 
                 ('share/mikidown/css', glob.glob("mikidown/css/*")), 
                 ('share/icons/hicolor/scalable/apps', ['mikidown/icons/mikidown.svg']), 
-                ('share/applications', ['mikidown.desktop'])
-                ('share/mikidown/locale', glob.glob("locale/*.qm"))
+                ('share/applications', ['mikidown.desktop']),
+                ('share/mikidown/locale', os.path.join('locale', '*.qm')),
                 ],
     requires=['PyQt', 'markdown', 'whoosh'],
     install_requires=['Markdown >= 2.3.1', 'Whoosh >= 2.5.2'],
     cmdclass={
+        'sdist': miki_sdist,
         'build': miki_build,
         'install_scripts': miki_install_scripts
     },
