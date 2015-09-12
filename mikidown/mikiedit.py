@@ -214,7 +214,7 @@ class MikiEdit(QTextEdit):
 
         popup_menu = self.createStandardContextMenu()
         paste_action = popup_menu.actions()[6]
-        paste_formatted_action = QAction("Paste raw HTML", popup_menu)
+        paste_formatted_action = QAction(self.tr("Paste raw HTML"), popup_menu)
         paste_formatted_action.triggered.connect(self.insertFromRawHtml)
         paste_formatted_action.setShortcut(QKeySequence("Ctrl+Shift+V"))
         popup_menu.insertAction(paste_action, paste_formatted_action)
@@ -265,8 +265,8 @@ class MikiEdit(QTextEdit):
             if not fh.open(QIODevice.WriteOnly):
                 raise IOError(fh.errorString())
         except IOError as e:
-            QMessageBox.warning(self, 'Save Error',
-                                'Failed to save %s: %s' % (pageName, e))
+            QMessageBox.warning(self, self.tr("Save Error"),
+                                self.tr("Failed to save %s: %s") % (pageName, e))
             raise
         finally:
             if fh is not None:

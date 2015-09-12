@@ -114,6 +114,7 @@ class NotebookSettingsDialog(QDialog):
     """GUI for adjusting notebook settings"""
     def __init__(self, parent=None):
         super(NotebookSettingsDialog, self).__init__(parent)
+        self.setWindowTitle(self.tr("Notebook settings - mikidown"))
         #widgets for tab 1
         self.mdExts = QListWidget()
         self.mjEdit = QLineEdit()
@@ -135,7 +136,7 @@ class NotebookSettingsDialog(QDialog):
         markupTab = QWidget()
         fileExtsTab = QWidget()
         tabs.addTab(markupTab, "Markdown")
-        tabs.addTab(fileExtsTab, "File extensions")
+        tabs.addTab(fileExtsTab, self.tr("File extensions"))
         
         #initialization functions
         self.initExtList()
@@ -401,7 +402,7 @@ class NewNotebookDlg(QDialog):
     def browse(self):
         default = os.path.expanduser('~')
         path = QFileDialog.getExistingDirectory(self,
-                                                "Select Folder",
+                                                self.tr("Select Folder"),
                                                 default,
                                                 QFileDialog.ShowDirsOnly)
         self.pathEditor.setText(path)
@@ -435,6 +436,7 @@ class MikidownCfgDialog(QDialog):
         super(MikidownCfgDialog, self).__init__(parent)
         #tab = QWidget()
         #tab2 = QWidget()
+        self.setWindowTitle(self.tr("Settings - mikidown"))
         self.recentNotesCount = QSpinBox()
         recent_notes_n = Mikibook.settings.value('recentNotesNumber',type=int, defaultValue=20)
         self.recentNotesCount.setValue(recent_notes_n)

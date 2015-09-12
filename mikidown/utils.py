@@ -33,11 +33,11 @@ class LineEditDialog(QDialog):
 
         # newPage/newSubpage
         if parent.objectName() in ["mikiWindow", "notesTree"]:
-            editorLabel = QLabel("Page Name:")
+            editorLabel = QLabel(self.tr("Page Name:"))
             self.extNames = [".md", ".markdown", ".mkd"]
         # Copy Image to notesEdit
         elif parent.objectName() == "notesEdit":
-            editorLabel = QLabel("File Name:")
+            editorLabel = QLabel(self.tr("File Name:"))
             self.extNames = ["", ".jpg"]
         else:
             return
@@ -72,8 +72,8 @@ class LineEditDialog(QDialog):
         for ext in self.extNames:
             if QFile.exists(notePath + ext):
                 acceptable = False
-                QMessageBox.warning(self, 'Error',
-                                    'File already exists: %s' % notePath + ext)
+                QMessageBox.warning(self, self.tr("Error"),
+                                    self.tr("File already exists: %s") % notePath + ext)
                 break
         if acceptable:
             QDialog.accept(self)
