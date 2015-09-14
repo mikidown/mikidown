@@ -219,8 +219,8 @@ class MikiTree(QTreeWidget):
         newDir = os.path.join(targetPage, sourceItem.text(0))
 
         if QFile.exists(newFile):
-            QMessageBox.warning(self, 'Error',
-                                'File already exists: %s' % newFile)
+            QMessageBox.warning(self, self.tr("Error"),
+                                self.tr("File already exists: %s") % newFile)
             return
 
         # rename file/folder, remove parent note folder if necessary

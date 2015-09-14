@@ -48,8 +48,8 @@ class MikiSepNote(QDockWidget):
             if not fh.open(QIODevice.ReadOnly):
                 raise IOError(fh.errorString())
         except IOError as e:
-            QMessageBox.warning(self, 'Read Error',
-                                'Failed to open %s: %s' % (filename, e))
+            QMessageBox.warning(self, self.tr("Read Error"),
+                                self.tr("Failed to open %s: %s") % (filename, e))
         finally:
             if fh is not None:
                 noteBody = QTextStream(fh).readAll()
@@ -553,8 +553,8 @@ class MikiWindow(QMainWindow):
             if not fh.open(QIODevice.ReadOnly):
                 raise IOError(fh.errorString())
         except IOError as e:
-            QMessageBox.warning(self, 'Read Error',
-                                'Failed to open %s: %s' % (filename, e))
+            QMessageBox.warning(self, self.tr('Read Error'),
+                                self.tr('Failed to open %s: %s') % (filename, e))
         finally:
             if fh is not None:
                 noteBody = QTextStream(fh).readAll()
@@ -666,8 +666,8 @@ class MikiWindow(QMainWindow):
         page = QFileInfo(filename).completeBaseName()
         fh = QFile(self.notesTree.pageToFile(page))
         if fh.exists():
-            QMessageBox.warning(self, 'Import Error',
-                'Page already exists: %s' % page)
+            QMessageBox.warning(self, self.tr("Import Error"),
+                self.tr("Page already exists: %s") % page)
             dialog = LineEditDialog(self.notePath, self)
             if dialog.exec_():
                 page = dialog.editor.text()
