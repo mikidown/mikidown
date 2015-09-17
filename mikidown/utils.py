@@ -108,7 +108,8 @@ def parseHeaders(source):
     used_ids = set()           # In case there are headers with the same name.
 
     # hash headers
-    RE = re.compile(r'^(#+)(.+)', re.MULTILINE)
+    #RE = re.compile(r'^(#+)(.+)', re.MULTILINE)
+    RE = re.compile(r'(?:(?<!```\s)^(\S+#+ )(.+)$(?!\s```))', re.MULTILINE)
     for m in RE.finditer(source):
         level = len(m.group(1))
         hdr = m.group(2)
