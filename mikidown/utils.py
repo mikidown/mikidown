@@ -97,7 +97,7 @@ def allMDExtensions():
                     exts.append(m[1][4:])
     return exts
 
-def parseHeaders(source):
+def parseHeaders(source, strip_fenced_block=False, strip_ascii_math=False):
     """ Parse headers to construct Table Of Contents
         return: [(level, text, position, anchor)]
         position/anchor is the header position in notesEdit/notesView
@@ -107,9 +107,39 @@ def parseHeaders(source):
     headers = []
     used_ids = set()           # In case there are headers with the same name.
 
+    # copied from the asciimathml so we don't have to have a hard dependency to strip
+    ASCIIMATHML_RE = re.compile(r'^(.*)\$\$([^\$]*)\$\$(.*)$', re.M)
+
+    # copied from the fenced block code
+    FENCED_BLOCK_RE = re.compile(r'''
+(?P<fence>^(?:~{3,}|`{3,}))[ ]*         # Opening ``` or ~~~
+(\{?\.?(?P<lang>[a-zA-Z0-9_+-]*))?[ ]*  # Optional {, and lang
+# Optional highlight lines, single- or double-quote-delimited
+(hl_lines=(?P<quot>"|')(?P<hl_lines>.*?)(?P=quot))?[ ]*
+}?[ ]*\n                                # Optional closing }
+(?P<code>.*?)(?<=\n)
+(?P=fence)[ ]*$''', re.MULTILINE | re.DOTALL | re.VERBOSE)
+
+    filtered_source = source
+    #if applicable, strip out any trouble text before we start parsing the headers
+    if strip_fenced_block:
+        m = FENCED_BLOCK_RE.search(filtered_source)
+        while m is not None:
+            nfillers = (m.end() - m.start())
+            filtered_source = FENCED_BLOCK_RE.sub("\n"*nfillers, filtered_source, count=1)
+            m = FENCED_BLOCK_RE.search(filtered_source)
+
+    if strip_ascii_math:
+        m = ASCIIMATHML_RE.search(filtered_source)
+        while m is not None:
+            nfillers = (m.end() - m.start())
+            filtered_source = ASCIIMATHML_RE.sub("\n"*nfillers, filtered_source, count=1)
+            m = ASCIIMATHML_RE.search(filtered_source)
+
+
     # hash headers
     RE = re.compile(r'^(#+)(.+)', re.MULTILINE)
-    for m in RE.finditer(source):
+    for m in RE.finditer(filtered_source):
         level = len(m.group(1))
         hdr = m.group(2)
         pos = m.start()
@@ -117,7 +147,7 @@ def parseHeaders(source):
 
     # setext headers
     RE = re.compile(r'(.+)\n([=-]+[ ]*)(\n|$)', re.MULTILINE)
-    for m in RE.finditer(source):
+    for m in RE.finditer(filtered_source):
         if m.group(2).startswith('='):
             level = 1
         else:

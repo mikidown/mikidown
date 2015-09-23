@@ -56,8 +56,18 @@ class MikiSepNote(QDockWidget):
                 fh.close()
                 self.tocw = TocTree(self)
                 splitty.addWidget(self.tocw)
-                self.tocw.updateToc(os.path.basename(name), parseHeaders(noteBody))
+
+                strip_math_for_header_parsing = False
+                strip_fence_for_header_parsing = False
+
                 self.tocw.itemClicked.connect(self.tocNavigate)
+                if 'asciimathml' in settings.extensions:
+                    stuff=JSCRIPT_TPL.format(settings.mathjax)
+                    strip_math_for_header_parsing = True
+                else:
+                    stuff=''
+                if 'fenced_code' in settings.extensions or 'extra' in settings.extensions:
+                    strip_fence_for_header_parsing = True
                 if plain_text:
                     note_view = QPlainTextEdit(self)
                     qfnt = QFont()
@@ -65,10 +75,6 @@ class MikiSepNote(QDockWidget):
                     note_view.setFont(qfnt)
                     note_view.setPlainText(noteBody)
                 else:
-                    if 'asciimathml' in settings.extensions:
-                        stuff=JSCRIPT_TPL.format(settings.mathjax)
-                    else:
-                        stuff=''
                     note_view = QWebView(self)
                     note_view.setHtml(settings.md.reset().convert(noteBody)+stuff)
                     note_view.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
@@ -77,6 +83,9 @@ class MikiSepNote(QDockWidget):
                      QUrl('file://'+self.parent().settings.cssfile))
                 self.note_view = note_view
                 splitty.addWidget(note_view)
+                self.tocw.updateToc(os.path.basename(name), 
+                    parseHeaders(noteBody, strip_fenced_block=strip_fence_for_header_parsing,
+                        strip_ascii_math=strip_math_for_header_parsing))
 
     def tocNavigate(self, current):
         ''' works for notesEdit now '''
@@ -538,7 +547,16 @@ class MikiWindow(QMainWindow):
             tocTree fields: [hdrText, hdrPosition, hdrAnchor]
         '''
         root = self.notesTree.currentPage()
-        self.tocTree.updateToc(root, parseHeaders(self.notesEdit.toPlainText()))
+        strip_math_for_header_parsing = False
+        strip_fence_for_header_parsing = False
+        if 'asciimathml' in self.settings.extensions:
+            strip_math_for_header_parsing = True
+        if 'fenced_code' in self.settings.extensions or 'extra' in self.settings.extensions:
+            strip_fence_for_header_parsing = True
+        self.tocTree.updateToc(root, parseHeaders(self.notesEdit.toPlainText(), 
+                        strip_fenced_block=strip_fence_for_header_parsing,
+                        strip_ascii_math=strip_math_for_header_parsing))
+
 
     def updateAttachmentView(self):
         # Update attachmentView to show corresponding attachments.
