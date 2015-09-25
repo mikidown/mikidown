@@ -457,6 +457,12 @@ class MikidownCfgDialog(QDialog):
             fontval.setFamily(fontfam)
         fontval.setPointSize(fontsize)
 
+        self.headerScalesFont = QCheckBox(self)
+        if Mikibook.settings.value('headerScaleFont', type=bool, defaultValue=True):
+            self.headerScalesFont.setCheckState(Qt.Checked)
+        else:
+            self.headerScalesFont.setCheckState(Qt.Unchecked)
+
         self.editorFont.font = fontval
 
         self.tabWidth.setValue(Mikibook.settings.value('tabWidth', type=int, defaultValue=4))
@@ -472,6 +478,8 @@ class MikidownCfgDialog(QDialog):
         layout.addWidget(self.recentNotesCount,0,1,1,1)
         layout.addWidget(QLabel(self.tr("Editor font")), 1, 0, 1, 1)
         layout.addWidget(self.editorFont, 1, 1, 1, 1)
+        layout.addWidget(QLabel(self.tr("Header rank scales editor font?")), 2, 0, 1, 1)
+        layout.addWidget(self.headerScalesFont, 2, 1, 1, 1)
         qs = QScrollArea(self)
         qs.setWidget(self.hltCfg)
         layout.addWidget(QLabel(self.tr("Tabs expand to spaces?")), 3, 0, 1, 1)
@@ -489,6 +497,10 @@ class MikidownCfgDialog(QDialog):
         Mikibook.settings.setValue('recentNotesNumber', self.recentNotesCount.value())
         Mikibook.settings.setValue('editorFont', self.editorFont.font.family())
         Mikibook.settings.setValue('editorFontSize', self.editorFont.font.pointSize())
+        if self.headerScalesFont.isChecked():
+            Mikibook.settings.setValue('headerScaleFont', True)
+        else:
+            Mikibook.settings.setValue('headerScaleFont', False)
         Mikibook.settings.setValue('tabWidth', self.tabWidth.value())
         Mikibook.settings.setValue('iconTheme', self.iconTheme.text())
         if self.tabToSpaces.isChecked():

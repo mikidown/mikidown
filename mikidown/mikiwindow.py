@@ -206,10 +206,11 @@ class MikiWindow(QMainWindow):
     def loadHighlighter(self):
         fnt = Mikibook.settings.value('editorFont', defaultValue=None)
         fntsize = Mikibook.settings.value('editorFontSize', type=int, defaultValue=12)
+        header_scales_font = Mikibook.settings.value('headerScaleFont', type=bool, defaultValue=True)
         if fnt is not None:
             self.notesEdit.setFontFamily(fnt)
             self.notesEdit.setFontPointSize(fntsize)
-        h = MikiHighlighter(self.notesEdit)
+        h = MikiHighlighter(parent=self.notesEdit, scale_font_sizes=header_scales_font)
         tw = Mikibook.settings.value('tabWidth', type=int, defaultValue=4)
         qfm = QFontMetrics(h.patterns[0][1].font())
         self.notesEdit.setTabStopWidth(tw * qfm.width(' '))

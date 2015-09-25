@@ -10,7 +10,7 @@ class MikiHighlighter(QSyntaxHighlighter):
 
     WORDS = r'(?iu)[\w\']+'
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, scale_font_sizes=True):
         super(MikiHighlighter, self).__init__(parent)
         baseFontSize = Mikibook.settings.value('editorFontSize', type=int, defaultValue=12)
         baseFontFam = Mikibook.settings.value('editorFont', defaultValue=None)
@@ -28,15 +28,24 @@ class MikiHighlighter(QSyntaxHighlighter):
         # 1: h1 - #
         regexp[1] = '^#[^#]+'
         color[1] = QColor(color_settings[1])
-        font[1] = QFont(baseFontFam, baseFontSize, QFont.Bold)
+        if scale_font_sizes:
+            font[1] = QFont(baseFontFam, 2*baseFontSize, QFont.Bold)
+        else:
+            font[1] = QFont(baseFontFam, baseFontSize, QFont.Bold)
         # 2: h2 - ##
         regexp[2] = '^##[^#]+'
         color[2] = QColor(color_settings[2])
-        font[2] = QFont(baseFontFam, baseFontSize, QFont.Bold)
+        if scale_font_sizes:
+            font[2] = QFont(baseFontFam, 5.0/3*baseFontSize, QFont.Bold)
+        else:
+            font[2] = QFont(baseFontFam, baseFontSize, QFont.Bold)
         # 3: h3 - ###
         regexp[3] = '^###[^#]+'
         color[3] = QColor(color_settings[3])
-        font[3] = QFont(baseFontFam, baseFontSize, QFont.Bold)
+        if scale_font_sizes:
+            font[3] = QFont(baseFontFam, 4.0/3*baseFontSize, QFont.Bold)
+        else:
+            font[3] = QFont(baseFontFam, baseFontSize, QFont.Bold)
         # 4: h4 and more - ####
         regexp[4] = '^####.+'
         color[4] = QColor(color_settings[4])
