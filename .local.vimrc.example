@@ -1,0 +1,6 @@
+exe 'set path+=' . expand('<sfile>:p:h')
+
+if &filetype == 'markdown' && expand('%p:h') =~ expand('<sfile>:p:h')
+	:nnoremap <buffer> gf :exe ":find " . strpart(expand('<cfile>'), 1) . '.md'<CR>
+	:vnoremap <buffer> gf y:find <C-R>".md<CR>
+endif
