@@ -1,4 +1,4 @@
-TRANSLATIONS = locale/mikidown_fr.ts \
+TRANSLATIONS = locale/mikidown_fr_FR.ts \
  locale/mikidown_es.ts \
  locale/mikidown_de.ts \
  locale/mikidown_pt_BR.ts

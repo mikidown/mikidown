@@ -1,5 +1,8 @@
 # Mikidown Changelogs
 
+## Version 0.3.10
+- Fixed a mistake with setup.py where the glob for the *.qm files wasn't expanded
+
 ## Version 0.3.9
 - Fixed a mistake with setup.py not including translation files for sdist upload
 

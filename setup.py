@@ -67,7 +67,7 @@ setup(
                 ('share/mikidown/css', glob.glob("mikidown/css/*")), 
                 ('share/icons/hicolor/scalable/apps', ['mikidown/icons/mikidown.svg']), 
                 ('share/applications', ['mikidown.desktop']),
-                ('share/mikidown/locale', os.path.join('locale', '*.qm')),
+                ('share/mikidown/locale', glob.glob(os.path.join('locale', '*.qm'))),
                 ],
     requires=['PyQt', 'markdown', 'whoosh'],
     install_requires=['Markdown >= 2.3.1', 'Whoosh >= 2.5.2'],
