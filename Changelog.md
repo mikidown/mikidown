@@ -1,6 +1,13 @@
 # Mikidown Changelogs
 
 ## Version 0.3.8
+- Add option to change fonts
+- Add option to change whether fonts scale with header size
+- Add an example .local.vimrc file in case users want to browse their notebook with vim
+- French translation!
+- Fixes for RTL languages
+- Add the ability to view notes separately (needed since the per notebook lock)
+- Don't let lines starting with # in code blocks mangle the TOC
 - Do not use the custom icons since they could reduce accessibility with different themes
 - Add a textbox for the user to manually specify the icon theme if mikidown doesn't pick it up
 - Update Travis CI test.py and .travis.yml so it works again.
