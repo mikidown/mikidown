@@ -1,5 +1,8 @@
 # Mikidown Changelogs
 
+## Version 0.3.9
+- Fixed a mistake with setup.py not including translation files for sdist upload
+
 ## Version 0.3.8
 - Add option to change fonts
 - Add option to change whether fonts scale with header size

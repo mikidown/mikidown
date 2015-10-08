@@ -7,7 +7,7 @@ import markdown
 NOT_EXT = re.compile(r"Failed to initiate extension '([^']+)': 'module' object has no attribute 'makeExtension'")
 
 __appname__ = 'mikidown'
-__version__ = '0.3.8' # we should really change this to a tuple
+__version__ = '0.3.9' # we should really change this to a tuple
 
 class Setting():
 
