@@ -1,6 +1,18 @@
-exe 'set path+=' . expand('<sfile>:p:h')
+" http://stackoverflow.com/questions/1533565/how-to-get-visually-selected-text-in-vimscript
+function! GetVisualSelection()
+  " Why is this not a built-in Vim script function?!
+  let [lnum1, col1] = getpos("'<")[1:2]
+  let [lnum2, col2] = getpos("'>")[1:2]
+  let lines = getline(lnum1, lnum2)
+  let lines[-1] = lines[-1][: col2 - (&selection == 'inclusive' ? 1 : 2)]
+  let lines[0] = lines[0][col1 - 1:]
+  return join(lines, "\n")
+endfunction
 
 if &filetype == 'markdown' && expand('%p:h') =~ expand('<sfile>:p:h')
+	exe 'setlocal path+=' . escape(expand('<sfile>:p:h'), ' ')
 	:nnoremap <buffer> gf :exe ":find " . strpart(expand('<cfile>'), 1) . '.md'<CR>
-	:vnoremap <buffer> gf y:find <C-R>".md<CR>
+	:nnoremap <buffer> <c-w>gf :exe ":tabfind " . strpart(expand('<cfile>'), 1) . '.md'<CR>
+	:nnoremap <buffer> <c-w>f :exe ":vertical sfind " . strpart(expand('<cfile>'), 1) . '.md'<CR>
+	:vnoremap <buffer> gf <Esc>:exe ":find " . GetVisualSelection() . '.md'<CR>
 endif
