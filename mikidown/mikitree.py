@@ -124,8 +124,12 @@ class MikiTree(QTreeWidget):
         """ contextMenu shown when right click the mouse """
         item = self.itemAt(qpoint)
         menu = QMenu()
-        menu.addAction(self.tr("New Page..."), self.newPage)
-        menu.addAction(self.tr("New Subpage..."), self.newSubpage)
+        if item is None or item.parent() is None:
+            menu.addAction(self.tr("New Page..."), lambda: self.newPageCore(self, None))
+        else:
+            menu.addAction(self.tr("New Page..."), lambda: self.newPageCore(item.parent(), None))
+
+        menu.addAction(self.tr("New Subpage..."), lambda: self.newPageCore(item, None))
         menu.addAction(self.tr("View separately"), lambda: self.nvwCallback(item))
         menu.addAction(self.tr("View separately (plain text)"), lambda: self.nvwtCallback(item))
         menu.addSeparator()
