@@ -170,19 +170,50 @@ class MikiTree(QTreeWidget):
             dialog = LineEditDialog(pagePath, self)
             if dialog.exec_():
                 newPageName = dialog.editor.text()
+
+        prevparitem = None
+
         if newPageName:
             if hasattr(item, 'text'):
                 pagePath = os.path.join(self.notePath,
                                         pagePath + '/').replace(os.sep, '/')
             if not QDir(pagePath).exists():
                 QDir(self.notePath).mkdir(pagePath)
+
+            if not QDir(os.path.dirname(newPageName)).exists():
+                curdirname = os.path.dirname(newPageName)
+                needed_parents = []
+                while curdirname != '':
+                    needed_parents.append(curdirname)
+                    curdirname = os.path.dirname(curdirname)
+
+                #create the needed hierarchy in reverse order
+                for i, needed_parent in enumerate(needed_parents[::-1]):
+                    paritem = self.pageToItem(needed_parent)
+                    if paritem is None:
+                        if i == 0:
+                            self.newPageCore(item, os.path.basename(needed_parent))
+                        else:
+                            self.newPageCore(prevparitem, os.path.basename(needed_parent))
+                        QDir(pagePath).mkdir(needed_parent)
+                    elif not QDir(os.path.join(self.notePath, needed_parent).replace(os.sep, '/')).exists():
+                        QDir(pagePath).mkdir(needed_parent)
+                    if paritem is not None:
+                        prevparitem = paritem
+                    else:
+                        prevparitem = self.pageToItem(needed_parent)
+
             fileName = pagePath + newPageName + self.settings.fileExt
             fh = QFile(fileName)
             fh.open(QIODevice.WriteOnly)
+
             savestream = QTextStream(fh)
-            savestream << mikitemplate.makeDefaultBody(newPageName, self.tr("Created {}"))
+            savestream << mikitemplate.makeDefaultBody(os.path.basename(newPageName), self.tr("Created {}"))
             fh.close()
-            QTreeWidgetItem(item, [newPageName])
+            if prevparitem is not None:
+                QTreeWidgetItem(prevparitem, [os.path.basename(newPageName)])
+            else:
+                QTreeWidgetItem(item, [os.path.basename(newPageName)])
             newItem = self.pageToItem(pagePath + newPageName)
             self.sortItems(0, Qt.AscendingOrder)
             self.setCurrentItem(newItem)

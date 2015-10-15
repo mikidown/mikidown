@@ -2,42 +2,56 @@
 ## Version 0.3.11
 - **New Subpage** and **New Page** in the context menu use the item under
 the mouse, NOT the item we're currently looking at.
+- If the user types a slash in the note name, try to automatically create
+its parents. For instance, say you have a note tree like this:
+	&nbsp;
+		`Changelog`
+		`Durpadurp`
+	&nbsp;
+	And now you want to create Durpadurp/achild.
+	- If you do this from **New Subpage**, it will resolve it to
+	/Durpadurp/Durpadurp/achild if you right-clicked on Durpadurp. If 
+	you right-clicked on Changelog, then it will yield 
+	/Changelog/Durpadurp/achild. If you do this when nothing was under 
+	the right-click menu, it behaves just like resolving when the name
+	was typed in **New Page**.
+	- If you do this from **New Page**, it will resolve it to the root 
+	of the notebook. This yields /Durpadurp/achild
 - Templates system. You'll notice a folderlike the following
 in your notebook hierarchy when you create your first custom template:
-~~~~
-notes/
-css/
-notebook.conf
-templates/    <--- from here on down
-    - template_settings.conf
-    - FriendlyBodyTpl.md
-    - FriendlyBodyTpl2.md
-    - DNDCharacterSheet.md
-~~~~
-
-**template_settings.conf** should look something like this:
-~~~~
-[titleTemplates]
-size=2
-1\content=%Y_%m_%d
-1\friendlyName=Current datetime
-1\type=DATETIME
-2\content=Character Sheet {}
-2\friendlyName=Character Sheet
-2\type=FSTRING
-
-[bodyTitlePairs]
-size=3
-1\titleNum=1
-1\bodyTpl=FriendlyBodyTpl
-1\friendlyName=Journal Entry
-2\titleNum=1
-2\bodyTpl=FriendlyBodyTpl2
-2\friendlyName=Journal Entry V2
-3\titleNum=2
-3\bodyTpl=DNDCharacterSheet
-3\friendlyName=DND Character Sheet
-~~~~
+    &nbsp;
+		`notes/`
+		`css/`
+		`notebook.conf`
+		`templates/    <--- from here on down`
+		`	template_settings.conf`
+		`	FriendlyBodyTpl.md`
+		`	FriendlyBodyTpl2.md`
+		`	DNDCharacterSheet.md`
+    &nbsp;
+    **template_settings.conf** should look something like this:
+    &nbsp;
+		`[titleTemplates]`
+		`size=2`
+		`1\content=%Y_%m_%d`
+		`1\friendlyName=Current datetime`
+		`1\type=DATETIME`
+		`2\content=Character Sheet {}`
+		`2\friendlyName=Character Sheet`
+		`2\type=FSTRING`
+		&nbsp;
+		`[bodyTitlePairs]`
+		`size=3`
+		`1\titleNum=1`
+		`1\bodyTpl=FriendlyBodyTpl`
+		`1\friendlyName=Journal Entry`
+		`2\titleNum=1`
+		`2\bodyTpl=FriendlyBodyTpl2`
+		`2\friendlyName=Journal Entry V2`
+		`3\titleNum=2`
+		`3\bodyTpl=DNDCharacterSheet`
+		`3\friendlyName=DND Character Sheet`
+    &nbsp;
 
 ## Version 0.3.10
 - Fixed a mistake with setup.py where the glob for the *.qm files wasn't expanded
