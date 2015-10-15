@@ -16,6 +16,7 @@ from whoosh.writing import AsyncWriter
 
 from .config import Setting
 from .utils import LineEditDialog
+from . import mikitemplate
 
 
 class MikiTree(QTreeWidget):
@@ -38,6 +39,7 @@ class MikiTree(QTreeWidget):
         self.customContextMenuRequested.connect(self.contextMenu)
         self.nvwCallback = lambda item: None
         self.nvwtCallback = lambda item: None
+        self.fromTemplateCallback = lambda item: None
 
     def itemToPage(self, item):
         """ get item hierarchy from item """
@@ -128,8 +130,12 @@ class MikiTree(QTreeWidget):
             menu.addAction(self.tr("New Page..."), lambda: self.newPageCore(self, None))
         else:
             menu.addAction(self.tr("New Page..."), lambda: self.newPageCore(item.parent(), None))
-
-        menu.addAction(self.tr("New Subpage..."), lambda: self.newPageCore(item, None))
+        
+        if item is None:
+            menu.addAction(self.tr("New Subpage..."), lambda: self.newPageCore(self, None))
+        else:
+            menu.addAction(self.tr("New Subpage..."), lambda: self.newPageCore(item, None))
+        menu.addAction(self.tr("New page from template..."), lambda: self.fromTemplateCallback(item))
         menu.addAction(self.tr("View separately"), lambda: self.nvwCallback(item))
         menu.addAction(self.tr("View separately (plain text)"), lambda: self.nvwtCallback(item))
         menu.addSeparator()
@@ -158,7 +164,7 @@ class MikiTree(QTreeWidget):
         item = self.currentItem()
         self.newPageCore(item, name)
 
-    def newPageCore(self, item, newPageName):
+    def newPageCore(self, item, newPageName, useTemplate=False, templateTitle=None, templateBody=None):
         pagePath = os.path.join(self.notePath, self.itemToPage(item)).replace(os.sep, '/')
         if not newPageName:
             dialog = LineEditDialog(pagePath, self)
@@ -174,8 +180,7 @@ class MikiTree(QTreeWidget):
             fh = QFile(fileName)
             fh.open(QIODevice.WriteOnly)
             savestream = QTextStream(fh)
-            savestream << '# ' + newPageName + '\n'
-            savestream << 'Created ' + str(datetime.date.today()) + '\n\n'
+            savestream << mikitemplate.makeDefaultBody(newPageName, self.tr("Created {}"))
             fh.close()
             QTreeWidgetItem(item, [newPageName])
             newItem = self.pageToItem(pagePath + newPageName)
