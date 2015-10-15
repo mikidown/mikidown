@@ -9,10 +9,36 @@ function! GetVisualSelection()
   return join(lines, "\n")
 endfunction
 
+function! MikiGoToFile(posStart, findKind, pageName, fromVisual)
+	let highlightType = synIDattr(synID(a:posStart[0], a:posStart[1], 0), "name")
+	echom highlightType
+	if highlightType ==# "markdownUrl" && !(a:pageName =~ '^https\?')
+		if a:pageName =~ '^/'
+			exe ":" . a:findKind . " " . fnameescape(a:pageName[1:]) . ".md"
+		else
+			exe ":" . a:findKind . " " . fnameescape(a:pageName)
+		endif
+	else
+		if a:findKind ==# "find"
+			if a:fromVisual
+				normal! gvgf
+			else
+				normal! gf
+			endif
+		elseif a:findKind ==# "tabfind"
+			exe "normal! \<c-w>gf"
+		elseif a:findKind ==# "vertical sfind"
+			exe "normal! \<c-w>f"
+		else
+			return
+		endif
+	endif
+endfunction
+
 if &filetype == 'markdown' && expand('%p:h') =~ expand('<sfile>:p:h')
 	exe 'setlocal path+=' . escape(expand('<sfile>:p:h'), ' ')
-	:nnoremap <buffer> gf :exe ":find " . strpart(expand('<cfile>'), 1) . '.md'<CR>
-	:nnoremap <buffer> <c-w>gf :exe ":tabfind " . strpart(expand('<cfile>'), 1) . '.md'<CR>
-	:nnoremap <buffer> <c-w>f :exe ":vertical sfind " . strpart(expand('<cfile>'), 1) . '.md'<CR>
-	:vnoremap <buffer> gf <Esc>:exe ":find " . GetVisualSelection() . '.md'<CR>
+	:nnoremap <buffer> gf :call MikiGoToFile(getpos('.')[1:2], "find", expand('<cfile>'), 0)<CR>
+	:nnoremap <buffer> <c-w>gf :call MikiGoToFile(getpos('.')[1:2], "tabfind", expand('<cfile>'), 0)<CR>
+	:nnoremap <buffer> <c-w>f :call MikiGoToFile(getpos('.')[1:2], "vertical sfind", expand('<cfile>'), 0)<CR>
+	:vnoremap <buffer> gf <Esc>:call MikiGoToFile(getpos("'<")[1:2], "find", GetVisualSelection(), 1)<CR>
 endif
