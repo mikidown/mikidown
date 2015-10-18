@@ -22,6 +22,8 @@ class ViewedNoteIcon(QIcon):
         self.addPixmap(pixmap)
         del painter
 
+NOTE_EXTS = ['.md', '.markdown', '.mkd']
+IMAGE_EXTS = ['', '.jpg']
 class LineEditDialog(QDialog):
     """ A dialog asking for page/file name.
         It also checks for name crash.
@@ -34,11 +36,11 @@ class LineEditDialog(QDialog):
         # newPage/newSubpage
         if parent.objectName() in ["mikiWindow", "notesTree"]:
             editorLabel = QLabel(self.tr("Page Name:"))
-            self.extNames = [".md", ".markdown", ".mkd"]
+            self.extNames = NOTE_EXTS
         # Copy Image to notesEdit
         elif parent.objectName() == "notesEdit":
             editorLabel = QLabel(self.tr("File Name:"))
-            self.extNames = ["", ".jpg"]
+            self.extNames = IMAGE_EXTS
         else:
             return
 
@@ -68,15 +70,22 @@ class LineEditDialog(QDialog):
     def accept(self):
         notePath = os.path.join(self.path, self.editor.text())
 
-        acceptable = True
-        for ext in self.extNames:
-            if QFile.exists(notePath + ext):
-                acceptable = False
-                QMessageBox.warning(self, self.tr("Error"),
-                                    self.tr("File already exists: %s") % notePath + ext)
-                break
+        acceptable, existPath = doesFileExist(notePath, self.extNames)
         if acceptable:
             QDialog.accept(self)
+        else:
+            QMessageBox.warning(self, self.tr("Error"),
+                        self.tr("File already exists: %s") % existPath)
+
+def doesFileExist(path, altExts):
+    doesntExist = True
+    existPath = None
+    for ext in altExts:
+        if QFile.exists(path + ext):
+            doesntExist = False
+            existPath = path + ext
+            break
+    return [doesntExist, existPath]
 
 def allMDExtensions():
     exts=[]
