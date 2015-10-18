@@ -363,7 +363,6 @@ class NotebookListDialog(QDialog):
 
         QDialog.accept(self)
 
-
 class NewNotebookDlg(QDialog):
     def __init__(self, parent=None):
         super(NewNotebookDlg, self).__init__(parent)

@@ -167,9 +167,12 @@ class MikiTree(QTreeWidget):
     def newPageCore(self, item, newPageName, useTemplate=False, templateTitle=None, templateBody=None):
         pagePath = os.path.join(self.notePath, self.itemToPage(item)).replace(os.sep, '/')
         if not newPageName:
-            dialog = LineEditDialog(pagePath, self)
-            if dialog.exec_():
-                newPageName = dialog.editor.text()
+            if useTemplate:
+                pass
+            else:
+                dialog = LineEditDialog(pagePath, self)
+                if dialog.exec_():
+                    newPageName = dialog.editor.text()
 
         prevparitem = None
 
