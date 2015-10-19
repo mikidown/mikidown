@@ -39,7 +39,6 @@ class MikiTree(QTreeWidget):
         self.customContextMenuRequested.connect(self.contextMenu)
         self.nvwCallback = lambda item: None
         self.nvwtCallback = lambda item: None
-        self.fromTemplateCallback = lambda item: None
 
     def itemToPage(self, item):
         """ get item hierarchy from item """
@@ -135,7 +134,16 @@ class MikiTree(QTreeWidget):
             menu.addAction(self.tr("New Subpage..."), lambda: self.newPageCore(self, None))
         else:
             menu.addAction(self.tr("New Subpage..."), lambda: self.newPageCore(item, None))
-        menu.addAction(self.tr("New page from template..."), lambda: self.fromTemplateCallback(item))
+
+        if item is None or item.parent() is None:
+            menu.addAction(self.tr("New page from template..."), lambda: self.newPageCore(self, None, useTemplate=True))
+        else:
+            menu.addAction(self.tr("New page from template..."), lambda: self.newPageCore(item.parent(), None, useTemplate=True))
+
+        if item is None:
+            menu.addAction(self.tr("New subpage from template..."), lambda: self.newPageCore(self, None, useTemplate=True))
+        else:
+            menu.addAction(self.tr("New subpage from template..."), lambda: self.newPageCore(item, None, useTemplate=True))
         menu.addAction(self.tr("View separately"), lambda: self.nvwCallback(item))
         menu.addAction(self.tr("View separately (plain text)"), lambda: self.nvwtCallback(item))
         menu.addSeparator()
@@ -168,7 +176,21 @@ class MikiTree(QTreeWidget):
         pagePath = os.path.join(self.notePath, self.itemToPage(item)).replace(os.sep, '/')
         if not newPageName:
             if useTemplate:
-                pass
+                dialog = mikitemplate.PickTemplateDialog(pagePath, self.settings, parent=self)
+                if dialog.exec_():
+                    curTitleIdx = dialog.titleTemplates.currentIndex()
+                    curBodyIdx = dialog.bodyTemplates.currentIndex()
+                    dtnow = datetime.datetime.now()
+                    if curTitleIdx > -1:
+                        titleItem = dialog.titleTemplates.model().item(curTitleIdx)
+                        titleItemContent = titleItem.data(COL_DATA)
+                        titleItemType = titleItem.data(COL_EXTRA_DATA)
+                        titleParameter = dialog.titleTemplateParameter.text()
+                        newPageName = mikitemplate.makeTemplateTitle(titleItemType, 
+                            titleItemContent, dtnow=dtnow, userinput=titleParameter)
+                    if curBodyIdx > -1:
+                        bodyItemIdx = dialog.bodyTemplates.model().index(curBodyIdx, 0)
+                        bodyFPath = dialog.bodyTemplates.model().fileName(bodyItemIdx)
             else:
                 dialog = LineEditDialog(pagePath, self)
                 if dialog.exec_():
@@ -211,7 +233,14 @@ class MikiTree(QTreeWidget):
             fh.open(QIODevice.WriteOnly)
 
             savestream = QTextStream(fh)
-            savestream << mikitemplate.makeDefaultBody(os.path.basename(newPageName), self.tr("Created {}"))
+            if useTemplate:
+                with open(bodyFPath, 'r', encoding='utf-8') as templatef:
+                    savestream << mikitemplate.makeTemplateBody(
+                        os.path.basename(newPageName), dtnow=dtnow, 
+                        dt_in_body_txt=self.tr("Created {}"),
+                        body=templatef.read())
+            else:
+                savestream << mikitemplate.makeDefaultBody(os.path.basename(newPageName), self.tr("Created {}"))
             fh.close()
             if prevparitem is not None:
                 QTreeWidgetItem(prevparitem, [os.path.basename(newPageName)])

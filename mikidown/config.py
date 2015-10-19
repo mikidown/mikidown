@@ -1,7 +1,7 @@
 import os
 import re
 from PyQt4.QtCore import QDir, QFile, QSettings, Qt
-from PyQt4.QtGui  import QStandardItem, QStandardItemModel
+from PyQt4.QtGui  import QStandardItem, QStandardItemModel, QFileSystemModel
 from whoosh import fields
 import markdown
 
@@ -70,11 +70,6 @@ class Setting():
                     'content':COL_DATA, 
                     'type':COL_EXTRA_DATA,
                 })
-            self.bodyTemplates  = QStandardItemModel()
-            tmpTemplates = [path for path in os.listdir(self.templatesPath) if path.endswith(self.fileExt)]
-            for tmpTpl in tmpTemplates:
-                item = QStandardItem(os.path.splitext(tmpTpl)[1])
-                item.setData(tmpTpl, COL_DATA)
             self.bodyTitlePairs = readNestedListFromSettings(self.qsettings, 'bodyTitlePairs',
                 {
                     'friendlyName':Qt.DisplayRole,
@@ -82,9 +77,15 @@ class Setting():
                     'titleNum':COL_EXTRA_DATA,
                 })
         else:
+            os.makedirs(self.templatesPath)
             self.titleTemplates = QStandardItemModel()
-            self.bodyTemplates  = QStandardItemModel()
             self.bodyTitlePairs = QStandardItemModel()
+        self.bodyTemplates = QFileSystemModel()
+        self.bodyTemplates.setRootPath(self.templatesPath)
+        self.bodyTemplates.rowCount()
+        self.bodyTemplates.setFilter(QDir.Files)
+        self.bodyTemplates.setNameFilters(['*{}'.format(self.fileExt)])
+        self.bodyTemplates.setNameFilterDisables(True)
 
         self.faulty_exts=[]
 
@@ -240,16 +241,16 @@ def readNestedListFromSettings(settings, key, props):
     
     :return: QStandardItemModel with QStandardItems in the specified roles
     """
-    values = []
     size = settings.beginReadArray(key)
+    model = QStandardItemModel()
     for i in range(size):
         settings.setArrayIndex(i)
-        val_holder = {}
+        item = QStandardItem()
         for prop in props:
-            val_holder[prop] = settings.value(prop, props[prop])
-        values.append(val_holder)
+            item.setData(settings.value(prop, ''), props[prop])
+        model.appendRow(item)
     settings.endArray()
-    return values
+    return model
 
 def writeNestedListToSettings(settings, key, values, props):
     """
