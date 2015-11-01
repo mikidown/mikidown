@@ -207,31 +207,3 @@ class PickTemplateDialog(QDialog):
         if modelItem is not None:
             self.titleTemplates.setCurrentIndex(modelItem.data(COL_DATA))
             self.bodyTemplates.setCurrentIndex(self.bodyTemplates.findText(modelItem.data(COL_EXTRA_DATA)))
-
-def genTitleTemplatesModel(values):
-    model = QStandardItemModel()
-    for value in values:
-        item = QStandardItem()
-        item.setText(value['friendlyName'])
-        item.setData(value['content'], COL_DATA)
-        item.setData(value['type'], COL_EXTRA_DATA)
-        model.appendRow(item)
-    return model
-
-def genTitleBodyPairsModel(values):
-    model = QStandardItemModel()
-    for value in values:
-        item = QStandardItem()
-        item.setText(value['friendlyName'])
-        item.setData(value['titleNum'], COL_DATA)
-        item.setData(value['bodyTpl'], COL_EXTRA_DATA)
-        model.appendRow(item)
-    return model
-
-def genBodyTemplatesModel(values):
-    model = QStandardItemModel()
-    for value in values:
-        item = QStandardItem()
-        item.setText(value)
-        model.appendRow(item)
-    return model
