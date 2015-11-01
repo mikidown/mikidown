@@ -59,6 +59,82 @@ def makeTemplateBody(filled_title, dt_in_body=True, dtnow=None,
 COL_DATA = Qt.UserRole
 COL_EXTRA_DATA = COL_DATA + 1
 
+class EditTitleTemplateDialog(QDialog):
+    def __init__(self, pos, settings, parent=None):
+        super().__init__(parent=parent)
+        self.setWindowTitle(self.tr("Edit title template"))
+        self.pos = pos
+        self.titleFriendlyName = QLineEdit(self)
+        self.titleTemplateContent = QLineEdit(self)
+        self.titleTemplateContent.textChanged.connect(self.updateUi)
+        self.usesDate = QCheckBox(self)
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | 
+                                          QDialogButtonBox.Cancel)
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+        self.settings = settings
+
+        layout = QGridLayout(self)
+        layout.addWidget(0, 0, QLabel(self.tr("Friendly name")))
+        layout.addWidget(0, 1, self.titleFriendlyName)
+        layout.addWidget(1, 0, QLabel(self.tr("Title template")))
+        layout.addWidget(1, 1, self.titleTemplateContent)
+        layout.addWidget(2, 0, QLabel(self.tr("Uses date?")))
+        layout.addWidget(2, 1, self.usesDate)
+        layout.addWidget(3, 1, 1, 2, self.buttonBox)
+
+        if self.pos != -1:
+            item = self.settings.titleTemplates.item(self.pos)
+            self.titleFriendlyName.setText(item.text())
+            self.titleTemplateContent.setText(item.data(COL_DATA))
+            if item.data(COL_EXTRA_DATA) == TitleType.DATETIME:
+                self.usesDate.setCheckState(Qt.Checked)
+            else:
+                self.usesDate.setCheckState(Qt.Unchecked)
+
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+    def updateUi(self, newstr):
+        if newstr:
+            self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
+        else:
+            self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+
+    def accept(self):
+        acceptable = False
+        try:
+            if self.usesDate.isChecked():
+                makeTemplateTitle(TitleType.DATETIME, userinput="TestString")
+            else:
+                makeTemplateTitle(TitleType.FSTRING, userinput="TestString")
+            acceptable = True
+        except Exception as e:
+            acceptable = False
+            emessage = e.message
+
+        if acceptable:
+            if self.pos != -1:
+                item = self.settings.titleTemplates.item(self.pos)
+                item.setText(self.titleFriendlyName.text())
+                item.setData(self.titleTemplateContent.text(), COL_DATA)
+                if self.usesDate.isChecked():
+                    item.setData(TitleType.DATETIME, COL_EXTRA_DATA)
+                else:
+                    item.setData(TitleType.FSTRING, COL_EXTRA_DATA)
+            else:
+                item = QStandardItem()
+                item.setText(self.titleFriendlyName.text())
+                item.setData(self.titleTemplateContent.text(), COL_DATA)
+                if self.usesDate.isChecked():
+                    item.setData(TitleType.DATETIME, COL_EXTRA_DATA)
+                else:
+                    item.setData(TitleType.FSTRING, COL_EXTRA_DATA)
+                self.settings.titleTemplates.appendRow(item)
+            QDialog.accept(self)
+        else:
+            QMessageBox.warning(self, self.tr("Error"),
+            self.tr("Title format invalid: %s") % emessage)
+
 class PickTemplateDialog(QDialog):
     def __init__(self, path, settings, parent=None):
         super().__init__(parent=parent)
