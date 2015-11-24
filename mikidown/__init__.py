@@ -72,11 +72,11 @@ def main():
 
     # Read notebookList, open the first notebook.
     notebooks = Mikibook.read()
-    if len(notebooks) == 0:
+    if not notebooks:
         Mikibook.create()
         notebooks = Mikibook.read()
 
-    if len(notebooks) != 0:
+    if notebooks:
         #"""
         if os.path.exists(Mikibook.lockpath) and args.command != 'index':
             ret = QMessageBox.question(None, "mikidown - lock file exists", ("It looks like the lock file for "

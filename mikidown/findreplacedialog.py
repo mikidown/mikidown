@@ -1,5 +1,5 @@
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4.QtCore import QRegExp, Qt
+from PyQt4.QtGui import QGridLayout, QDialog, QCheckBox, QPushButton, QLabel, QTextDocument
 import re
 
 class FindReplaceDialog(QDialog):
@@ -20,7 +20,7 @@ class FindReplaceDialog(QDialog):
     self.replaceAllButton = QPushButton(self.tr("Replace All"),self)
     
     self.nextButton.clicked.connect(self.find)
-    self.prevButton.clicked.connect(lambda: self.find(back = True))
+    self.prevButton.clicked.connect(lambda: self.find(back=True))
     self.replaceButton.clicked.connect(self.replace)
     self.replaceAllButton.clicked.connect(self.replaceAll)
     self.searchInput.returnPressed.connect(self.find)
@@ -42,7 +42,7 @@ class FindReplaceDialog(QDialog):
     grid.addWidget(self.replaceButton,2,2)
     grid.addWidget(self.replaceAllButton,2,3)
   
-  def replace(self,autofind = True):
+  def replace(self, autofind=True):
     if autofind:
       self.find()
     contents = self.parent().textCursor().selectedText()
@@ -82,7 +82,7 @@ class FindReplaceDialog(QDialog):
       flags |= QTextDocument.FindBackward
     start_here = self.parent().textCursor()
     if flags:
-      cursor = self.parent().document().find(search_term, start_here, options = flags)
+      cursor = self.parent().document().find(search_term, start_here, options=flags)
     else:
       cursor = self.parent().document().find(search_term, start_here)
     self.parent().setTextCursor(cursor)

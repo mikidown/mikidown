@@ -58,9 +58,9 @@ class MikiTree(QTreeWidget):
 
         # strip the beginning and ending '/' character
         if page[0] == '/':
-            page = page[1:len(page)]
+            page = page[1:]
         if page[-1] == '/':
-            page = page[0:-1]
+            page = page[:-1]
 
         # find all items named pieces[-1], then match the page name.
         pieces = page.split('/')
@@ -258,9 +258,9 @@ class MikiTree(QTreeWidget):
                 QDir().mkpath(attDir)
 
             # TODO improvement needed, can be reused somehow
-            fileobj = open(fileName, 'r')
-            content = fileobj.read()
-            fileobj.close()
+            with open(fileName, 'r') as fileobj
+                content = fileobj.read()
+
             self.ix = open_dir(self.settings.indexdir)
             #writer = self.ix.writer()
             writer = AsyncWriter(self.ix)

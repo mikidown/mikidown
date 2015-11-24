@@ -82,11 +82,9 @@ class AttachmentView(QListView):
     def contextMenuEvent(self, event):
         menu = QMenu()
         indice = self.selectedIndexes()
-        if len(indice):
+        if indice:
             menu.addAction(self.tr("Insert into note"), self.insert)
             menu.addAction(self.tr("Delete"), self.delete)
-        else:
-            pass
         menu.exec_(event.globalPos())
 
     def mousePressEvent(self, event):

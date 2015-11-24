@@ -25,10 +25,10 @@ class HeaderLinkTreeprocessor(Treeprocessor):
         for elem in doc.getiterator():
             if elem.tag in ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
                 if "id" in elem.attrib:
-                    id = elem.get('id')
+                    hid = elem.get('id')
                     a = etree.SubElement(elem, "a")
                     a.set('class', 'headerlink')
-                    a.set('href', '#' + id)
+                    a.set('href', '#' + hid)
                     a.text = '¶'
 
 
@@ -41,5 +41,6 @@ class HeaderLinkExtension(Extension):
         md.treeprocessors.add('headerlink', self.processor, '>headerid')
 
 
-def makeExtension(configs={}):
+def makeExtension(configs=None):
+    configs = configs or {}
     return HeaderLinkExtension(configs=configs)

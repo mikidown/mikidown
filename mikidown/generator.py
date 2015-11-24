@@ -179,9 +179,9 @@ class Generator():
         """
 
         parts = page.split('/')
-        crumb = '<a href="/">Index</a>'
-        for i in range(len(parts)):
-            crumb += ' / '
-            crumb += '<a href="/notes/' + '/'.join(parts[0:i+1]) + '.html">' + parts[i] + '</a>'
+        crumb = ['<a href="/">Index</a>']
+        for i, part in enumerate(parts):
+            crumb.append(' / ')
+            crumb.append('<a href="/notes/' + '/'.join(parts[0:i+1]) + '.html">' + part + '</a>')
 
-        return crumb
+        return ''.join(crumb)

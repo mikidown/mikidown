@@ -219,7 +219,7 @@ def readListFromSettings(settings, key):
         return value
 
 def writeListToSettings(settings, key, value):
-    if len(value) >= 1:
+    if value:
         settings.setValue(key, value)
     else:
         settings.remove(key)

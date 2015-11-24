@@ -23,5 +23,6 @@ class StrkUndrExtension(markdown.Extension):
         del md.inlinePatterns['emphasis2']
 
 
-def makeExtension(configs={}):
+def makeExtension(configs=None):
+    configs = configs or {}
     return StrkUndrExtension(configs=configs)
