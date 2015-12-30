@@ -258,7 +258,7 @@ class MikiTree(QTreeWidget):
                 QDir().mkpath(attDir)
 
             # TODO improvement needed, can be reused somehow
-            with open(fileName, 'r') as fileobj
+            with open(fileName, 'r') as fileobj:
                 content = fileobj.read()
 
             self.ix = open_dir(self.settings.indexdir)
