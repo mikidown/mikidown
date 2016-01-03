@@ -64,13 +64,13 @@ class Setting():
             self.extcfg = {}
 
         if os.path.exists(self.templatesPath):
-            self.titleTemplates = readNestedListFromSettings(self.qsettings, 'titleTemplates', 
+            self.titleTemplates = readNestedListFromSettings(self.tplqsettings, 'titleTemplates',
                 {
                     'friendlyName':Qt.DisplayRole, 
                     'content':COL_DATA, 
                     'type':COL_EXTRA_DATA,
                 })
-            self.bodyTitlePairs = readNestedListFromSettings(self.qsettings, 'bodyTitlePairs',
+            self.bodyTitlePairs = readNestedListFromSettings(self.tplqsettings, 'bodyTitlePairs',
                 {
                     'friendlyName':Qt.DisplayRole,
                     'bodyTpl':COL_DATA,
