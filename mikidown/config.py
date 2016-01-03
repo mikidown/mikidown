@@ -268,7 +268,8 @@ def writeNestedListToSettings(settings, key, values, props):
         }
     """
     settings.beginWriteArray(key)
-    for i in values.rowCount():
+    size = values.rowCount()
+    for i in range(size):
         settings.setArrayIndex(i)
         val = values.item(i)
         for prop in props:
