@@ -5,7 +5,8 @@ import subprocess
 
 from PyQt4.QtGui import QDialog, QListView, QGridLayout, QAbstractItemDelegate, \
                         QComboBox, QWidget, QStandardItem, QStandardItemModel, \
-                        QDialogButtonBox, QLabel, QLineEdit
+                        QDialogButtonBox, QLabel, QLineEdit, QTabWidget, \
+                        QHBoxLayout, QVBoxLayout, QPushButton
 from PyQt4.QtCore import Qt
 
 from .utils import NOTE_EXTS, doesFileExist
@@ -135,6 +136,104 @@ class EditTitleTemplateDialog(QDialog):
             QMessageBox.warning(self, self.tr("Error"),
             self.tr("Title format invalid: %s") % emessage)
 
+class ManageTitlesWidget(QWidget):
+    def __init__(self, settings, parent=None):
+        super().__init__(parent=parent)
+        self.settings = settings
+
+        layout = QVBoxLayout(self)
+        self.titlesList = QListView()
+        self.titlesList.setModel(self.settings.titleTemplates)
+
+        self.buttonBox = QHBoxLayout()
+        editButton = QPushButton(self.tr("Edit"))
+        addButton = QPushButton("+")
+        delButton = QPushButton("-")
+        self.buttonBox.addWidget(editButton)
+        self.buttonBox.addWidget(addButton)
+        self.buttonBox.addWidget(delButton)
+
+        delButton.clicked.connect(self.deleteItems)
+        addButton.clicked.connect(self.addItem)
+
+        layout.addWidget(self.titlesList)
+        layout.addLayout(self.buttonBox)
+
+    def addItem(self, checked):
+        contents = self.titlesList.model()
+
+        item = QStandardItem()
+        item.setText("Test Date Format")
+        item.setData("Test_{}", COL_DATA)
+        item.setData(TitleType.DATETIME)
+        contents.appendRow(item)
+
+        self.settings.updateTitleTemplates()
+
+    def deleteItems(self, checked):
+        items = self.titlesList.selectedIndexes()
+        contents = self.titlesList.model()
+
+        for idx in reversed(items):
+            contents.takeRow(idx.row())
+
+        self.settings.updateTitleTemplates()
+
+
+class ManageBodiesWidget(QWidget):
+    def __init__(self, settings, parent=None):
+        super().__init__(parent=parent)
+        self.settings = settings
+
+        layout = QVBoxLayout(self)
+        self.bodiesList = QListView()
+        self.bodiesList.setModel(self.settings.bodyTemplates)
+        pathToIdx = self.settings.bodyTemplates.index(self.settings.templatesPath)
+        self.bodiesList.setRootIndex(pathToIdx)
+
+        self.buttonBox = QHBoxLayout()
+        editButton = QPushButton(self.tr("Edit"))
+        addButton = QPushButton("+")
+        delButton = QPushButton("-")
+        self.buttonBox.addWidget(editButton)
+        self.buttonBox.addWidget(addButton)
+        self.buttonBox.addWidget(delButton)
+
+        delButton.clicked.connect(self.deleteItems)
+        addButton.clicked.connect(self.addItem)
+
+        layout.addWidget(self.bodiesList)
+        layout.addLayout(self.buttonBox)
+
+    def deleteItems(self, checked):
+        pass
+
+    def addItem(self, checked):
+        pass
+
+
+class ManageTemplatesDialog(QDialog):
+    def __init__(self, settings, parent=None):
+        super().__init__(parent=parent)
+        self.setWindowTitle(self.tr("Manage templates"))
+        self.settings = settings
+
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Close)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+        self.templatePages = QTabWidget()
+
+        self.titlesPage = ManageTitlesWidget(settings)
+        self.bodiesPage = ManageBodiesWidget(settings)
+
+        self.templatePages.addTab(self.titlesPage, self.tr("Titles"))
+        self.templatePages.addTab(self.bodiesPage, self.tr("Bodies"))
+
+        layout = QVBoxLayout(self)
+        layout.addWidget(self.templatePages)
+        layout.addWidget(self.buttonBox)
+
+
 class PickTemplateDialog(QDialog):
     def __init__(self, path, settings, parent=None):
         super().__init__(parent=parent)
@@ -161,13 +260,17 @@ class PickTemplateDialog(QDialog):
         layout = QGridLayout(self)
         layout.addWidget(QLabel(self.tr("Title template:")), 0, 0)
         layout.addWidget(self.titleTemplates, 0, 1)
+
         layout.addWidget(QLabel(self.tr("Title parameter:")), 1, 0)
         layout.addWidget(self.titleTemplateParameter, 1, 1)
+
         layout.addWidget(QLabel(self.tr("Body template:")), 2, 0)
         layout.addWidget(self.bodyTemplates, 2, 1)
+
         tmpLabel = QLabel(self.tr("--- OR ---"))
         tmpLabel.setAlignment(Qt.AlignCenter)
         layout.addWidget(tmpLabel, 3, 0, 1, 2)
+
         layout.addWidget(QLabel(self.tr("Quick pick pair...")), 4, 0)
         layout.addWidget(self.bodyTitlePairs, 4, 1)
         layout.addWidget(self.buttonBox, 5, 0, 1, 2)

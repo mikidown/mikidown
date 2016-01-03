@@ -26,6 +26,7 @@ from .mikitree import MikiTree, TocTree
 from .mikiedit import MikiEdit
 from .mikiview import MikiView
 from .mikisearch import MikiSearch
+from .mikitemplate import ManageTemplatesDialog
 from .attachment import AttachmentView
 from .highlighter import MikiHighlighter
 from .findreplacedialog import FindReplaceDialog
@@ -241,6 +242,9 @@ class MikiWindow(QMainWindow):
         actionNBSettings = self.act(self.tr('Notebook Set&tings...'), self.notebookSettings)
         self.actions.update(NBSettings=actionNBSettings)
 
+        actionNBTemplates = self.act(self.tr('Notebook Temp&lates...'), self.notebookTemplates)
+        self.actions.update(NBTemplates=actionNBTemplates)
+
         actionMDSettings = self.act(self.tr('&Mikidown Settings...'), self.mikidownSettings)
         self.actions.update(MDSettings=actionMDSettings)
 
@@ -414,6 +418,7 @@ class MikiWindow(QMainWindow):
         menuFile.addAction(self.actions['newPage'])
         menuFile.addAction(self.actions['newSubpage'])
         menuFile.addAction(self.actions['NBSettings'])
+        menuFile.addAction(self.actions['NBTemplates'])
         menuFile.addAction(self.actions['MDSettings'])
         menuFile.addAction(self.actions['importPage'])
         menuFile.addAction(self.actions['openNotebook'])
@@ -709,6 +714,11 @@ class MikiWindow(QMainWindow):
 
     def notebookSettings(self):
         dialog = NotebookSettingsDialog(self)
+        if dialog.exec_():
+            pass
+
+    def notebookTemplates(self):
+        dialog = ManageTemplatesDialog(self.settings, parent=self)
         if dialog.exec_():
             pass
 
