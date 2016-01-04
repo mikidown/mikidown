@@ -6,7 +6,7 @@ import subprocess
 from PyQt4.QtGui import QDialog, QListView, QGridLayout, QAbstractItemDelegate, \
                         QComboBox, QWidget, QStandardItem, QStandardItemModel, \
                         QDialogButtonBox, QLabel, QLineEdit, QTabWidget, \
-                        QHBoxLayout, QVBoxLayout, QPushButton
+                        QHBoxLayout, QVBoxLayout, QPushButton, QCheckBox
 from PyQt4.QtCore import Qt
 
 from .utils import NOTE_EXTS, doesFileExist
@@ -75,13 +75,13 @@ class EditTitleTemplateDialog(QDialog):
         self.settings = settings
 
         layout = QGridLayout(self)
-        layout.addWidget(0, 0, QLabel(self.tr("Friendly name")))
-        layout.addWidget(0, 1, self.titleFriendlyName)
-        layout.addWidget(1, 0, QLabel(self.tr("Title template")))
-        layout.addWidget(1, 1, self.titleTemplateContent)
-        layout.addWidget(2, 0, QLabel(self.tr("Uses date?")))
-        layout.addWidget(2, 1, self.usesDate)
-        layout.addWidget(3, 1, 1, 2, self.buttonBox)
+        layout.addWidget(QLabel(self.tr("Friendly name")), 0, 0)
+        layout.addWidget(self.titleFriendlyName, 0, 1)
+        layout.addWidget(QLabel(self.tr("Title template")), 1, 0)
+        layout.addWidget(self.titleTemplateContent, 1, 1)
+        layout.addWidget(QLabel(self.tr("Uses date?")), 2, 0)
+        layout.addWidget(self.usesDate, 2, 1)
+        layout.addWidget(self.buttonBox, 3, 1, 1, 2)
 
         if self.pos != -1:
             item = self.settings.titleTemplates.item(self.pos)
@@ -153,11 +153,16 @@ class ManageTitlesWidget(QWidget):
         self.buttonBox.addWidget(addButton)
         self.buttonBox.addWidget(delButton)
 
+        editButton.clicked.connect(self.editItem)
         delButton.clicked.connect(self.deleteItems)
         addButton.clicked.connect(self.addItem)
 
         layout.addWidget(self.titlesList)
         layout.addLayout(self.buttonBox)
+
+    def editItem(self, checked):
+        idx = self.titlesList.currentIndex()
+        EditTitleTemplateDialog(idx.row(), self.settings, parent=self).exec_()
 
     def addItem(self, checked):
         contents = self.titlesList.model()
