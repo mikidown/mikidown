@@ -57,8 +57,8 @@ def makeTemplateBody(filled_title, dt_in_body=True, dtnow=None,
         return "# {}\n{}".format(filled_title, body)
 
 # --- WIDGETS
-COL_DATA = Qt.UserRole
-COL_EXTRA_DATA = COL_DATA + 1
+COL_DATA = Qt.ToolTipRole
+COL_EXTRA_DATA = Qt.UserRole
 
 class EditTitleTemplateDialog(QDialog):
     def __init__(self, pos, settings, parent=None):
