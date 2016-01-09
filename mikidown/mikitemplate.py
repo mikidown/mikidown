@@ -1,15 +1,20 @@
 import datetime
 from enum import Enum
+from os import path
 import shlex
 import subprocess
 
 from PyQt4.QtGui import QDialog, QListView, QGridLayout, QAbstractItemDelegate, \
                         QComboBox, QWidget, QStandardItem, QStandardItemModel, \
                         QDialogButtonBox, QLabel, QLineEdit, QTabWidget, \
-                        QHBoxLayout, QVBoxLayout, QPushButton, QCheckBox
-from PyQt4.QtCore import Qt
+                        QHBoxLayout, QVBoxLayout, QPushButton, QCheckBox, QTextEdit, \
+                        QFontMetrics, QMessageBox
+from PyQt4.QtCore import Qt, QFile, QTextStream, QIODevice
 
-from .utils import NOTE_EXTS, doesFileExist
+from .highlighter import MikiHighlighter
+from .mikibook import Mikibook
+from .mikiedit import MikiEdit
+from .utils import NOTE_EXTS, doesFileExist, LineEditDialog, TTPL_COL_DATA, TTPL_COL_EXTRA_DATA
 
 #BANNED_COMMANDS={'rm', 'cp', 'mv', 'unlink', 'mkdir', 'rmdir'}
 
@@ -22,7 +27,7 @@ class TitleType(Enum):
 def makeDefaultBody(title, dt_in_body_txt):
     dtnow = datetime.datetime.now()
     filled_title = makeTemplateTitle(TitleType.FSTRING, "{}", dtnow=dtnow, userinput=title)
-    return makeTemplateBody(dt_in_body_txt=dt_in_body_txt)
+    return makeTemplateBody(filled_title, dt_in_body_txt=dt_in_body_txt)
 
 def makeTemplateTitle(title_type, title, dtnow=None, userinput=""):
     if dtnow is None:
@@ -57,8 +62,6 @@ def makeTemplateBody(filled_title, dt_in_body=True, dtnow=None,
         return "# {}\n{}".format(filled_title, body)
 
 # --- WIDGETS
-COL_DATA = Qt.ToolTipRole
-COL_EXTRA_DATA = Qt.UserRole
 
 class EditTitleTemplateDialog(QDialog):
     def __init__(self, pos, settings, parent=None):
@@ -86,8 +89,8 @@ class EditTitleTemplateDialog(QDialog):
         if self.pos != -1:
             item = self.settings.titleTemplates.item(self.pos)
             self.titleFriendlyName.setText(item.text())
-            self.titleTemplateContent.setText(item.data(COL_DATA))
-            if item.data(COL_EXTRA_DATA) == TitleType.DATETIME:
+            self.titleTemplateContent.setText(item.data(TTPL_COL_DATA))
+            if item.data(TTPL_COL_EXTRA_DATA) == TitleType.DATETIME:
                 self.usesDate.setCheckState(Qt.Checked)
             else:
                 self.usesDate.setCheckState(Qt.Unchecked)
@@ -103,11 +106,12 @@ class EditTitleTemplateDialog(QDialog):
 
     def accept(self):
         acceptable = False
+        tplContent = self.titleTemplateContent.text()
         try:
             if self.usesDate.isChecked():
-                makeTemplateTitle(TitleType.DATETIME, userinput="TestString")
+                makeTemplateTitle(TitleType.DATETIME, tplContent, userinput="TestString")
             else:
-                makeTemplateTitle(TitleType.FSTRING, userinput="TestString")
+                makeTemplateTitle(TitleType.FSTRING, tplContent, userinput="TestString")
             acceptable = True
         except Exception as e:
             acceptable = False
@@ -117,24 +121,67 @@ class EditTitleTemplateDialog(QDialog):
             if self.pos != -1:
                 item = self.settings.titleTemplates.item(self.pos)
                 item.setText(self.titleFriendlyName.text())
-                item.setData(self.titleTemplateContent.text(), COL_DATA)
+                item.setData(tplContent, TTPL_COL_DATA)
                 if self.usesDate.isChecked():
-                    item.setData(TitleType.DATETIME, COL_EXTRA_DATA)
+                    item.setData(TitleType.DATETIME, TTPL_COL_EXTRA_DATA)
                 else:
-                    item.setData(TitleType.FSTRING, COL_EXTRA_DATA)
+                    item.setData(TitleType.FSTRING, TTPL_COL_EXTRA_DATA)
             else:
                 item = QStandardItem()
                 item.setText(self.titleFriendlyName.text())
-                item.setData(self.titleTemplateContent.text(), COL_DATA)
+                item.setData(tplContent, TTPL_COL_DATA)
                 if self.usesDate.isChecked():
-                    item.setData(TitleType.DATETIME, COL_EXTRA_DATA)
+                    item.setData(TitleType.DATETIME, TTPL_COL_EXTRA_DATA)
                 else:
-                    item.setData(TitleType.FSTRING, COL_EXTRA_DATA)
+                    item.setData(TitleType.FSTRING, TTPL_COL_EXTRA_DATA)
                 self.settings.titleTemplates.appendRow(item)
             QDialog.accept(self)
         else:
             QMessageBox.warning(self, self.tr("Error"),
             self.tr("Title format invalid: %s") % emessage)
+
+class EditBodyTemplateDialog(QDialog):
+    def __init__(self, fpath, settings, parent=None):
+        super().__init__(parent=parent)
+        self.settings = settings
+        self.setWindowTitle(self.tr("Edit body template"))
+
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | 
+                                          QDialogButtonBox.Cancel)
+
+        self.templateEdit = MikiEdit(self)
+        fnt = Mikibook.settings.value('editorFont', defaultValue=None)
+        fntsize = Mikibook.settings.value('editorFontSize', type=int, defaultValue=12)
+        header_scales_font = Mikibook.settings.value('headerScaleFont', type=bool, defaultValue=True)
+        if fnt is not None:
+            self.templateEdit.setFontFamily(fnt)
+            self.templateEdit.setFontPointSize(fntsize)
+        h = MikiHighlighter(parent=self.templateEdit, scale_font_sizes=header_scales_font)
+        tw = Mikibook.settings.value('tabWidth', type=int, defaultValue=4)
+        qfm = QFontMetrics(h.patterns[0][1].font())
+        self.templateEdit.setTabStopWidth(tw * qfm.width(' '))
+        self.templateEdit.setVisible(True)
+
+        fh = QFile(fpath)
+        try:
+            if not fh.open(QIODevice.ReadOnly):
+                raise IOError(fh.errorString())
+        except IOError as e:
+            QMessageBox.warning(self, self.tr("Read Error"),
+                                self.tr("Failed to open %s: %s") % (fpath, e))
+        finally:
+            if fh is not None:
+                noteBody = QTextStream(fh).readAll()
+                fh.close()
+                self.templateEdit.setPlainText(noteBody)
+                self.templateEdit.document().setModified(False)
+
+        layout = QVBoxLayout(self)
+        layout.addWidget(self.templateEdit)
+        layout.addWidget(self.buttonBox)
+
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
 
 class ManageTitlesWidget(QWidget):
     def __init__(self, settings, parent=None):
@@ -162,15 +209,18 @@ class ManageTitlesWidget(QWidget):
 
     def editItem(self, checked):
         idx = self.titlesList.currentIndex()
-        EditTitleTemplateDialog(idx.row(), self.settings, parent=self).exec_()
+        dialog = EditTitleTemplateDialog(idx.row(), self.settings, parent=self)
+
+        if dialog.exec_():
+            self.settings.updateTitleTemplates()
 
     def addItem(self, checked):
         contents = self.titlesList.model()
 
         item = QStandardItem()
-        item.setText("Test Date Format")
-        item.setData("Test_{}", COL_DATA)
-        item.setData(TitleType.DATETIME)
+        item.setText("Test Date Format (YYYYmmdd)")
+        item.setData("%Y%m%d_Test_{}", TTPL_COL_DATA)
+        item.setData(TitleType.DATETIME, TTPL_COL_EXTRA_DATA)
         contents.appendRow(item)
 
         self.settings.updateTitleTemplates()
@@ -190,7 +240,6 @@ class ManageBodiesWidget(QWidget):
         super().__init__(parent=parent)
         self.settings = settings
 
-        layout = QVBoxLayout(self)
         self.bodiesList = QListView()
         self.bodiesList.setModel(self.settings.bodyTemplates)
         pathToIdx = self.settings.bodyTemplates.index(self.settings.templatesPath)
@@ -204,17 +253,51 @@ class ManageBodiesWidget(QWidget):
         self.buttonBox.addWidget(addButton)
         self.buttonBox.addWidget(delButton)
 
+        editButton.clicked.connect(self.editItem)
         delButton.clicked.connect(self.deleteItems)
         addButton.clicked.connect(self.addItem)
 
+        layout = QVBoxLayout(self)
         layout.addWidget(self.bodiesList)
         layout.addLayout(self.buttonBox)
 
+    def editItem(self, checked):
+        idx = self.bodiesList.currentIndex()
+        model = self.bodiesList.model()
+        filePath = model.filePath(idx)
+        if not path.isfile(filePath):
+            return
+
+        dialog = EditBodyTemplateDialog(filePath, self.settings, parent=self)
+        if dialog.exec_():
+            fh = QFile(filePath)
+            try:
+                if not fh.open(QIODevice.WriteOnly):
+                    raise IOError(fh.errorString())
+            except IOError as e:
+                QMessageBox.warning(self, self.tr("Save Error"),
+                                    self.tr("Failed to save %s: %s") % (path.basename(filepath), e))
+                raise
+            finally:
+                if fh is not None:
+                    savestream = QTextStream(fh)
+                    savestream << dialog.templateEdit.toPlainText()
+                    fh.close()
+
     def deleteItems(self, checked):
-        pass
+        items = self.bodiesList.selectedIndexes()
+        contents = self.bodiesList.model()
+
+        for idx in reversed(items):
+            contents.remove(idx)
 
     def addItem(self, checked):
-        pass
+        dialog = LineEditDialog(self.settings.templatesPath, self)
+        if dialog.exec_():
+            templateName = '{}{}'.format(dialog.editor.text(), self.settings.fileExt)
+            outPath = path.join(self.settings.templatesPath, templateName)
+            with open(outPath, 'w', encoding='utf-8') as f:
+                pass
 
 
 class ManageTemplatesDialog(QDialog):
@@ -287,13 +370,14 @@ class PickTemplateDialog(QDialog):
 
     def accept(self):
         dtnow = datetime.datetime.now()
+        curTitleIdx = self.titleTemplates.currentIndex()
         titleItem = self.titleTemplates.model().item(curTitleIdx)
-        titleItemContent = titleItem.data(COL_DATA)
-        titleItemType = titleItem.data(COL_EXTRA_DATA)
+        titleItemContent = titleItem.data(TTPL_COL_DATA)
+        titleItemType = titleItem.data(TTPL_COL_EXTRA_DATA)
         titleParameter = self.titleTemplateParameter.text()
-        newPageName = mikitemplate.makeTemplateTitle(titleItemType, 
+        newPageName = makeTemplateTitle(titleItemType, 
             titleItemContent, dtnow=dtnow, userinput=titleParameter)
-        notePath = os.path.join(self.path, newPageName)
+        notePath = path.join(self.path, newPageName)
         acceptable, existPath = doesFileExist(notePath, NOTE_EXTS)
         if acceptable:
             QDialog.accept(self)
@@ -313,5 +397,5 @@ class PickTemplateDialog(QDialog):
     def updateTitleBody(self, idx):
         modelItem = self.bodyTitlePairs.model().item(idx)
         if modelItem is not None:
-            self.titleTemplates.setCurrentIndex(modelItem.data(COL_DATA))
-            self.bodyTemplates.setCurrentIndex(self.bodyTemplates.findText(modelItem.data(COL_EXTRA_DATA)))
+            self.titleTemplates.setCurrentIndex(modelItem.data(TTPL_COL_DATA))
+            self.bodyTemplates.setCurrentIndex(self.bodyTemplates.findText(modelItem.data(TTPL_COL_EXTRA_DATA)))

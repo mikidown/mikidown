@@ -5,7 +5,7 @@ from PyQt4.QtGui  import QStandardItem, QStandardItemModel, QFileSystemModel
 from whoosh import fields
 import markdown
 
-from .mikitemplate import COL_DATA, COL_EXTRA_DATA
+from .utils import TTPL_COL_DATA, TTPL_COL_EXTRA_DATA
 
 NOT_EXT = re.compile(r"Failed to initiate extension '([^']+)': 'module' object has no attribute 'makeExtension'")
 
@@ -29,7 +29,7 @@ class Setting():
         self.indexdir = os.path.join(self.notePath, ".indexdir").replace(os.sep, '/')
         self.attachmentPath = os.path.join(self.notebookPath, "attachments").replace(os.sep, '/')
         self.configfile = os.path.join(self.notebookPath, "notebook.conf").replace(os.sep, '/')
-        self.templatesConfigfile = os.path.join(self.templatesPath, 
+        self.templatesConfigfile = os.path.join(self.templatesPath,
             "template_settings.conf").replace(os.sep, '/')
         cssPath = os.path.join(self.notebookPath, "css").replace(os.sep, '/')
         self.cssfile = os.path.join(cssPath, "notebook.css").replace(os.sep, '/')
@@ -66,15 +66,15 @@ class Setting():
         if os.path.exists(self.templatesPath):
             self.titleTemplates = readNestedListFromSettings(self.tplqsettings, 'titleTemplates',
                 {
-                    'friendlyName':Qt.DisplayRole, 
-                    'content':COL_DATA, 
-                    'type':COL_EXTRA_DATA,
+                    'friendlyName':Qt.DisplayRole,
+                    'content':TTPL_COL_DATA,
+                    'type':TTPL_COL_EXTRA_DATA,
                 })
             self.bodyTitlePairs = readNestedListFromSettings(self.tplqsettings, 'bodyTitlePairs',
                 {
                     'friendlyName':Qt.DisplayRole,
-                    'bodyTpl':COL_DATA,
-                    'titleNum':COL_EXTRA_DATA,
+                    'bodyTpl':TTPL_COL_DATA,
+                    'titleNum':TTPL_COL_EXTRA_DATA,
                 })
         else:
             os.makedirs(self.templatesPath)
@@ -85,7 +85,7 @@ class Setting():
         self.bodyTemplates.rowCount()
         self.bodyTemplates.setFilter(QDir.Files)
         self.bodyTemplates.setNameFilters(['*{}'.format(self.fileExt)])
-        self.bodyTemplates.setNameFilterDisables(True)
+        self.bodyTemplates.setNameFilterDisables(False)
 
         self.faulty_exts=[]
 
@@ -192,21 +192,21 @@ class Setting():
         writeListToSettings(self.qsettings, "recentViewedNoteList", notesList)
 
     def updateTitleTemplates(self):
-        writeNestedListToSettings(self.tplqsettings, 'titleTemplates', 
-            self.titleTemplates, 
+        writeNestedListToSettings(self.tplqsettings, 'titleTemplates',
+            self.titleTemplates,
                 {
-                    Qt.DisplayRole:'friendlyName', 
-                    COL_DATA:'content', 
-                    COL_EXTRA_DATA:'type',
+                    Qt.DisplayRole:'friendlyName',
+                    TTPL_COL_DATA:'content',
+                    TTPL_COL_EXTRA_DATA:'type',
                 })
 
     def updateBodyTitlePairs(self):
-        writeNestedListToSettings(self.tplqsettings, 'bodyTitlePairs', 
-            self.bodyTitlePairs, 
+        writeNestedListToSettings(self.tplqsettings, 'bodyTitlePairs',
+            self.bodyTitlePairs,
                 {
                     Qt.DisplayRole:'friendlyName',
-                    COL_DATA:'bodyTpl',
-                    COL_EXTRA_DATA:'titleNum',
+                    TTPL_COL_DATA:'bodyTpl',
+                    TTPL_COL_EXTRA_DATA:'titleNum',
                 })
 
 def readListFromSettings(settings, key):

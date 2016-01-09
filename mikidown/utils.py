@@ -11,6 +11,9 @@ from PyQt4.QtGui import (QDialog, QDialogButtonBox, QGridLayout, QIcon, QLabel, 
 JSCRIPT_TPL = '<script type="text/javascript" src="{}"></script>\n'
 METADATA_CHECKER = re.compile(r'((?: {0,3}[\w\-]+:.*)(?:(?:\n {4,}.+)|(?:\n {0,3}[\w\-]+:.*))*)')
 
+TTPL_COL_DATA = Qt.ToolTipRole
+TTPL_COL_EXTRA_DATA = Qt.UserRole
+
 class ViewedNoteIcon(QIcon):
     def __init__(self, num, parent=None):
         super(ViewedNoteIcon, self).__init__(parent)
@@ -42,7 +45,8 @@ class LineEditDialog(QDialog):
             editorLabel = QLabel(self.tr("File Name:"))
             self.extNames = IMAGE_EXTS
         else:
-            return
+            editorLabel = QLabel(self.tr("Template Name:"))
+            self.extNames = NOTE_EXTS
 
         self.editor = QLineEdit()
         editorLabel.setBuddy(self.editor)

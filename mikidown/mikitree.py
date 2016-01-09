@@ -15,7 +15,7 @@ from whoosh.qparser import QueryParser
 from whoosh.writing import AsyncWriter
 
 from .config import Setting
-from .utils import LineEditDialog
+from .utils import LineEditDialog, TTPL_COL_DATA, TTPL_COL_EXTRA_DATA
 from . import mikitemplate
 
 
@@ -183,14 +183,16 @@ class MikiTree(QTreeWidget):
                     dtnow = datetime.datetime.now()
                     if curTitleIdx > -1:
                         titleItem = dialog.titleTemplates.model().item(curTitleIdx)
-                        titleItemContent = titleItem.data(COL_DATA)
-                        titleItemType = titleItem.data(COL_EXTRA_DATA)
+                        titleItemContent = titleItem.data(TTPL_COL_DATA)
+                        titleItemType = titleItem.data(TTPL_COL_EXTRA_DATA)
                         titleParameter = dialog.titleTemplateParameter.text()
                         newPageName = mikitemplate.makeTemplateTitle(titleItemType, 
                             titleItemContent, dtnow=dtnow, userinput=titleParameter)
                     if curBodyIdx > -1:
-                        bodyItemIdx = dialog.bodyTemplates.model().index(curBodyIdx, 0)
-                        bodyFPath = dialog.bodyTemplates.model().fileName(bodyItemIdx)
+                        bodyItemIdx = dialog.bodyTemplates.rootModelIndex().child(curBodyIdx, 0)
+                        bodyFPath = dialog.bodyTemplates.model().filePath(bodyItemIdx)
+                    else:
+                        bodyFPath = None
             else:
                 dialog = LineEditDialog(pagePath, self)
                 if dialog.exec_():
@@ -233,7 +235,7 @@ class MikiTree(QTreeWidget):
             fh.open(QIODevice.WriteOnly)
 
             savestream = QTextStream(fh)
-            if useTemplate:
+            if useTemplate and bodyFPath is not None:
                 with open(bodyFPath, 'r', encoding='utf-8') as templatef:
                     savestream << mikitemplate.makeTemplateBody(
                         os.path.basename(newPageName), dtnow=dtnow, 
