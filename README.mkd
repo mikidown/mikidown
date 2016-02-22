@@ -86,4 +86,4 @@ All python-markdown [extensions] are supported. To enable/disable extension, edi
 - [ShadowKyogre]: https://github.com/ShadowKyogre
 - [extensions]: http://pythonhosted.org/Markdown/extensions/index.html
 
-Want to help? Further details are in the CONTRIBUTING.md file.
+Want to help? Further details are in the [CONTRIBUTING.md](CONTRIBUTING.md) file.
