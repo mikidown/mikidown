@@ -19,4 +19,6 @@ from PyQt5.QtCore import Qt
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
+from PyQt5 import QtNetwork
 from PyQt5 import QtWebKit
+from PyQt5 import QtWebKitWidgets

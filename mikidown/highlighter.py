@@ -1,12 +1,15 @@
 import re
 
+from Qt import QtCore, QtGui, QtWidgets, Qt
+"""
 from PyQt4.QtGui import QSyntaxHighlighter, QColor, QFont, QTextCharFormat
 from PyQt4.QtCore import Qt
+"""
 from .mdx_strkundr import DEL_RE, INS_RE, STRONG_RE, EMPH_RE
 from .mikibook import Mikibook
 
 
-class MikiHighlighter(QSyntaxHighlighter):
+class MikiHighlighter(QtGui.QSyntaxHighlighter):
 
     WORDS = r'(?iu)[\w\']+'
 
@@ -23,85 +26,85 @@ class MikiHighlighter(QSyntaxHighlighter):
         # 0: html tags - <pre></pre>
         # less naive html regex
         regexp[0] = r'</?\w+((\s+\w+(\s*=\s*(?:".*?"|\'.*?\'|[^\'">\s]+))?)+\s*|\s*)/?>'
-        font[0] = QFont(baseFontFam, baseFontSize, -1)
-        color[0] = QColor(color_settings[0])
+        font[0] = QtGui.QFont(baseFontFam, baseFontSize, -1)
+        color[0] = QtGui.QColor(color_settings[0])
         # 1: h1 - #
         regexp[1] = '^#[^#]+'
-        color[1] = QColor(color_settings[1])
+        color[1] = QtGui.QColor(color_settings[1])
         if scale_font_sizes:
-            font[1] = QFont(baseFontFam, 2*baseFontSize, QFont.Bold)
+            font[1] = QtGui.QFont(baseFontFam, 2*baseFontSize, QtGui.QFont.Bold)
         else:
-            font[1] = QFont(baseFontFam, baseFontSize, QFont.Bold)
+            font[1] = QtGui.QFont(baseFontFam, baseFontSize, QtGui.QFont.Bold)
         # 2: h2 - ##
         regexp[2] = '^##[^#]+'
-        color[2] = QColor(color_settings[2])
+        color[2] = QtGui.QColor(color_settings[2])
         if scale_font_sizes:
-            font[2] = QFont(baseFontFam, 5.0/3*baseFontSize, QFont.Bold)
+            font[2] = QtGui.QFont(baseFontFam, 5.0/3*baseFontSize, QtGui.QFont.Bold)
         else:
-            font[2] = QFont(baseFontFam, baseFontSize, QFont.Bold)
+            font[2] = QtGui.QFont(baseFontFam, baseFontSize, QFont.Bold)
         # 3: h3 - ###
         regexp[3] = '^###[^#]+'
-        color[3] = QColor(color_settings[3])
+        color[3] = QtGui.QColor(color_settings[3])
         if scale_font_sizes:
-            font[3] = QFont(baseFontFam, 4.0/3*baseFontSize, QFont.Bold)
+            font[3] = QtGui.QFont(baseFontFam, 4.0/3*baseFontSize, QtGui.QFont.Bold)
         else:
-            font[3] = QFont(baseFontFam, baseFontSize, QFont.Bold)
+            font[3] = QtGui.QFont(baseFontFam, baseFontSize, QtGui.QFont.Bold)
         # 4: h4 and more - ####
         regexp[4] = '^####.+'
-        color[4] = QColor(color_settings[4])
-        font[4] = QFont(baseFontFam, baseFontSize, QFont.Bold)
+        color[4] = QtGui.QColor(color_settings[4])
+        font[4] = QtGui.QFont(baseFontFam, baseFontSize, QtGui.QFont.Bold)
         # 5: html symbols - &gt;
         regexp[5] = '&[^; ].+;'
-        color[5] = QColor(color_settings[5])
-        font[5] = QFont(baseFontFam, baseFontSize, -1)
+        color[5] = QtGui.QColor(color_settings[5])
+        font[5] = QtGui.QFont(baseFontFam, baseFontSize, -1)
         # 6: html comments - <!-- -->
         regexp[6] = '<!--.+-->'
-        color[6] = QColor(color_settings[6])
-        font[6] = QFont(baseFontFam, baseFontSize, -1)
+        color[6] = QtGui.QColor(color_settings[6])
+        font[6] = QtGui.QFont(baseFontFam, baseFontSize, -1)
         # 7: delete - ~~delete~~
         regexp[7] = DEL_RE
-        color[7] = QColor(color_settings[7])
-        font[7] = QFont(baseFontFam, baseFontSize, -1)
+        color[7] = QtGui.QColor(color_settings[7])
+        font[7] = QtGui.QFont(baseFontFam, baseFontSize, -1)
         # 8: insert - __insert__
         regexp[8] = INS_RE
-        font[8] = QFont(baseFontFam, baseFontSize, -1)
+        font[8] = QtGui.QFont(baseFontFam, baseFontSize, -1)
         font[8].setUnderline(True)
         # 9: strong - **strong**
         regexp[9] = STRONG_RE
-        color[9] = QColor(color_settings[9])
-        font[9] = QFont(baseFontFam, baseFontSize, QFont.Bold)
+        color[9] = QtGui.QColor(color_settings[9])
+        font[9] = QtGui.QFont(baseFontFam, baseFontSize, QtGui.QFont.Bold)
         # 10: emphasis - //emphasis//
         regexp[10] = EMPH_RE
-        color[10] = QColor(color_settings[10])
-        font[10] = QFont(baseFontFam, baseFontSize, -1, True)
+        color[10] = QtGui.QColor(color_settings[10])
+        font[10] = QtGui.QFont(baseFontFam, baseFontSize, -1, True)
         # 11: links - (links) after [] or links after []:
         regexp[11] = (r'(?<=(\]\())[^\(\)]*(?=\))|'
                     '(<https?://[^>]+>)|'
                     '(<[^ >]+@[^ >]+>)')
-        font[11] = QFont(baseFontFam, baseFontSize, -1, True)
+        font[11] = QtGui.QFont(baseFontFam, baseFontSize, -1, True)
         font[11].setUnderline(True)
         #.setUnderlineColor("#204A87")
         # 12: link/image references - [] or ![]
         regexp[12] = r'!?\[[^\[\]]*\]'
-        color[12] = QColor(color_settings[12])
-        font[12] = QFont(baseFontFam, baseFontSize, -1)
+        color[12] = QtGui.QColor(color_settings[12])
+        font[12] = QtGui.QFont(baseFontFam, baseFontSize, -1)
         # 13: blockquotes and lists -  > or - or * or 0.
         regexp[13] = r'(^>+)|(^(?:    |\t)*[0-9]+\. )|(^(?:    |\t)*- )|(^(?:    |\t)*\* )'
-        color[13] = QColor(color_settings[13])
-        font[13] = QFont(baseFontFam, baseFontSize, -1)
+        color[13] = QtGui.QColor(color_settings[13])
+        font[13] = QtGui.QFont(baseFontFam, baseFontSize, -1)
         # 14: fence - ``` or ~~~
         regexp[14] = '^(?:~{3,}|`{3,}).*$'
-        color[14] = QColor(color_settings[14])
-        font[14] = QFont(baseFontFam, baseFontSize, QFont.Bold)
+        color[14] = QtGui.QColor(color_settings[14])
+        font[14] = QtGui.QFont(baseFontFam, baseFontSize, QtGui.QFont.Bold)
 
         # 15: math - $$
         regexp[15] = r'^(?:\${2}).*$'
-        color[15] = QColor(color_settings[15])
-        font[15] = QFont(baseFontFam, baseFontSize, QFont.Bold)
+        color[15] = QtGui.QColor(color_settings[15])
+        font[15] = QtGui.QFont(baseFontFam, baseFontSize, QtGui.QFont.Bold)
 
         for i in range(NUM):
             p = re.compile(regexp[i])
-            f = QTextCharFormat()
+            f = QtGui.QTextCharFormat()
             if font[i] != 0:
                 f.setFont(font[i])
             if color[i] != 0:
@@ -109,16 +112,16 @@ class MikiHighlighter(QSyntaxHighlighter):
             self.patterns.append((p, f))
         self.speller = parent.speller
 
-        fenced_font = QFont(baseFontFam, baseFontSize, -1)
+        fenced_font = QtGui.QFont(baseFontFam, baseFontSize, -1)
         self.fenced_block = re.compile(r"^(~{3,}|`{3,})[^`~]*(?!\1)$")
         #regex for block that needs to be continued
 
-        self.fenced_format = QTextCharFormat()
+        self.fenced_format = QtGui.QTextCharFormat()
         self.fenced_format.setFont(fenced_font)
 
-        math_font = QFont(baseFontFam, baseFontSize, -1)
+        math_font = QtGui.QFont(baseFontFam, baseFontSize, -1)
         self.math_block = re.compile(r"^(?:\${2}).*$")
-        self.math_format = QTextCharFormat()
+        self.math_format = QtGui.QTextCharFormat()
         self.math_format.setFont(math_font)
 
         self.settext_h1 = re.compile('^=+$')
@@ -133,7 +136,7 @@ class MikiHighlighter(QSyntaxHighlighter):
             if self.speller and not self.speller.check(word_object.group()):
                 current_format = self.format(word_object.start())
                 current_format.setUnderlineColor(Qt.red)
-                current_format.setUnderlineStyle(QTextCharFormat.SpellCheckUnderline)
+                current_format.setUnderlineStyle(QtGui.QTextCharFormat.SpellCheckUnderline)
                 self.setFormat(word_object.start(),
                     word_object.end() - word_object.start(), current_format)
 

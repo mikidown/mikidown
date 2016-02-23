@@ -1,7 +1,7 @@
 import os
 import re
 
-from Qt import QtCore, QtGui, QtWidgets
+from Qt import QtCore, QtGui, QtWidgets, Qt
 
 #from PyQt4.QtCore import QDir, QFile, QSettings, Qt
 #from PyQt4.QtGui  import QStandardItem, QStandardItemModel, QFileSystemModel
@@ -37,8 +37,8 @@ class Setting():
         cssPath = os.path.join(self.notebookPath, "css").replace(os.sep, '/')
         self.cssfile = os.path.join(cssPath, "notebook.css").replace(os.sep, '/')
         self.searchcssfile = os.path.join(cssPath, "search-window.css").replace(os.sep, '/')
-        self.qsettings = QSettings(self.configfile, QSettings.IniFormat)
-        self.tplqsettings = QSettings(self.templatesConfigfile, QSettings.IniFormat)
+        self.qsettings = QtCore.QSettings(self.configfile, QtCore.QSettings.IniFormat)
+        self.tplqsettings = QtCore.QSettings(self.templatesConfigfile, QtCore.QSettings.IniFormat)
 
         if os.path.exists(self.configfile):
             self.extensions = readListFromSettings(self.qsettings,
@@ -81,12 +81,12 @@ class Setting():
                 })
         else:
             os.makedirs(self.templatesPath)
-            self.titleTemplates = QStandardItemModel()
-            self.bodyTitlePairs = QStandardItemModel()
-        self.bodyTemplates = QFileSystemModel()
+            self.titleTemplates = QtWidgets.QStandardItemModel()
+            self.bodyTitlePairs = QtWidgets.QStandardItemModel()
+        self.bodyTemplates = QtWidgets.QFileSystemModel()
         self.bodyTemplates.setRootPath(self.templatesPath)
         self.bodyTemplates.rowCount()
-        self.bodyTemplates.setFilter(QDir.Files)
+        self.bodyTemplates.setFilter(QtCore.QDir.Files)
         self.bodyTemplates.setNameFilters(['*{}'.format(self.fileExt)])
         self.bodyTemplates.setNameFilterDisables(True)
 
@@ -152,7 +152,7 @@ class Setting():
 
         # Migrate notebookPath to v0.3.0 folder structure
         if not self.version:
-            notebookDir = QDir(self.notebookPath)
+            notebookDir = QtCore.QDir(self.notebookPath)
 
             # move all markdown files to notes/
             dirList = notebookDir.entryList(QDir.Dirs | QDir.NoDotAndDotDot)
@@ -164,7 +164,7 @@ class Setting():
                 notebookDir.rename(d, os.path.join('notes', d).replace(os.sep, '/'))
 
             # remove .indexdir folder
-            oldIndexDir = QDir(os.path.join(self.notebookPath, '.indexdir'.replace(os.sep, '/')))
+            oldIndexDir = QtCore.QDir(os.path.join(self.notebookPath, '.indexdir'.replace(os.sep, '/')))
             indexFileList = oldIndexDir.entryList()
             for f in indexFileList:
                 oldIndexDir.remove(f)
@@ -245,10 +245,10 @@ def readNestedListFromSettings(settings, key, props):
     :return: QStandardItemModel with QStandardItems in the specified roles
     """
     size = settings.beginReadArray(key)
-    model = QStandardItemModel()
+    model = QtGui.QStandardItemModel()
     for i in range(size):
         settings.setArrayIndex(i)
-        item = QStandardItem()
+        item = QtGui.QStandardItem()
         for prop in props:
             item.setData(settings.value(prop, ''), props[prop])
         model.appendRow(item)

@@ -1,11 +1,14 @@
 import re
 
+from Qt import QtCore, QtGui, QtWidgets, QtWebKitWidgets
+"""
 from PyQt4.QtCore import QDir, QPoint, QTimer, QUrl
 from PyQt4.QtGui import QDesktopServices
 from PyQt4.QtWebKit import QWebView, QWebPage
+"""
 import markdown
 
-class MikiView(QWebView):
+class MikiView(QtWebKitWidgets.QWebView):
 
     def __init__(self, parent=None):
         super(MikiView, self).__init__(parent)
@@ -14,9 +17,9 @@ class MikiView(QWebView):
         self.settings().clearMemoryCaches()
         self.notePath = parent.settings.notePath
         self.settings().setUserStyleSheetUrl(
-            QUrl('file://'+self.parent.settings.cssfile))
-        print(QUrl('file://'+self.parent.settings.cssfile))
-        self.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
+            QtCore.QUrl('file://'+self.parent.settings.cssfile))
+        print(QtCore.QUrl('file://'+self.parent.settings.cssfile))
+        self.page().setLinkDelegationPolicy(QtWebKitWidgets.QWebPage.DelegateAllLinks)
 
         self.page().linkClicked.connect(self.linkClicked)
         self.page().linkHovered.connect(self.linkHovered)
@@ -34,7 +37,7 @@ class MikiView(QWebView):
         name = qurl.toString()
         http = re.compile('https?://')
         if http.match(name):                        # external uri
-            QDesktopServices.openUrl(qurl)
+            QtGui.QDesktopServices.openUrl(qurl)
             return
 
         self.load(qurl)
@@ -89,5 +92,5 @@ class MikiView(QWebView):
 
     def updateLiveView(self):
         if self.parent.actions.get('split').isChecked():
-            QTimer.singleShot(1000, self.updateView)
+            QtCore.QTimer.singleShot(1000, self.updateView)
 

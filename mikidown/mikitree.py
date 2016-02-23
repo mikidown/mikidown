@@ -8,8 +8,11 @@ Naming convention:
 import os
 import datetime
 
+from Qt import QtCore, QtGui, QtWidgets, Qt
+"""
 from PyQt4.QtCore import Qt, QDir, QFile, QIODevice, QSize, QTextStream
 from PyQt4.QtGui import (QAbstractItemView, QCursor, QMenu, QMessageBox, QTreeWidget, QTreeWidgetItem)
+"""
 from whoosh.index import open_dir
 from whoosh.qparser import QueryParser
 from whoosh.writing import AsyncWriter
@@ -19,7 +22,7 @@ from .utils import LineEditDialog
 from . import mikitemplate
 
 
-class MikiTree(QTreeWidget):
+class MikiTree(QtWidgets.QTreeWidget):
 
     def __init__(self, parent=None):
         super(MikiTree, self).__init__(parent)
@@ -32,7 +35,7 @@ class MikiTree(QTreeWidget):
         self.setDragEnabled(True)
         # self.setDropIndicatorShown(True)
         self.setDragDropOverwriteMode(True)
-        self.setDragDropMode(QAbstractItemView.InternalMove)
+        self.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
         # self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
 
@@ -308,7 +311,7 @@ class MikiTree(QTreeWidget):
                 QDir(self.notePath).rmdir(parentPage)
 
         # pass the event to default implementation
-        QTreeWidget.dropEvent(self, event)
+        QtWidgets.QTreeWidget.dropEvent(self, event)
         self.sortItems(0, Qt.AscendingOrder)
         if hasattr(targetItem, 'text'):
             self.expandItem(targetItem)
@@ -351,7 +354,7 @@ class MikiTree(QTreeWidget):
                 self.parent.updateAttachmentView()
 
     def pageExists(self, noteFullName):
-        return QFile.exists(self.pageToFile(noteFullName))
+        return QtCore.QFile.exists(self.pageToFile(noteFullName))
 
     def delPageWrapper(self):
         item = self.currentItem()
@@ -408,7 +411,7 @@ class MikiTree(QTreeWidget):
             a_item = item.child(i)
             self.recurseExpand(a_item)
 
-class TocTree(QTreeWidget):
+class TocTree(QtWidgets.QTreeWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -416,7 +419,7 @@ class TocTree(QTreeWidget):
 
     def updateToc(self, root, entries):
         self.clear()
-        item = QTreeWidgetItem(self, [root, '0'])
+        item = QtWidgets.QTreeWidgetItem(self, [root, '0'])
         curLevel = 0
         for (level, h, p, a) in entries:
             val = [h, str(p), a]

@@ -1,9 +1,13 @@
 import os
+
+from Qt import QtCore, QtGui, QtWidgets
+"""
 from PyQt4.QtCore import Qt, QDir, QFile, QRect, QSize
 from PyQt4.QtGui import (QColor, QFileIconProvider, QFileSystemModel,
     QListView, QMenu, QPen, QPixmap, QStyle, QStyledItemDelegate)
+"""
 
-class AttachmentItemDelegate(QStyledItemDelegate):
+class AttachmentItemDelegate(QtWidgets.QStyledItemDelegate):
 
     def __init__(self, parent=None):
         super(AttachmentItemDelegate, self).__init__(parent)
@@ -58,7 +62,7 @@ class AttachmentItemDelegate(QStyledItemDelegate):
     def sizeHint(self, option, index):
         return QSize(self.width + 16, self.height + 16)
 
-class AttachmentView(QListView):
+class AttachmentView(QtWidgets.QListView):
     """ A dockWidget displaying attachments of the current note.
     """
 
@@ -67,15 +71,15 @@ class AttachmentView(QListView):
         self.parent = parent
         self.settings = parent.settings
 
-        self.model = QFileSystemModel()
-        self.model.setFilter(QDir.Files)
+        self.model = QtWidgets.QFileSystemModel()
+        self.model.setFilter(QtCore.QDir.Files)
         self.model.setRootPath(self.settings.attachmentPath)
         self.setModel(self.model)
 
         # self.setRootIndex(self.model.index(self.settings.attachmentPath))
-        self.setViewMode(QListView.IconMode)
+        self.setViewMode(QtWidgets.QListView.IconMode)
         self.setUniformItemSizes(True)
-        self.setResizeMode(QListView.Adjust)
+        self.setResizeMode(QtWidgets.QListView.Adjust)
         self.setItemDelegate(AttachmentItemDelegate(self))
         self.clicked.connect(self.click)
 
@@ -91,13 +95,13 @@ class AttachmentView(QListView):
         """ Trigger click() when an item is pressed.
         """
         self.clearSelection()
-        QListView.mousePressEvent(self, event)
+        QtWidgets.QListView.mousePressEvent(self, event)
 
     def mouseReleaseEvent(self, event):
         """ Trigger click() when an item is pressed.
         """
         self.clearSelection()
-        QListView.mouseReleaseEvent(self, event)
+        QtWidgets.QListView.mouseReleaseEvent(self, event)
 
     def insert(self):
         indice = self.selectedIndexes()
@@ -112,7 +116,7 @@ class AttachmentView(QListView):
         indice = self.selectedIndexes()
         for i in indice:
             filePath = self.model.filePath(i)
-            QFile(filePath).remove()
+            QtCore.QFile(filePath).remove()
 
     def click(self, index):
         self.setCurrentIndex(index)

@@ -34,7 +34,7 @@ from .highlighter import MikiHighlighter
 from .findreplacedialog import FindReplaceDialog
 from .utils import LineEditDialog, ViewedNoteIcon, parseHeaders, parseTitle, METADATA_CHECKER, JSCRIPT_TPL
 
-class MikiSepNote(QDockWidget):
+class MikiSepNote(QtWidgets.QDockWidget):
     #This is a static widget! It is not meant to dynamically update
     def __init__(self, settings, name, filename, plain_text=False, parent=None):
         super().__init__(parent=parent)
@@ -136,7 +136,7 @@ class MikiSepNote(QDockWidget):
                     self.parent().newNoteDisplay(item)
         #"""
 
-class MikiWindow(QMainWindow):
+class MikiWindow(QtWidgets.QMainWindow):
     def __init__(self, settings, parent=None):
         super(MikiWindow, self).__init__(parent)
         self.setObjectName("mikiWindow")
@@ -147,8 +147,8 @@ class MikiWindow(QMainWindow):
             self.lockPathFH = os.open(lockPath, os.O_CREAT | os.O_EXCL | os.O_RDWR)
         ################ Setup core components ################
         self.notesTree = MikiTree(self)
-        self.quickNoteNav = QLineEdit()
-        self.notesTab = QWidget()
+        self.quickNoteNav = QtWidgets.QLineEdit()
+        self.notesTab = QtWidgets.QWidget()
         self.completer = SlashPleter()
         self.completer.setModel(self.notesTree.model())
         self.quickNoteNav.setCompleter(self.completer)
@@ -159,20 +159,20 @@ class MikiWindow(QMainWindow):
         self.ix = None
         self.setupWhoosh()
 
-        self.viewedList = QToolBar(self.tr('Recently Viewed'), self)
-        self.viewedList.setIconSize(QSize(16, 16))
+        self.viewedList = QtWidgets.QToolBar(self.tr('Recently Viewed'), self)
+        self.viewedList.setIconSize(QtCore.QSize(16, 16))
         self.viewedList.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self.viewedListActions = []
-        self.noteSplitter = QSplitter(Qt.Horizontal)
+        self.noteSplitter = QtWidgets.QSplitter(Qt.Horizontal)
 
-        self.dockIndex = QDockWidget(self.tr("Index"))
-        self.dockSearch = QDockWidget(self.tr("Search"))
-        self.searchEdit = QLineEdit()
+        self.dockIndex = QtWidgets.QDockWidget(self.tr("Index"))
+        self.dockSearch = QtWidgets.QDockWidget(self.tr("Search"))
+        self.searchEdit = QtWidgets.QLineEdit()
         self.searchView = MikiSearch(self)
-        self.searchTab = QWidget()
-        self.dockToc = QDockWidget(self.tr("TOC"))
+        self.searchTab = QtWidgets.QWidget()
+        self.dockToc = QtWidgets.QDockWidget(self.tr("TOC"))
         self.tocTree = TocTree()
-        self.dockAttachment = QDockWidget(self.tr("Attachment"))
+        self.dockAttachment = QtWidgets.QDockWidget(self.tr("Attachment"))
         self.attachmentView = AttachmentView(self)
 
         self.notesEdit = MikiEdit(self)
@@ -180,13 +180,13 @@ class MikiWindow(QMainWindow):
         self.loadHighlighter()
         self.notesView = MikiView(self)
 
-        self.findBar = QToolBar(self.tr('Find'), self)
+        self.findBar = QtWidgets.QToolBar(self.tr('Find'), self)
         self.findBar.setFixedHeight(30)
-        self.findEdit = QLineEdit(self.findBar)
-        self.checkBox = QCheckBox(self.tr('Match case'), self.findBar)
+        self.findEdit = QtWidgets.QLineEdit(self.findBar)
+        self.checkBox = QtWidgets.QCheckBox(self.tr('Match case'), self.findBar)
 
-        self.statusBar = QStatusBar(self)
-        self.statusLabel = QLabel(self)
+        self.statusBar = QtWidgets.QStatusBar(self)
+        self.statusLabel = QtWidgets.QLabel(self)
 
         self.altPressed = False
 
@@ -215,7 +215,7 @@ class MikiWindow(QMainWindow):
             self.notesEdit.setFontPointSize(fntsize)
         h = MikiHighlighter(parent=self.notesEdit, scale_font_sizes=header_scales_font)
         tw = Mikibook.settings.value('tabWidth', type=int, defaultValue=4)
-        qfm = QFontMetrics(h.patterns[0][1].font())
+        qfm = QtGui.QFontMetrics(h.patterns[0][1].font())
         self.notesEdit.setTabStopWidth(tw * qfm.width(' '))
 
     def setupActions(self):
@@ -537,16 +537,16 @@ class MikiWindow(QMainWindow):
         ''' When there exist foo.md, foo.mkd, foo.markdown,
             only one item will be shown in notesTree.
         '''
-        if not QDir(notePath).exists():
+        if not QtCore.QDir(notePath).exists():
             return
-        notebookDir = QDir(notePath)
+        notebookDir = QtCore.QDir(notePath)
         notesList = notebookDir.entryInfoList(['*.md', '*.mkd', '*.markdown'],
-                                               QDir.NoFilter,
-                                               QDir.Name|QDir.IgnoreCase)
+                                               QtCore.QDir.NoFilter,
+                                               QtCore.QDir.Name|QtCore.QDir.IgnoreCase)
         nl = [note.completeBaseName() for note in notesList]
         noduplicate = list(set(nl))
         for name in noduplicate:
-            item = QTreeWidgetItem(parent, [name])
+            item = QtWidgets.QTreeWidgetItem(parent, [name])
             path = notePath + '/' + name
             self.initTree(path, item)
 
@@ -576,14 +576,14 @@ class MikiWindow(QMainWindow):
     def openFile(self, filename):
         fh = QFile(filename)
         try:
-            if not fh.open(QIODevice.ReadOnly):
+            if not fh.open(QtCore.QIODevice.ReadOnly):
                 raise IOError(fh.errorString())
         except IOError as e:
-            QMessageBox.warning(self, self.tr('Read Error'),
+            QtWidgets.QMessageBox.warning(self, self.tr('Read Error'),
                                 self.tr('Failed to open %s: %s') % (filename, e))
         finally:
             if fh is not None:
-                noteBody = QTextStream(fh).readAll()
+                noteBody = QtCore.QTextStream(fh).readAll()
                 fh.close()
                 self.notesEdit.setPlainText(noteBody)
                 self.notesView.scrollPosition = QPoint(0, 0)

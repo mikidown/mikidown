@@ -1,9 +1,12 @@
 import os
 from threading import Thread
 from multiprocessing import Process
+from Qt import QtCore, QtGui, QtWidgets, QtNetwork, Qt
+"""
 from PyQt4.QtCore import Qt, QDir, QFile, QFileInfo, QMimeData, QIODevice, QTextStream, QUrl
 from PyQt4.QtGui import QAction, QCursor, QFileDialog, QFont, QTextCursor, QTextEdit, QMessageBox, QKeySequence, QApplication
 from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkRequest
+"""
 import markdown
 from whoosh.index import open_dir
 from whoosh.writing import AsyncWriter
@@ -16,7 +19,7 @@ except ImportError:
 from .utils import LineEditDialog, parseTitle, JSCRIPT_TPL, METADATA_CHECKER
 from .mikibook import Mikibook
 
-class MikiEdit(QTextEdit):
+class MikiEdit(QtWidgets.QTextEdit):
 
     def __init__(self, parent=None):
         super(MikiEdit, self).__init__(parent)
@@ -48,7 +51,7 @@ class MikiEdit(QTextEdit):
         self.documentFilter = "Document (" + self.documentFilter.strip() + ")"
 
         self.downloadAs = ""
-        self.networkManager = QNetworkAccessManager()
+        self.networkManager = QtNetwork.QNetworkAccessManager()
         self.networkManager.finished.connect(self.downloadFinished)
 
 
