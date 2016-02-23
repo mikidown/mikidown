@@ -1,0 +1,4 @@
+mikitray.*
+===================================
+.. automodule:: mikidown.mikitray
+

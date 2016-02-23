@@ -1,0 +1,4 @@
+mikitemplate.*
+===================================
+.. automodule:: mikidown.mikitemplate
+

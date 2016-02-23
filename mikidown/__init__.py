@@ -83,21 +83,22 @@ def main():
         notebooks = Mikibook.read()
 
     if notebooks:
-        if False: # THIS BLOCK indendeted adn diabled for now
-            if os.path.exists(Mikibook.lockpath) and args.command != 'index':
-                ret = QtWidgets.QMessageBox.question(None, "mikidown - lock file exists", ("It looks like the lock file for "
-                    "mikidown already exists. Is mikidown currently running? "
-                    "Click no to remove the lock file before rerunning mikidown."), buttons=QtWidgets.QMessageBox.Yes|QtWidgets.QMessageBox.No)
-                if ret == QtWidgets.QMessageBox.Yes:
-                    sys.exit(1)
-                else:
-                    os.remove(Mikibook.lockpath)
-                    sys.exit(0)
-                exit_code = app.exec_()
+        #"""
+        if os.path.exists(Mikibook.lockpath) and args.command != 'index':
+            ret = QtWidgets.QMessageBox.question(None, "mikidown - lock file exists", ("It looks like the lock file for "
+                "mikidown already exists. Is mikidown currently running? "
+                "Click no to remove the lock file before rerunning mikidown."), buttons=QtWidgets.QMessageBox.Yes|QtWidgets.QMessageBox.No)
+            if ret == QtWidgets.QMessageBox.Yes:
+                sys.exit(1)
             else:
-                print("Applying single instance per user lock.")
-                lock_fh = os.open(Mikibook.lockpath, os.O_CREAT | os.O_EXCL | os.O_RDWR)
-       
+                os.remove(Mikibook.lockpath)
+                sys.exit(0)
+            exit_code = app.exec_()
+        else:
+            print("Applying single instance per user lock.")
+            lock_fh = os.open(Mikibook.lockpath, os.O_CREAT | os.O_EXCL | os.O_RDWR)
+        #"""
+        
         settings = Setting(notebooks)
         # Initialize application and main window.
         icon = QtGui.QIcon(":/icons/mikidown.svg")

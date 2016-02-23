@@ -1,0 +1,4 @@
+mikiview.*
+===================================
+.. automodule:: mikidown.mikiview
+

@@ -1,0 +1,4 @@
+generator.*
+===================================
+.. automodule:: mikidown.generator
+

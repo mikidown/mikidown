@@ -1,0 +1,4 @@
+fontbutton.*
+===================================
+.. automodule:: mikidown.fontbutton
+
