@@ -14,18 +14,20 @@ from PyQt4.QtGui import (QAbstractItemDelegate, QAbstractItemView, QColor, QDial
                          QTreeWidgetItem, QSpinBox, QScrollArea, QCheckBox, QIcon, QPalette, QFont)
 """
 import mikidown
+
+## TODO look at using QColorDialog ?
 try:
     import slickpicker
-    BETTER_COLOR_PICKER=True
+    BETTER_COLOR_PICKER = True
 except ImportError as e:
     print("Can't find slickpicker, falling back to QLineEdit for editing mikidown colors")
-    BETTER_COLOR_PICKER=False
+    BETTER_COLOR_PICKER = False
 from .utils import allMDExtensions
 from .config import Setting, readListFromSettings, writeListToSettings, writeDictToSettings
 from .fontbutton import QFontButton
 
 class ListDelegate(QtWidgets.QAbstractItemDelegate):
-    """ Customize view and behavior of notebook list """
+    """Customize view and behavior of notebook list"""
 
     def __init__(self, parent=None):
         super(ListDelegate, self).__init__(parent)
@@ -113,66 +115,69 @@ class NotebookExtSettingsDialog(QtWidgets.QDialog):
         return items
 
 class NotebookSettingsDialog(QtWidgets.QDialog):
-    """GUI for adjusting notebook settings"""
+    """Dialog for adjusting notebook settings"""
+    
     def __init__(self, parent=None):
         super(NotebookSettingsDialog, self).__init__(parent)
         self.setWindowTitle(self.tr("Notebook settings - mikidown"))
-        #widgets for tab 1
+        
+        # widgets for tab 1
         self.mdExts = QtWidgets.QListWidget()
         self.mjEdit = QtWidgets.QLineEdit()
         self.moveUp = QtWidgets.QPushButton('<<')
         self.moveDown = QtWidgets.QPushButton('>>')
-        self.configureExtension = QPushButton(self.tr('Edit Settings for this extension'))
+        self.configureExtension = QtWidgets.QPushButton(self.tr('Edit Settings for this extension'))
         self.tmpdict = deepcopy(self.parent().settings.extcfg)
         
-        #widgets for tab 2
+        # widgets for tab 2
         self.fExtEdit = QtWidgets.QLineEdit()
         self.attImgEdit = QtWidgets.QLineEdit()
         self.attDocEdit = QtWidgets.QLineEdit()
+        
         # mandatory button box
         self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok |
                                                     QtWidgets.QDialogButtonBox.Cancel)
         
-        #tab panels
-        tabs = QTabWidget()
-        markupTab = QWidget()
-        fileExtsTab = QWidget()
+        # tab panels
+        tabs = QtWidgets.QTabWidget()
+        markupTab = QtWidgets.QWidget()
+        fileExtsTab = QtWidgets.QWidget()
         tabs.addTab(markupTab, "Markdown")
         tabs.addTab(fileExtsTab, self.tr("File extensions"))
         
-        #initialization functions
+        # initialization functions
         self.initExtList()
-        self.mdExts.setDragDropMode(QAbstractItemView.InternalMove)
+        self.mdExts.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
         self.mjEdit.setText(self.parent().settings.mathjax)
         self.attImgEdit.setText(', '.join(self.parent().settings.attachmentImage))
         self.attDocEdit.setText(', '.join(self.parent().settings.attachmentDocument))
         self.fExtEdit.setText(self.parent().settings.fileExt)
         
-        #set up tab 1
-        layout=QGridLayout(markupTab)
-        layout.addWidget(QLabel(self.tr("Markdown extensions")),0,0,1,4)
+        # set up tab 1
+        layout = QtWidgets.QGridLayout(markupTab)
+        layout.addWidget(QtWidgets.QLabel(self.tr("Markdown extensions")),0,0,1,4)
         layout.addWidget(self.mdExts,1,0,1,4)
         layout.addWidget(self.moveUp,2,0,1,1)
         layout.addWidget(self.moveDown,2,1,1,1)
         layout.addWidget(self.configureExtension,2,2,1,2)
-        layout.addWidget(QLabel(self.tr("MathJax Location")),3,0,1,1)
+        layout.addWidget(QtWidgets.QLabel(self.tr("MathJax Location")),3,0,1,1)
         layout.addWidget(self.mjEdit,3,1,1,3)
         
-        #set up tab 2
-        layout=QGridLayout(fileExtsTab)
-        layout.addWidget(QLabel(self.tr("Note file extension")),0,0,1,1)
-        layout.addWidget(QLabel(self.tr("Image file extension")),1,0,1,1)
-        layout.addWidget(QLabel(self.tr("Document file extension")),2,0,1,1)
+        # set up tab 2
+        layout = QtWidgets.QGridLayout(fileExtsTab)
+        layout.addWidget(QtWidgets.QLabel(self.tr("Note file extension")),0,0,1,1)
+        layout.addWidget(QtWidgets.QLabel(self.tr("Image file extension")),1,0,1,1)
+        layout.addWidget(QtWidgets.QLabel(self.tr("Document file extension")),2,0,1,1)
         layout.addWidget(self.fExtEdit,0,1,1,1)
         layout.addWidget(self.attImgEdit,1,1,1,1)
         layout.addWidget(self.attDocEdit,2,1,1,1)
         
-        #put it together
-        vlayout = QVBoxLayout(self)
+        # put it together
+        vlayout = QtWidgets.QVBoxLayout(self)
         vlayout.addWidget(tabs)
         vlayout.addWidget(self.buttonBox)
 
-        #setup signal handlers
+        # setup signal handlers
         self.moveUp.clicked.connect(self.moveItemUp)
         self.configureExtension.clicked.connect(self.configExt)
         self.moveDown.clicked.connect(self.moveItemDown)
@@ -189,23 +194,23 @@ class NotebookSettingsDialog(QtWidgets.QDialog):
             self.tmpdict[ext] = dialog.configToList()
 
     def initExtList(self):
-        extset=set(self.parent().settings.extensions)
+        extset = set(self.parent().settings.extensions)
         #for easier performance in checking
         for ext in self.parent().settings.extensions:
-            item = QListWidgetItem(ext, self.mdExts)
+            item = QtWidgets.QListWidgetItem(ext, self.mdExts)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
             item.setCheckState(Qt.Checked)
 
         for ext in self.parent().settings.faulty_exts:
-            item = QListWidgetItem(ext, self.mdExts)
+            item = QtWidgets.QListWidgetItem(ext, self.mdExts)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
-            item.setBackground(QBrush(QColor('red')))
-            item.setForeground(QBrush(QColor('black')))
+            item.setBackground(QtGui.QBrush(QtGui.QColor('red')))
+            item.setForeground(QtGui.QBrush(QtGui.QColor('black')))
             item.setCheckState(Qt.Checked)
 
         for ext in allMDExtensions():
             if ext in extset: continue
-            item = QListWidgetItem(ext, self.mdExts)
+            item = QtWidgets.QListWidgetItem(ext, self.mdExts)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
             item.setCheckState(Qt.Unchecked)
             #self.mdExts.addItem(item)
@@ -230,7 +235,7 @@ class NotebookSettingsDialog(QtWidgets.QDialog):
 
 
     def accept(self):
-        #write to settings first
+        # write to settings first
         msettings = self.parent().settings
         nbsettings = msettings.qsettings
         
@@ -245,7 +250,7 @@ class NotebookSettingsDialog(QtWidgets.QDialog):
         writeListToSettings(nbsettings, 'attachmentDocument', self.attDocEdit.text().split(", "))
         writeDictToSettings(nbsettings, 'extensionsConfig', self.tmpdict)
         
-        #then to memory
+        # then to memory
         msettings.extensions = extlist
         msettings.mathjax = self.mjEdit.text()
         msettings.attachmentDocument = readListFromSettings(nbsettings, 'attachmentDocument')
@@ -253,13 +258,13 @@ class NotebookSettingsDialog(QtWidgets.QDialog):
         msettings.extcfg.update(self.tmpdict)
         msettings.md = markdown.Markdown(msettings.extensions, extension_configs=msettings.extcfg)
         
-        #then make mikidown use these settings NOW
+        # then make mikidown use these settings NOW
         curitem=self.parent().notesTree.currentItem()
         self.parent().currentItemChangedWrapper(curitem, curitem)
         QDialog.accept(self)
 
 class NotebookListDialog(QtWidgets.QDialog):
-    """ Functions to display, create, remove, modify notebookList """
+    """Display, create, remove, modify notebookList """
 
     def __init__(self, parent=None):
         super(NotebookListDialog, self).__init__(parent)
@@ -269,9 +274,11 @@ class NotebookListDialog(QtWidgets.QDialog):
         self.moveDown = QtWidgets.QPushButton('>>')
         self.add = QtWidgets.QPushButton(self.tr('Add'))
         self.remove = QtWidgets.QPushButton(self.tr('Remove'))
+        
         self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok |
                                                     QtWidgets.QDialogButtonBox.Cancel)
         self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
+        
         layout = QtWidgets.QGridLayout()
         layout.addWidget(self.notebookList, 0, 0, 4, 6)
         layout.addWidget(self.moveUp, 1, 6)
@@ -290,6 +297,7 @@ class NotebookListDialog(QtWidgets.QDialog):
         self.moveDown.clicked.connect(self.moveItemDown)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
+        
         self.initList()
 
     def initList(self):
@@ -306,7 +314,7 @@ class NotebookListDialog(QtWidgets.QDialog):
 
         self.updateUi(len(notebooks) != 0)
         self.notebookList.setCurrentRow(0)
-            # QListWidgetItem(nb, self.notebookList)
+        # QListWidgetItem(nb, self.notebookList) ???
 
     def updateUi(self, row):
         flag = (row != -1)
@@ -371,15 +379,18 @@ class NewNotebookDlg(QtWidgets.QDialog):
         self.setWindowTitle(self.tr('Add Notebook - mikidown'))
         tipLabel = QtWidgets.QLabel(self.tr('Choose a name and folder for your notebook.') +
                           self.tr('\nThe folder can be an existing notebook folder.'))
+        
         self.nameEditor = QtWidgets.QLineEdit()
         self.nameEditor.setText(self.tr('Notes'))
         nameLabel = QtWidgets.QLabel(self.tr('Name:'))
         nameLabel.setBuddy(self.nameEditor)
+        
         self.pathEditor = QtWidgets.QLineEdit()
         # self.pathEditor.setText('~/mikidown')
         self.pathEditor.setText(os.path.expanduser('~').replace(os.sep,'/')+'/mikinotes')
         pathLabel = QtWidgets.QLabel(self.tr('Path:'))
         pathLabel.setBuddy(self.pathEditor)
+        
         browse = QtWidgets.QPushButton(self.tr('Browse'))
         buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok |
                                                 QtWidgets.QDialogButtonBox.Cancel)
@@ -519,15 +530,29 @@ class Mikibook():
     # ~/.config/mikidown/mikidown.conf
     settings = QtCore.QSettings(QtCore.QSettings.IniFormat, QtCore.QSettings.UserScope, 'mikidown', 'mikidown')
     lockpath = os.path.join(os.path.dirname(settings.fileName()),'lock').replace(os.sep,'/')
-    highlighter_labels = ['HTML Tags', '1<sup>st</sup> LVL headers', '2<sup>nd</sup> LVL headers',
-                         '3<sup>rd</sup> LVL headers', '4<sup>th</sup> and lower LVL headers',
-                         'HTML Symbols','HTML comments','Strikethrough','Underline','Bold', 'Italics',
-                         'Links', 'Links and images', 'Block Quotes','Fenced Code','Math']
+    highlighter_labels = [
+            'HTML Tags', 
+            '1<sup>st</sup> LVL headers', 
+            '2<sup>nd</sup> LVL headers',
+            '3<sup>rd</sup> LVL headers', 
+            '4<sup>th</sup> and lower LVL headers',
+            'HTML Symbols',
+            'HTML comments',
+            'Strikethrough',
+            'Underline',
+            'Bold', 
+            'Italics',
+            'Links', 
+            'Links and images', 
+            'Block Quotes',
+            'Fenced Code',
+            'Math'
+    ]
 
     @staticmethod
     def highlighterColors():
         items = []
-        defaults = [ '#A40000',
+        defaults = ["#A40000",
                     "#4E9A06",
                     "#4E9A06",
                     "#4E9A06",
@@ -564,7 +589,7 @@ class Mikibook():
 
     @staticmethod
     def read():
-        """ Read notebook list from config file """
+        """Read notebook list from config file """
         version = Mikibook.settings.value("version", defaultValue=None)
         if not version: #before 0.3.4, since we're migrating the notebooklist to be plaintext
             Mikibook.nbListMigration()

@@ -5,7 +5,7 @@ import os
 import shutil
 import re
 from threading import Thread
-from Qt import QtCore, QtGui, QtWidgets, QtWebKitWidgets, Qt
+from Qt import QtCore, QtGui, QtWidgets, QtWebKitWidgets, QtPrintSupport, Qt
 """
 from PyQt4.QtCore import (Qt, QDir, QFile, QFileInfo, QIODevice,
                           QPoint, QSize, QTextStream, QUrl)
@@ -654,11 +654,11 @@ class MikiWindow(QtWidgets.QMainWindow):
         fh.close()
 
     def printNote(self):
-        printer = QtCore.QPrinter(QPrinter.HighResolution)
+        printer = QtPrintSupport.QPrinter(QtPrintSupport.QPrinter.HighResolution)
         printer.setCreator(__appname__ + ' ' + __version__)
         printer.setDocName(self.notesTree.currentItem().text(0))
-        printdialog = QtCore.QPrintDialog(printer, self)
-        if printdialog.exec() == QDialog.Accepted:
+        printdialog = QtPrintSupport.QPrintDialog(printer, self)
+        if printdialog.exec() == QtWidgets.QDialog.Accepted:
             self.notesView.print_(printer)
 
     def noteEditted(self):

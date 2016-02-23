@@ -50,7 +50,7 @@ class MikiView(QtWebKitWidgets.QWebView):
             self.parent.notesTree.setCurrentItem(item)
             if len(name) > 1:
                 link = "file://" + self.notePath + "/#" + name[1]
-                self.load(QUrl(link))
+                self.load(QtCore.QUrl(link))
             viewFrame = self.page().mainFrame()
             self.scrollPosition = viewFrame.scrollPosition()
 
