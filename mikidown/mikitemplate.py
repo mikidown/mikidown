@@ -225,7 +225,7 @@ class ManageTemplatesDialog(QtWidgets.QDialog):
         self.setWindowTitle(self.tr("Manage templates"))
         self.settings = settings
 
-        self.buttonBox = QtWidgets.QDialogButtonBox(QDialogButtonBox.Close)
+        self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Close)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
         self.templatePages = QtWidgets.QTabWidget()

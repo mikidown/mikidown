@@ -60,7 +60,7 @@ class AttachmentItemDelegate(QtWidgets.QStyledItemDelegate):
         painter.drawText(rect, flag, fileName)
 
     def sizeHint(self, option, index):
-        return QSize(self.width + 16, self.height + 16)
+        return QtCore.QSize(self.width + 16, self.height + 16)
 
 class AttachmentView(QtWidgets.QListView):
     """ A dockWidget displaying attachments of the current note.

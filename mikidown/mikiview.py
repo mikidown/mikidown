@@ -26,7 +26,7 @@ class MikiView(QtWebKitWidgets.QWebView):
         self.page().mainFrame(
         ).contentsSizeChanged.connect(self.contentsSizeChanged)
 
-        self.scrollPosition = QPoint(0, 0)
+        self.scrollPosition = QtCore.QPoint(0, 0)
 
     def linkClicked(self, qurl):
         '''three kinds of link:
@@ -71,7 +71,7 @@ class MikiView(QtWebKitWidgets.QWebView):
         '''scroll notesView while editing (adding new lines)
            Whithout this, every `updateView` will result in scroll to top.
         '''
-        if self.scrollPosition == QPoint(0, 0):
+        if self.scrollPosition == QtCore.QPoint(0, 0):
             return
         viewFrame = self.page().mainFrame()
         newY = self.scrollPosition.y(
@@ -86,7 +86,7 @@ class MikiView(QtWebKitWidgets.QWebView):
         self.scrollPosition = viewFrame.scrollPosition()
         self.contentsSize = viewFrame.contentsSize()
         url_notebook = 'file://' + self.notePath + '/'
-        self.setHtml(self.parent.notesEdit.toHtml(), QUrl(url_notebook))
+        self.setHtml(self.parent.notesEdit.toHtml(), QtCore.QUrl(url_notebook))
         # Restore previous scrollPosition
         viewFrame.setScrollPosition(self.scrollPosition)
 

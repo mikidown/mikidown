@@ -45,16 +45,16 @@ class MikiSearch(QtWebKitWidgets.QWebView):
         if link:
             self.flag = True
             self.link = link
-            QToolTip.showText(QCursor.pos(), self.link)
+            QtWidgets.QToolTip.showText(QCursor.pos(), self.link)
         else:
             self.flag = False
 
     def mouseMoveEvent(self, event):
         if self.flag:
-            QToolTip.showText(QCursor.pos(), self.link)
+            QtWidgets.QToolTip.showText(QCursor.pos(), self.link)
         else:
-            QToolTip.hideText()
-        QWebView.mouseMoveEvent(self, event)
+            QtWidgets.QToolTip.hideText()
+        QtWebKitWidgets.QWebView.mouseMoveEvent(self, event)
 
     def sizeHint(self):
-        return QSize(200, 0)
+        return QtCore.QSize(200, 0)

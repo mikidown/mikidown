@@ -8,7 +8,7 @@ import re
 class FindReplaceDialog(QtWidgets.QDialog):
   def __init__(self, parent = None):
     super(FindReplaceDialog, self).__init__(parent)
-    grid = QGridLayout(self)
+    grid = QtWidgets.QGridLayout(self)
     
     self.searchInput = QtWidgets.QLineEdit(self)
     self.replaceInput = QtWidgets.QLineEdit(self)
@@ -29,9 +29,9 @@ class FindReplaceDialog(QtWidgets.QDialog):
     self.searchInput.returnPressed.connect(self.find)
     self.replaceInput.returnPressed.connect(self.replace)
     
-    grid.addWidget(QLabel(self.tr("Search")),0,0)
-    grid.addWidget(QLabel(self.tr("    Options")),1,0)
-    grid.addWidget(QLabel(self.tr("Replace")),2,0)
+    grid.addWidget(QtWidgets.QLabel(self.tr("Search")),0,0)
+    grid.addWidget(QtWidgets.QLabel(self.tr("    Options")),1,0)
+    grid.addWidget(QtWidgets.QLabel(self.tr("Replace")),2,0)
     
     grid.addWidget(self.searchInput,0,1)
     grid.addWidget(self.nextButton,0,2)

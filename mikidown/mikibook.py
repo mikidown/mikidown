@@ -5,7 +5,7 @@ Notebook management module.
 import os
 import markdown
 from copy import deepcopy
-from Qt import QtCore, QtGui, QtWidgets
+from Qt import QtCore, QtGui, QtWidgets, Qt
 """
 from PyQt4.QtCore import Qt, QDir, QFile, QSettings, QSize
 from PyQt4.QtGui import (QAbstractItemDelegate, QAbstractItemView, QColor, QDialog, QDialogButtonBox, 
@@ -33,12 +33,12 @@ class ListDelegate(QtWidgets.QAbstractItemDelegate):
     def paint(self, painter, option, index):
         r = option.rect
 
-        if option.state & QStyle.State_Selected:
+        if option.state & QtWidgets.QStyle.State_Selected:
             painter.fillRect(r, self.parent().palette().highlight())
-            fontPen = QPen(self.parent().palette().highlightedText(), 1, Qt.SolidLine)
+            fontPen = QtGui.QPen(self.parent().palette().highlightedText(), 1, Qt.SolidLine)
         else:
             painter.fillRect(r, self.parent().palette().base())
-            fontPen = QPen(self.parent().palette().text(), 1, Qt.SolidLine)
+            fontPen = QtGui.QPen(self.parent().palette().text(), 1, Qt.SolidLine)
 
         painter.setPen(fontPen)
 
@@ -48,7 +48,7 @@ class ListDelegate(QtWidgets.QAbstractItemDelegate):
         imageSpace = 10
         # notebook name
         r = option.rect.adjusted(imageSpace, 0, -10, -20)
-        name_font = QFont(self.parent().font())
+        name_font = QtGui.QFont(self.parent().font())
         name_font.setPointSize(10)
         name_font.setBold(True)
         if index.flags() == Qt.NoItemFlags:
@@ -57,7 +57,7 @@ class ListDelegate(QtWidgets.QAbstractItemDelegate):
         painter.drawText(r.left(), r.top(), r.width(), r.height(), 
                          Qt.AlignBottom|Qt.AlignLeft, name)
         # notebook path
-        path_font = QFont(self.parent().font())
+        path_font = QtGui.QFont(self.parent().font())
         path_font.setPointSize(8)
         if index.flags() == Qt.NoItemFlags:
             path_font.setStrikeOut(True)
@@ -271,8 +271,8 @@ class NotebookListDialog(QtWidgets.QDialog):
         self.remove = QtWidgets.QPushButton(self.tr('Remove'))
         self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok |
                                                     QtWidgets.QDialogButtonBox.Cancel)
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
-        layout = QGridLayout()
+        self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
+        layout = QtWidgets.QGridLayout()
         layout.addWidget(self.notebookList, 0, 0, 4, 6)
         layout.addWidget(self.moveUp, 1, 6)
         layout.addWidget(self.moveDown, 2, 6)
@@ -296,7 +296,7 @@ class NotebookListDialog(QtWidgets.QDialog):
         self.notebookList.clear()
         notebooks = Mikibook.read()
         for nb in notebooks:
-            item = QListWidgetItem()
+            item = QtWidgets.QListWidgetItem()
             item.setData(Qt.DisplayRole, nb[0])
             item.setData(Qt.UserRole, nb[1])
             lockPath = os.path.join(nb[1], '.mikidown_lock')
@@ -310,7 +310,7 @@ class NotebookListDialog(QtWidgets.QDialog):
 
     def updateUi(self, row):
         flag = (row != -1)
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(flag)
+        self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(flag)
         self.remove.setEnabled(flag)
         self.moveUp.setEnabled(flag)
         self.moveDown.setEnabled(flag)
@@ -363,7 +363,7 @@ class NotebookListDialog(QtWidgets.QDialog):
             notebooks.append([name, path])
             Mikibook.write(notebooks)
 
-        QDialog.accept(self)
+        QtWidgets.QDialog.accept(self)
 
 class NewNotebookDlg(QtWidgets.QDialog):
     def __init__(self, parent=None):
@@ -373,18 +373,18 @@ class NewNotebookDlg(QtWidgets.QDialog):
                           self.tr('\nThe folder can be an existing notebook folder.'))
         self.nameEditor = QtWidgets.QLineEdit()
         self.nameEditor.setText(self.tr('Notes'))
-        nameLabel = QLabel(self.tr('Name:'))
+        nameLabel = QtWidgets.QLabel(self.tr('Name:'))
         nameLabel.setBuddy(self.nameEditor)
         self.pathEditor = QtWidgets.QLineEdit()
         # self.pathEditor.setText('~/mikidown')
         self.pathEditor.setText(os.path.expanduser('~').replace(os.sep,'/')+'/mikinotes')
-        pathLabel = QLabel(self.tr('Path:'))
+        pathLabel = QtWidgets.QLabel(self.tr('Path:'))
         pathLabel.setBuddy(self.pathEditor)
-        browse = QPushButton(self.tr('Browse'))
-        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                     QDialogButtonBox.Cancel)
+        browse = QtWidgets.QPushButton(self.tr('Browse'))
+        buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok |
+                                                QtWidgets.QDialogButtonBox.Cancel)
 
-        grid = QGridLayout()
+        grid = QtWidgets.QGridLayout()
         grid.setRowMinimumHeight(1, 10)
         grid.setRowMinimumHeight(4, 10)
         grid.addWidget(tipLabel, 0, 0, 1, 4)
@@ -402,10 +402,10 @@ class NewNotebookDlg(QtWidgets.QDialog):
 
     def browse(self):
         default = os.path.expanduser('~')
-        path = QFileDialog.getExistingDirectory(self,
+        path = QtWidgets.QFileDialog.getExistingDirectory(self,
                                                 self.tr("Select Folder"),
                                                 default,
-                                                QFileDialog.ShowDirsOnly)
+                                                QtWidgets.QFileDialog.ShowDirsOnly)
         self.pathEditor.setText(path)
 
     def closeEvent(self, event):
@@ -414,14 +414,14 @@ class NewNotebookDlg(QtWidgets.QDialog):
 class MikidownHighlightCfgWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super(MikidownHighlightCfgWidget, self).__init__(parent)
-        layout = QGridLayout(self)
+        layout = QtWidgets.QGridLayout(self)
         colors = Mikibook.highlighterColors()
         for i in range(16):
             layout.addWidget(QtWidgets.QLabel(Mikibook.highlighter_labels[i]),i,0,1,1)
             if BETTER_COLOR_PICKER:
                 layout.addWidget(slickpicker.QColorEdit(colors[i]),i,1,1,1)
             else:
-                layout.addWidget(QLineEdit(colors[i]),i,1,1,1)
+                layout.addWidget(QtWidgets.QLineEdit(colors[i]),i,1,1,1)
 
     def configToList(self):
         items=[]
@@ -438,27 +438,27 @@ class MikidownCfgDialog(QtWidgets.QDialog):
         #tab = QWidget()
         #tab2 = QWidget()
         self.setWindowTitle(self.tr("Settings - mikidown"))
-        self.recentNotesCount = QSpinBox()
+        self.recentNotesCount = QtWidgets.QSpinBox()
         recent_notes_n = Mikibook.settings.value('recentNotesNumber',type=int, defaultValue=20)
         self.recentNotesCount.setValue(recent_notes_n)
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                          QDialogButtonBox.Cancel)
+        self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok |
+                                                    QtWidgets.QDialogButtonBox.Cancel)
         self.hltCfg = MikidownHighlightCfgWidget(parent=self)
-        self.tabWidth = QSpinBox(self)
+        self.tabWidth = QtWidgets.QSpinBox(self)
         self.tabWidth.setRange(2, 8)
         self.tabWidth.setSingleStep(2)
-        self.iconTheme = QLineEdit(self)
-        self.iconTheme.setText(Mikibook.settings.value('iconTheme', QIcon.themeName()))
+        self.iconTheme = QtWidgets.QLineEdit(self)
+        self.iconTheme.setText(Mikibook.settings.value('iconTheme', QtGui.QIcon.themeName()))
 
         self.editorFont = QFontButton(parent=self)
-        fontval = QFont()
+        fontval = QtGui.QFont()
         fontfam = Mikibook.settings.value('editorFont', defaultValue=None)
         fontsize = Mikibook.settings.value('editorFontSize', type=int, defaultValue=12)
         if fontfam is not None:
             fontval.setFamily(fontfam)
         fontval.setPointSize(fontsize)
 
-        self.headerScalesFont = QCheckBox(self)
+        self.headerScalesFont = QtWidgets.QCheckBox(self)
         if Mikibook.settings.value('headerScaleFont', type=bool, defaultValue=True):
             self.headerScalesFont.setCheckState(Qt.Checked)
         else:
@@ -468,26 +468,26 @@ class MikidownCfgDialog(QtWidgets.QDialog):
 
         self.tabWidth.setValue(Mikibook.settings.value('tabWidth', type=int, defaultValue=4))
 
-        self.tabToSpaces = QCheckBox(self)
+        self.tabToSpaces = QtWidgets.QCheckBox(self)
         if Mikibook.settings.value('tabInsertsSpaces', type=bool, defaultValue=True):
             self.tabToSpaces.setCheckState(Qt.Checked)
         else:
             self.tabToSpaces.setCheckState(Qt.Unchecked)
 
-        layout = QGridLayout(self)
-        layout.addWidget(QLabel(self.tr("# of recently viewed notes to keep")),0,0,1,1)
+        layout = QtWidgets.QGridLayout(self)
+        layout.addWidget(QtWidgets.QLabel(self.tr("# of recently viewed notes to keep")),0,0,1,1)
         layout.addWidget(self.recentNotesCount,0,1,1,1)
-        layout.addWidget(QLabel(self.tr("Editor font")), 1, 0, 1, 1)
+        layout.addWidget(QtWidgets.QLabel(self.tr("Editor font")), 1, 0, 1, 1)
         layout.addWidget(self.editorFont, 1, 1, 1, 1)
-        layout.addWidget(QLabel(self.tr("Header rank scales editor font?")), 2, 0, 1, 1)
+        layout.addWidget(QtWidgets.QLabel(self.tr("Header rank scales editor font?")), 2, 0, 1, 1)
         layout.addWidget(self.headerScalesFont, 2, 1, 1, 1)
-        qs = QScrollArea(self)
+        qs = QtWidgets.QScrollArea(self)
         qs.setWidget(self.hltCfg)
-        layout.addWidget(QLabel(self.tr("Tabs expand to spaces?")), 3, 0, 1, 1)
+        layout.addWidget(QtWidgets.QLabel(self.tr("Tabs expand to spaces?")), 3, 0, 1, 1)
         layout.addWidget(self.tabToSpaces, 3, 1, 1, 1)
-        layout.addWidget(QLabel(self.tr("Tab width")), 4, 0, 1, 1)
+        layout.addWidget(QtWidgets.QLabel(self.tr("Tab width")), 4, 0, 1, 1)
         layout.addWidget(self.tabWidth, 4, 1, 1, 1)
-        layout.addWidget(QLabel(self.tr("Icon Theme")),5,0,1,1)
+        layout.addWidget(QtWidgets.QLabel(self.tr("Icon Theme")),5,0,1,1)
         layout.addWidget(self.iconTheme,5,1,1,1)
         layout.addWidget(qs,6,0,1,2)
         layout.addWidget(self.buttonBox,7,0,1,2)
@@ -509,11 +509,11 @@ class MikidownCfgDialog(QtWidgets.QDialog):
         else:
             Mikibook.settings.setValue('tabInsertsSpaces', False)
         Mikibook.setHighlighterColors(self.hltCfg.configToList())
-        QIcon.setThemeName(self.iconTheme.text())
+        QtGui.QIcon.setThemeName(self.iconTheme.text())
 
         #then make mikidown use these settings NOW
         self.parent().loadHighlighter()
-        QDialog.accept(self)
+        QtWidgets.QDialog.accept(self)
 
 class Mikibook():
     # ~/.config/mikidown/mikidown.conf
@@ -618,8 +618,8 @@ class Mikibook():
         """
 
         # QDir().mkpath will create all necessary parent directories
-        QDir().mkpath(os.path.join(notebookPath, "notes").replace(os.sep,'/'))
-        QDir().mkpath(os.path.join(notebookPath, "css").replace(os.sep,'/'))
+        QtCore.QDir().mkpath(os.path.join(notebookPath, "notes").replace(os.sep,'/'))
+        QtCore.QDir().mkpath(os.path.join(notebookPath, "css").replace(os.sep,'/'))
         cssFile = os.path.join(notebookPath, "css", "notebook.css").replace(os.sep,'/')
         searchCssFile = os.path.join(notebookPath, "css", "search-window.css").replace(os.sep,'/')
         cssTemplate = "/usr/share/mikidown/notebook.css"
@@ -633,8 +633,8 @@ class Mikibook():
         # If //cssFile// already exists, copy() returns false!
         print(cssTemplate)
         print(searchCssTemplate)
-        QFile.copy(cssTemplate, cssFile)
-        QFile.copy(searchCssTemplate, searchCssFile)
+        QtCore.QFile.copy(cssTemplate, cssFile)
+        QtCore.QFile.copy(searchCssTemplate, searchCssFile)
 
     @staticmethod
     def remove(name, path):

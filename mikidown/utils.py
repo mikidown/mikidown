@@ -38,21 +38,21 @@ class LineEditDialog(QtWidgets.QDialog):
 
         # newPage/newSubpage
         if parent.objectName() in ["mikiWindow", "notesTree"]:
-            editorLabel = QLabel(self.tr("Page Name:"))
+            editorLabel = QtWidgets.QLabel(self.tr("Page Name:"))
             self.extNames = NOTE_EXTS
         # Copy Image to notesEdit
         elif parent.objectName() == "notesEdit":
-            editorLabel = QLabel(self.tr("File Name:"))
+            editorLabel = QtWidgets.QLabel(self.tr("File Name:"))
             self.extNames = IMAGE_EXTS
         else:
             return
 
-        self.editor = QLineEdit()
+        self.editor = QtWidgets.QLineEdit()
         editorLabel.setBuddy(self.editor)
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                          QDialogButtonBox.Cancel)
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
-        layout = QGridLayout()
+        self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok |
+                                                    QtWidgets.QDialogButtonBox.Cancel)
+        self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
+        layout = QtWidgets.QGridLayout()
         layout.addWidget(editorLabel, 0, 0)
         layout.addWidget(self.editor, 0, 1)
         layout.addWidget(self.buttonBox, 1, 1)
@@ -67,7 +67,7 @@ class LineEditDialog(QtWidgets.QDialog):
         self.editor.selectAll()
 
     def updateUi(self):
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(
+        self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(
             self.editor.text() != "")
 
     def accept(self):
@@ -75,16 +75,16 @@ class LineEditDialog(QtWidgets.QDialog):
 
         acceptable, existPath = doesFileExist(notePath, self.extNames)
         if acceptable:
-            QDialog.accept(self)
+            QtWidgets.QDialog.accept(self)
         else:
-            QMessageBox.warning(self, self.tr("Error"),
+            QtWidgets.QMessageBox.warning(self, self.tr("Error"),
                         self.tr("File already exists: %s") % existPath)
 
 def doesFileExist(path, altExts):
     doesntExist = True
     existPath = None
     for ext in altExts:
-        if QFile.exists(path + ext):
+        if QtCore.QFile.exists(path + ext):
             doesntExist = False
             existPath = path + ext
             break

@@ -81,8 +81,8 @@ class Setting():
                 })
         else:
             os.makedirs(self.templatesPath)
-            self.titleTemplates = QtWidgets.QStandardItemModel()
-            self.bodyTitlePairs = QtWidgets.QStandardItemModel()
+            self.titleTemplates = QtGui.QStandardItemModel()
+            self.bodyTitlePairs = QtGui.QStandardItemModel()
         self.bodyTemplates = QtWidgets.QFileSystemModel()
         self.bodyTemplates.setRootPath(self.templatesPath)
         self.bodyTemplates.rowCount()

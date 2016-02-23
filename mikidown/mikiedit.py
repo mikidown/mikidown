@@ -301,11 +301,11 @@ class MikiEdit(QtWidgets.QTextEdit):
             To be merged with saveNoteAs
         """
         if not htmlFile:
-            (htmlFile, htmlType) = QFileDialog.getSaveFileNameAndFilter(
+            (htmlFile, htmlType) = QtWidgets.QFileDialog.getSaveFileNameAndFilter(
                 self, self.tr("Export to HTML"), "", "Complete;;HTML Only")
         if htmlFile == '':
             return
-        if not QFileInfo(htmlFile).suffix():
+        if not QtCore.QFileInfo(htmlFile).suffix():
             htmlFile += '.html'
 
         if htmlType == "Complete":
@@ -314,16 +314,16 @@ class MikiEdit(QtWidgets.QTextEdit):
             self.saveHtmlOnly(htmlFile)
 
     def saveCompleteHtml(self, htmlFile):
-        html = QFile(htmlFile)
-        html.open(QIODevice.WriteOnly)
-        savestream = QTextStream(html)
-        css = QFile(self.settings.cssfile)
-        css.open(QIODevice.ReadOnly)
+        html = QtCore.QFile(htmlFile)
+        html.open(QtCore.QIODevice.WriteOnly)
+        savestream = QtCore.QTextStream(html)
+        css = QtCore.QFile(self.settings.cssfile)
+        css.open(QtCore.QIODevice.ReadOnly)
         # Use a html lib may be a better idea?
         savestream << "<html><head><meta charset='utf-8'></head>"
         # Css is inlined.
         savestream << "<style>"
-        savestream << QTextStream(css).readAll()
+        savestream << QtCore.QTextStream(css).readAll()
         savestream << "</style>"
         # Note content
         savestream << self.toHtml()
@@ -332,11 +332,11 @@ class MikiEdit(QtWidgets.QTextEdit):
 
     def saveHtmlOnly(self, htmlFile):
         fileDir = os.path.dirname(htmlFile)
-        QDir().mkpath(fileDir)
+        QtCore.QDir().mkpath(fileDir)
 
         html = QFile(htmlFile)
-        html.open(QIODevice.WriteOnly)
-        savestream = QTextStream(html)
+        html.open(QtCore.QIODevice.WriteOnly)
+        savestream = QtCore.QTextStream(html)
         savestream << """
                       <html><head>
                         <meta charset="utf-8">

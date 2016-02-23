@@ -96,7 +96,7 @@ class MikiTree(QtWidgets.QTreeWidget):
         extName.insert(0, defExt)
         for ext in extName:
             filepath = os.path.join(self.notePath, page + ext)
-            if QFile.exists(filepath):
+            if QtCore.QFile.exists(filepath):
                 return filepath
 
         # return filename with default extension name even if file not exists.
@@ -122,7 +122,7 @@ class MikiTree(QtWidgets.QTreeWidget):
         if event.button() == Qt.RightButton:
             return
         else:
-            QTreeWidget.mousePressEvent(self, event)
+            QtWidgets.QTreeWidget.mousePressEvent(self, event)
 
     def contextMenu(self, qpoint):
         """ contextMenu shown when right click the mouse """
@@ -205,10 +205,10 @@ class MikiTree(QtWidgets.QTreeWidget):
             if hasattr(item, 'text'):
                 pagePath = os.path.join(self.notePath,
                                         pagePath + '/').replace(os.sep, '/')
-            if not QDir(pagePath).exists():
-                QDir(self.notePath).mkdir(pagePath)
+            if not QtCore.QDir(pagePath).exists():
+                QtCore.QDir(self.notePath).mkdir(pagePath)
 
-            if not QDir(os.path.dirname(newPageName)).exists():
+            if not QtCore.QDir(os.path.dirname(newPageName)).exists():
                 curdirname = os.path.dirname(newPageName)
                 needed_parents = []
                 while curdirname != '':
@@ -223,19 +223,19 @@ class MikiTree(QtWidgets.QTreeWidget):
                             self.newPageCore(item, os.path.basename(needed_parent))
                         else:
                             self.newPageCore(prevparitem, os.path.basename(needed_parent))
-                        QDir(pagePath).mkdir(needed_parent)
+                        QtCore.QDir(pagePath).mkdir(needed_parent)
                     elif not QDir(os.path.join(self.notePath, needed_parent).replace(os.sep, '/')).exists():
-                        QDir(pagePath).mkdir(needed_parent)
+                        QtCore.QDir(pagePath).mkdir(needed_parent)
                     if paritem is not None:
                         prevparitem = paritem
                     else:
                         prevparitem = self.pageToItem(needed_parent)
 
             fileName = pagePath + newPageName + self.settings.fileExt
-            fh = QFile(fileName)
-            fh.open(QIODevice.WriteOnly)
+            fh = QtCore.QFile(fileName)
+            fh.open(QtCore.QIODevice.WriteOnly)
 
-            savestream = QTextStream(fh)
+            savestream = QtCore.QTextStream(fh)
             if useTemplate:
                 with open(bodyFPath, 'r', encoding='utf-8') as templatef:
                     savestream << mikitemplate.makeTemplateBody(
@@ -246,9 +246,9 @@ class MikiTree(QtWidgets.QTreeWidget):
                 savestream << mikitemplate.makeDefaultBody(os.path.basename(newPageName), self.tr("Created {}"))
             fh.close()
             if prevparitem is not None:
-                QTreeWidgetItem(prevparitem, [os.path.basename(newPageName)])
+                QtWidgets.QTreeWidgetItem(prevparitem, [os.path.basename(newPageName)])
             else:
-                QTreeWidgetItem(item, [os.path.basename(newPageName)])
+                QtWidgets.QTreeWidgetItem(item, [os.path.basename(newPageName)])
             newItem = self.pageToItem(pagePath + newPageName)
             self.sortItems(0, Qt.AscendingOrder)
             self.setCurrentItem(newItem)
@@ -257,8 +257,8 @@ class MikiTree(QtWidgets.QTreeWidget):
 
             # create attachment folder if not exist
             attDir = self.itemToAttachmentDir(newItem)
-            if not QDir(attDir).exists():
-                QDir().mkpath(attDir)
+            if not QtCore.QDir(attDir).exists():
+                QtCore.QDir().mkpath(attDir)
 
             # TODO improvement needed, can be reused somehow
             with open(fileName, 'r') as fileobj:
@@ -293,22 +293,22 @@ class MikiTree(QtWidgets.QTreeWidget):
         oldDir = sourcePage
         newDir = os.path.join(targetPage, sourceItem.text(0))
 
-        if QFile.exists(newFile):
+        if QtCore.QFile.exists(newFile):
             QMessageBox.warning(self, self.tr("Error"),
                                 self.tr("File already exists: %s") % newFile)
             return
 
         # rename file/folder, remove parent note folder if necessary
         if targetPage != '':
-            QDir(self.notePath).mkpath(targetPage)
-        QDir(self.notePath).rename(oldFile, newFile)
+            QtCore.QDir(self.notePath).mkpath(targetPage)
+        QtCore.QDir(self.notePath).rename(oldFile, newFile)
         if sourceItem.childCount() != 0:
-            QDir(self.notePath).rename(oldDir, newDir)
+            QtCore.QDir(self.notePath).rename(oldDir, newDir)
         if sourceItem.parent() is not None:
             parentItem = sourceItem.parent()
             parentPage = self.itemToPage(parentItem)
             if parentItem.childCount() == 1:
-                QDir(self.notePath).rmdir(parentPage)
+                QtCore.QDir(self.notePath).rmdir(parentPage)
 
         # pass the event to default implementation
         QtWidgets.QTreeWidget.dropEvent(self, event)
@@ -317,12 +317,12 @@ class MikiTree(QtWidgets.QTreeWidget):
             self.expandItem(targetItem)
 
         # if attachment folder exists, rename it
-        if QDir().exists(oldAttDir):
+        if QtCore.QDir().exists(oldAttDir):
             # make sure target folder exists
-            QDir().mkpath(self.itemToAttachmentDir(targetItem))
+            QtCore.QDir().mkpath(self.itemToAttachmentDir(targetItem))
 
             newAttDir = self.itemToAttachmentDir(sourceItem)
-            QDir().rename(oldAttDir, newAttDir)
+            QtCore.QDir().rename(oldAttDir, newAttDir)
             self.parent.updateAttachmentView()
 
     def renamePage(self, item):
@@ -339,18 +339,18 @@ class MikiTree(QtWidgets.QTreeWidget):
                 parentPage = parentPage + '/'
             oldFile = self.itemToFile(item)
             newFile = parentPage + newPageName + self.settings.fileExt
-            QDir(self.notePath).rename(oldFile, newFile)
+            QtCore.QDir(self.notePath).rename(oldFile, newFile)
             if item.childCount() != 0:
                 oldDir = parentPage + item.text(0)
                 newDir = parentPage + newPageName
-                QDir(self.notePath).rename(oldDir, newDir)
+                QtCore.QDir(self.notePath).rename(oldDir, newDir)
             item.setText(0, newPageName)
             self.sortItems(0, Qt.AscendingOrder)
 
             # if attachment folder exists, rename it
-            if QDir().exists(oldAttDir):
+            if QtCore.QDir().exists(oldAttDir):
                 newAttDir = self.itemToAttachmentDir(item)
-                QDir().rename(oldAttDir, newAttDir)
+                QtCore.QDir().rename(oldAttDir, newAttDir)
                 self.parent.updateAttachmentView()
 
     def pageExists(self, noteFullName):
@@ -370,9 +370,9 @@ class MikiTree(QtWidgets.QTreeWidget):
 
         # remove attachment folder
         attDir = self.itemToAttachmentDir(item)
-        for info in QDir(attDir).entryInfoList():
-            QDir().remove(info.absoluteFilePath())
-        QDir().rmdir(attDir)
+        for info in QtCore.QDir(attDir).entryInfoList():
+            QtCore.QDir().remove(info.absoluteFilePath())
+        QtCore.QDir().rmdir(attDir)
 
         pagePath = self.itemToPage(item)
         self.ix = open_dir(self.settings.indexdir)
@@ -383,21 +383,21 @@ class MikiTree(QtWidgets.QTreeWidget):
         # n = writer.delete_by_term('path', pagePath)
         writer.commit()
         #self.ix.close()
-        b = QDir(self.notePath).remove(self.pageToFile(pagePath))
+        b = QtCore.QDir(self.notePath).remove(self.pageToFile(pagePath))
         parent = item.parent()
         parentPage = self.itemToPage(parent)
         if parent is not None:
             index = parent.indexOfChild(item)
             parent.takeChild(index)
             if parent.childCount() == 0:  # if no child, dir not needed
-                QDir(self.notePath).rmdir(parentPage)
+                QtCore.QDir(self.notePath).rmdir(parentPage)
         else:
             index = self.indexOfTopLevelItem(item)
             self.takeTopLevelItem(index)
-        QDir(self.notePath).rmdir(pagePath)
+        QtCore.QDir(self.notePath).rmdir(pagePath)
 
     def sizeHint(self):
-        return QSize(200, 0)
+        return QtCore.QSize(200, 0)
 
     def recurseCollapse(self, item):
         for i in range(item.childCount()):
@@ -424,14 +424,14 @@ class TocTree(QtWidgets.QTreeWidget):
         for (level, h, p, a) in entries:
             val = [h, str(p), a]
             if level == curLevel:
-                item = QTreeWidgetItem(item.parent(), val)
+                item = QtWidgets.QTreeWidgetItem(item.parent(), val)
             elif level < curLevel:
-                item = QTreeWidgetItem(item.parent().parent(), val)
+                item = QtWidgets.QTreeWidgetItem(item.parent().parent(), val)
                 curLevel = level
             else:
-                item = QTreeWidgetItem(item, val)
+                item = QtWidgets.QTreeWidgetItem(item, val)
                 curLevel = level
         self.expandAll()
 
     def sizeHint(self):
-        return QSize(200, 0)
+        return QtCore.QSize(200, 0)
