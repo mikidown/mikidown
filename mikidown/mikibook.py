@@ -5,12 +5,14 @@ Notebook management module.
 import os
 import markdown
 from copy import deepcopy
+from Qt import QtCore, QtGui, QtWidgets
+"""
 from PyQt4.QtCore import Qt, QDir, QFile, QSettings, QSize
 from PyQt4.QtGui import (QAbstractItemDelegate, QAbstractItemView, QColor, QDialog, QDialogButtonBox, 
                          QFileDialog, QFont, QGridLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem,
                          QPen, QPushButton, QStyle, QVBoxLayout, QTabWidget, QWidget, QBrush, QTreeWidget,
                          QTreeWidgetItem, QSpinBox, QScrollArea, QCheckBox, QIcon, QPalette, QFont)
-
+"""
 import mikidown
 try:
     import slickpicker
@@ -22,7 +24,7 @@ from .utils import allMDExtensions
 from .config import Setting, readListFromSettings, writeListToSettings, writeDictToSettings
 from .fontbutton import QFontButton
 
-class ListDelegate(QAbstractItemDelegate):
+class ListDelegate(QtWidgets.QAbstractItemDelegate):
     """ Customize view and behavior of notebook list """
 
     def __init__(self, parent=None):
@@ -65,19 +67,19 @@ class ListDelegate(QAbstractItemDelegate):
                          Qt.AlignLeft, path)
 
     def sizeHint(self, option, index):
-        return QSize(200, 40)
+        return QtCore.QSize(200, 40)
 
-class NotebookExtSettingsDialog(QDialog):
+class NotebookExtSettingsDialog(QtWidgets.QDialog):
     def __init__(self, parent=None, cfg_list=[]):
         super(NotebookExtSettingsDialog, self).__init__(parent)
-        self.extCfgEdit = QTreeWidget()
+        self.extCfgEdit = QtWidgets.QTreeWidget()
         self.extCfgEdit.setHeaderLabels(['Property', 'Value'])
-        self.addRow = QPushButton('+')
-        self.removeRow = QPushButton('-')
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                          QDialogButtonBox.Cancel)
+        self.addRow = QtWidgets.QPushButton('+')
+        self.removeRow = QtWidgets.QPushButton('-')
+        self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok |
+                                                    QtWidgets.QDialogButtonBox.Cancel)
 
-        layout = QGridLayout(self)
+        layout = QtWidgets.QGridLayout(self)
         layout.addWidget(self.extCfgEdit,0,0,1,2)
         layout.addWidget(self.addRow,1,0,1,1)
         layout.addWidget(self.removeRow,1,1,1,1)
@@ -110,26 +112,26 @@ class NotebookExtSettingsDialog(QDialog):
             items.append((witem.text(0), witem.text(1)))
         return items
 
-class NotebookSettingsDialog(QDialog):
+class NotebookSettingsDialog(QtWidgets.QDialog):
     """GUI for adjusting notebook settings"""
     def __init__(self, parent=None):
         super(NotebookSettingsDialog, self).__init__(parent)
         self.setWindowTitle(self.tr("Notebook settings - mikidown"))
         #widgets for tab 1
-        self.mdExts = QListWidget()
-        self.mjEdit = QLineEdit()
-        self.moveUp = QPushButton('<<')
-        self.moveDown = QPushButton('>>')
+        self.mdExts = QtWidgets.QListWidget()
+        self.mjEdit = QtWidgets.QLineEdit()
+        self.moveUp = QtWidgets.QPushButton('<<')
+        self.moveDown = QtWidgets.QPushButton('>>')
         self.configureExtension = QPushButton(self.tr('Edit Settings for this extension'))
         self.tmpdict = deepcopy(self.parent().settings.extcfg)
         
         #widgets for tab 2
-        self.fExtEdit = QLineEdit()
-        self.attImgEdit = QLineEdit()
-        self.attDocEdit = QLineEdit()
+        self.fExtEdit = QtWidgets.QLineEdit()
+        self.attImgEdit = QtWidgets.QLineEdit()
+        self.attDocEdit = QtWidgets.QLineEdit()
         # mandatory button box
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                          QDialogButtonBox.Cancel)
+        self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok |
+                                                    QtWidgets.QDialogButtonBox.Cancel)
         
         #tab panels
         tabs = QTabWidget()
@@ -256,19 +258,19 @@ class NotebookSettingsDialog(QDialog):
         self.parent().currentItemChangedWrapper(curitem, curitem)
         QDialog.accept(self)
 
-class NotebookListDialog(QDialog):
+class NotebookListDialog(QtWidgets.QDialog):
     """ Functions to display, create, remove, modify notebookList """
 
     def __init__(self, parent=None):
         super(NotebookListDialog, self).__init__(parent)
 
-        self.notebookList = QListWidget()
-        self.moveUp = QPushButton('<<')
-        self.moveDown = QPushButton('>>')
-        self.add = QPushButton(self.tr('Add'))
-        self.remove = QPushButton(self.tr('Remove'))
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                          QDialogButtonBox.Cancel)
+        self.notebookList = QtWidgets.QListWidget()
+        self.moveUp = QtWidgets.QPushButton('<<')
+        self.moveDown = QtWidgets.QPushButton('>>')
+        self.add = QtWidgets.QPushButton(self.tr('Add'))
+        self.remove = QtWidgets.QPushButton(self.tr('Remove'))
+        self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok |
+                                                    QtWidgets.QDialogButtonBox.Cancel)
         self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         layout = QGridLayout()
         layout.addWidget(self.notebookList, 0, 0, 4, 6)
@@ -363,17 +365,17 @@ class NotebookListDialog(QDialog):
 
         QDialog.accept(self)
 
-class NewNotebookDlg(QDialog):
+class NewNotebookDlg(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(NewNotebookDlg, self).__init__(parent)
         self.setWindowTitle(self.tr('Add Notebook - mikidown'))
-        tipLabel = QLabel(self.tr('Choose a name and folder for your notebook.') +
+        tipLabel = QtWidgets.QLabel(self.tr('Choose a name and folder for your notebook.') +
                           self.tr('\nThe folder can be an existing notebook folder.'))
-        self.nameEditor = QLineEdit()
+        self.nameEditor = QtWidgets.QLineEdit()
         self.nameEditor.setText(self.tr('Notes'))
         nameLabel = QLabel(self.tr('Name:'))
         nameLabel.setBuddy(self.nameEditor)
-        self.pathEditor = QLineEdit()
+        self.pathEditor = QtWidgets.QLineEdit()
         # self.pathEditor.setText('~/mikidown')
         self.pathEditor.setText(os.path.expanduser('~').replace(os.sep,'/')+'/mikinotes')
         pathLabel = QLabel(self.tr('Path:'))
@@ -409,13 +411,13 @@ class NewNotebookDlg(QDialog):
     def closeEvent(self, event):
         event.accept()
 
-class MikidownHighlightCfgWidget(QWidget):
+class MikidownHighlightCfgWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super(MikidownHighlightCfgWidget, self).__init__(parent)
         layout = QGridLayout(self)
         colors = Mikibook.highlighterColors()
         for i in range(16):
-            layout.addWidget(QLabel(Mikibook.highlighter_labels[i]),i,0,1,1)
+            layout.addWidget(QtWidgets.QLabel(Mikibook.highlighter_labels[i]),i,0,1,1)
             if BETTER_COLOR_PICKER:
                 layout.addWidget(slickpicker.QColorEdit(colors[i]),i,1,1,1)
             else:
@@ -430,7 +432,7 @@ class MikidownHighlightCfgWidget(QWidget):
                 items.append(self.layout().itemAtPosition(i,1).widget().text())
         return items
 
-class MikidownCfgDialog(QDialog):
+class MikidownCfgDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(MikidownCfgDialog, self).__init__(parent)
         #tab = QWidget()
@@ -515,7 +517,7 @@ class MikidownCfgDialog(QDialog):
 
 class Mikibook():
     # ~/.config/mikidown/mikidown.conf
-    settings = QSettings(QSettings.IniFormat, QSettings.UserScope, 'mikidown', 'mikidown')
+    settings = QtCore.QSettings(QtCore.QSettings.IniFormat, QtCore.QSettings.UserScope, 'mikidown', 'mikidown')
     lockpath = os.path.join(os.path.dirname(settings.fileName()),'lock').replace(os.sep,'/')
     highlighter_labels = ['HTML Tags', '1<sup>st</sup> LVL headers', '2<sup>nd</sup> LVL headers',
                          '3<sup>rd</sup> LVL headers', '4<sup>th</sup> and lower LVL headers',

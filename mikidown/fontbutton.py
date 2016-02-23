@@ -1,6 +1,6 @@
-from PyQt4 import QtCore,QtGui
+from Qt import QtCore, QtGui, QtWidgets
 
-class QFontButton(QtGui.QWidget):
+class QFontButton(QtWidgets.QWidget):
 
 	fontChanged = QtCore.pyqtSignal('QFont')
 
@@ -15,13 +15,13 @@ class QFontButton(QtGui.QWidget):
 		layout.addWidget(self.label)
 		layout.addWidget(self.button)
 
-		if isinstance(font,QtGui.QFont):
-			self.font=font
+		if isinstance(font, QtGui.QFont):
+			self.font = font
 		else:
-			self.font=QtGui.QFont()
+			self.font = QtGui.QFont()
 	
 	def adjustFont(self):
-		self.font,_=QtGui.QFontDialog.getFont(self.font,self,"")
+		self.font,_ = QtGui.QFontDialog.getFont(self.font,self,"")
 
 	def font(self):
 		return self._font

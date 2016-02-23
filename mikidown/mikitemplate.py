@@ -3,12 +3,14 @@ from enum import Enum
 import shlex
 import subprocess
 
+from Qt import QtCore, QtGui, QtWidgets, Qt
+"""
 from PyQt4.QtGui import QDialog, QListView, QGridLayout, QAbstractItemDelegate, \
                         QComboBox, QWidget, QStandardItem, QStandardItemModel, \
                         QDialogButtonBox, QLabel, QLineEdit, QTabWidget, \
                         QHBoxLayout, QVBoxLayout, QPushButton, QCheckBox
 from PyQt4.QtCore import Qt
-
+"""
 from .utils import NOTE_EXTS, doesFileExist
 
 #BANNED_COMMANDS={'rm', 'cp', 'mv', 'unlink', 'mkdir', 'rmdir'}
@@ -60,18 +62,18 @@ def makeTemplateBody(filled_title, dt_in_body=True, dtnow=None,
 COL_DATA = Qt.ToolTipRole
 COL_EXTRA_DATA = Qt.UserRole
 
-class EditTitleTemplateDialog(QDialog):
+class EditTitleTemplateDialog(QtWidgets.QDialog):
     def __init__(self, pos, settings, parent=None):
         super().__init__(parent=parent)
         self.setWindowTitle(self.tr("Edit title template"))
         self.pos = pos
-        self.titleFriendlyName = QLineEdit(self)
-        self.titleTemplateContent = QLineEdit(self)
+        self.titleFriendlyName = QtWidgets.QLineEdit(self)
+        self.titleTemplateContent = QtWidgets.QLineEdit(self)
         self.titleTemplateContent.textChanged.connect(self.updateUi)
-        self.usesDate = QCheckBox(self)
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | 
-                                          QDialogButtonBox.Cancel)
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+        self.usesDate = QtWidgets.QCheckBox(self)
+        self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | 
+                                          QtWidgets.QDialogButtonBox.Cancel)
+        self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
         self.settings = settings
 
         layout = QGridLayout(self)
@@ -136,19 +138,19 @@ class EditTitleTemplateDialog(QDialog):
             QMessageBox.warning(self, self.tr("Error"),
             self.tr("Title format invalid: %s") % emessage)
 
-class ManageTitlesWidget(QWidget):
+class ManageTitlesWidget(QtWidgets.QWidget):
     def __init__(self, settings, parent=None):
         super().__init__(parent=parent)
         self.settings = settings
 
-        layout = QVBoxLayout(self)
-        self.titlesList = QListView()
+        layout = QtWidgets.QVBoxLayout(self)
+        self.titlesList = QtWidgets.QListView()
         self.titlesList.setModel(self.settings.titleTemplates)
 
-        self.buttonBox = QHBoxLayout()
-        editButton = QPushButton(self.tr("Edit"))
-        addButton = QPushButton("+")
-        delButton = QPushButton("-")
+        self.buttonBox = QtWidgets.QHBoxLayout()
+        editButton = QtWidgets.QPushButton(self.tr("Edit"))
+        addButton = QtWidgets.QPushButton("+")
+        delButton = QtWidgets.QPushButton("-")
         self.buttonBox.addWidget(editButton)
         self.buttonBox.addWidget(addButton)
         self.buttonBox.addWidget(delButton)
@@ -185,21 +187,21 @@ class ManageTitlesWidget(QWidget):
         self.settings.updateTitleTemplates()
 
 
-class ManageBodiesWidget(QWidget):
+class ManageBodiesWidget(QtWidgets.QWidget):
     def __init__(self, settings, parent=None):
         super().__init__(parent=parent)
         self.settings = settings
 
-        layout = QVBoxLayout(self)
-        self.bodiesList = QListView()
+        layout = QtWidgets.QVBoxLayout(self)
+        self.bodiesList = QtWidgets.QListView()
         self.bodiesList.setModel(self.settings.bodyTemplates)
         pathToIdx = self.settings.bodyTemplates.index(self.settings.templatesPath)
         self.bodiesList.setRootIndex(pathToIdx)
 
-        self.buttonBox = QHBoxLayout()
-        editButton = QPushButton(self.tr("Edit"))
-        addButton = QPushButton("+")
-        delButton = QPushButton("-")
+        self.buttonBox = QtWidgets.QHBoxLayout()
+        editButton = QtWidgets.QPushButton(self.tr("Edit"))
+        addButton = QtWidgets.QPushButton("+")
+        delButton = QtWidgets.QPushButton("-")
         self.buttonBox.addWidget(editButton)
         self.buttonBox.addWidget(addButton)
         self.buttonBox.addWidget(delButton)
@@ -217,16 +219,16 @@ class ManageBodiesWidget(QWidget):
         pass
 
 
-class ManageTemplatesDialog(QDialog):
+class ManageTemplatesDialog(QtWidgets.QDialog):
     def __init__(self, settings, parent=None):
         super().__init__(parent=parent)
         self.setWindowTitle(self.tr("Manage templates"))
         self.settings = settings
 
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Close)
+        self.buttonBox = QtWidgets.QDialogButtonBox(QDialogButtonBox.Close)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
-        self.templatePages = QTabWidget()
+        self.templatePages = QtWidgets.QTabWidget()
 
         self.titlesPage = ManageTitlesWidget(settings)
         self.bodiesPage = ManageBodiesWidget(settings)
@@ -239,7 +241,7 @@ class ManageTemplatesDialog(QDialog):
         layout.addWidget(self.buttonBox)
 
 
-class PickTemplateDialog(QDialog):
+class PickTemplateDialog(QtWidgets.QDialog):
     def __init__(self, path, settings, parent=None):
         super().__init__(parent=parent)
         self.setWindowTitle(self.tr("Create note from template"))

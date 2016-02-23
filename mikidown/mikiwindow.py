@@ -5,7 +5,8 @@ import os
 import shutil
 import re
 from threading import Thread
-
+from Qt import QtCore, QtGui, QtWidgets, QtWebKit, Qt
+"""
 from PyQt4.QtCore import (Qt, QDir, QFile, QFileInfo, QIODevice,
                           QPoint, QSize, QTextStream, QUrl)
 from PyQt4.QtGui import (qApp, QAction, QCheckBox, QDesktopWidget, QDialog,
@@ -14,6 +15,7 @@ from PyQt4.QtGui import (qApp, QAction, QCheckBox, QDesktopWidget, QDialog,
     QTabWidget, QTextCursor, QTextDocument, QToolBar, QTreeWidgetItem,
     QTreeWidgetItemIterator, QVBoxLayout, QWidget, QFontMetrics, QSplitter, QPlainTextEdit, QFont)
 from PyQt4.QtWebKit import QWebPage, QWebView
+"""
 from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser, RegexPlugin
 from whoosh.writing import AsyncWriter

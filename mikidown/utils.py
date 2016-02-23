@@ -5,13 +5,16 @@ import pkgutil
 import markdown
 from markdown.extensions import __path__ as extpath
 from markdown.extensions.headerid import slugify, unique
+
+from Qt import QtCore, QtGui, QtWidgets, Qt
+"""
 from PyQt4.QtCore import Qt, QFile, QRect
 from PyQt4.QtGui import (QDialog, QDialogButtonBox, QGridLayout, QIcon, QLabel, QLineEdit, QMessageBox, QPainter, QPixmap)
-
+"""
 JSCRIPT_TPL = '<script type="text/javascript" src="{}"></script>\n'
 METADATA_CHECKER = re.compile(r'((?: {0,3}[\w\-]+:.*)(?:(?:\n {4,}.+)|(?:\n {0,3}[\w\-]+:.*))*)')
 
-class ViewedNoteIcon(QIcon):
+class ViewedNoteIcon(QtGui.QIcon):
     def __init__(self, num, parent=None):
         super(ViewedNoteIcon, self).__init__(parent)
         pixmap = QPixmap(16, 16)
@@ -24,7 +27,7 @@ class ViewedNoteIcon(QIcon):
 
 NOTE_EXTS = ['.md', '.markdown', '.mkd']
 IMAGE_EXTS = ['', '.jpg']
-class LineEditDialog(QDialog):
+class LineEditDialog(QtWidgets.QDialog):
     """ A dialog asking for page/file name.
         It also checks for name crash.
     """

@@ -4,8 +4,14 @@ import re
 import sys
 import signal
 
-from PyQt4.QtCore import QSettings, QTranslator, QLocale
-from PyQt4.QtGui import QApplication, QIcon, QMessageBox
+sys.path.append(os.path.dirname(__file__) + "/../")
+sys.path.append(os.path.dirname(__file__))
+
+
+from Qt import QtCore, QtGui, QtWidgets
+
+#from Qt.QtCore import QSettings, QTranslator, QLocale
+#from Qt.QtGui import QApplication, QIcon, QMessageBox
 
 import mikidown.mikidown_rc
 from .config import Setting
@@ -15,7 +21,7 @@ from .mikiwindow import MikiWindow
 from .mikibook import Mikibook
 from .sandbox import Sandbox
 
-sys.path.append(os.path.dirname(__file__))
+
 
 # http://code.activestate.com/recipes/578453-python-single-instance-cross-platform/
 

@@ -1,7 +1,10 @@
 import os
 import re
-from PyQt4.QtCore import QDir, QFile, QSettings, Qt
-from PyQt4.QtGui  import QStandardItem, QStandardItemModel, QFileSystemModel
+
+from Qt import QtCore, QtGui, QtWidgets
+
+#from PyQt4.QtCore import QDir, QFile, QSettings, Qt
+#from PyQt4.QtGui  import QStandardItem, QStandardItemModel, QFileSystemModel
 from whoosh import fields
 import markdown
 
