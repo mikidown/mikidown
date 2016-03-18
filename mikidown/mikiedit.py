@@ -233,7 +233,8 @@ class MikiEdit(QtWidgets.QTextEdit):
                 for word in self.speller.suggest(text)[:10]:
                     action = QtWidgets.QAction(word, popup_menu)
                     action.triggered.connect(correctWord(cursor, word))
-                    action.setFont(QtGui.QFont(None, weight=QtGui.QFont.Bold))
+                    defaultFamily = QtWidgets.QApplication.font().family()
+                    action.setFont(QtGui.QFont(defaultFamily, weight=QtGui.QFont.Bold))
                     popup_menu.insertAction(lastAction, action)
                 popup_menu.insertSeparator(lastAction)
 
