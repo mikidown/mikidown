@@ -80,15 +80,15 @@ class MikiEdit(QtWidgets.QTextEdit):
         if reply.error():
             print("Failed to download")
         else:
-            attFile = QFile(self.downloadAs)
-            attFile.open(QIODevice.WriteOnly)
+            attFile = QtCore.QFile(self.downloadAs)
+            attFile.open(QtCore.QIODevice.WriteOnly)
             attFile.write(reply.readAll())
             attFile.close()
             print("Succeeded")
         reply.deleteLater()
 
     def mimeFromText(self, text):
-        mime = QMimeData()
+        mime = QtCore.QMimeData()
         mime.setText(text)
         return mime
 
@@ -115,8 +115,8 @@ class MikiEdit(QtWidgets.QTextEdit):
 
         item = self.parent.notesTree.currentItem()
         attDir = self.parent.notesTree.itemToAttachmentDir(item)
-        if not QDir(attDir).exists():
-            QDir().mkpath(attDir)
+        if not QtCore.QDir(attDir).exists():
+            QtCore.QDir().mkpath(attDir)
 
         if source.hasUrls():
             for qurl in source.urls():
@@ -127,7 +127,7 @@ class MikiEdit(QtWidgets.QTextEdit):
                 relativeFilePath = newFilePath.replace(self.settings.notebookPath, "..")
                 attachments = self.settings.attachmentImage + self.settings.attachmentDocument
 
-                if QUrl(qurl).isLocalFile():
+                if QtCore.QUrl(qurl).isLocalFile():
                     if extension.lower() in attachments:
                         nurl = url.replace("file://", "")
                         QFile.copy(nurl, newFilePath)
@@ -202,7 +202,7 @@ class MikiEdit(QtWidgets.QTextEdit):
         self.insertAttachment(filePath, fileType)
 
     def insertFromRawHtml(self):
-        qclippy = QApplication.clipboard()
+        qclippy = QtWidgets.QApplication.clipboard()
         if qclippy.mimeData().hasHtml():
             self.insertFromMimeData(self.mimeFromText(qclippy.mimeData().html()))
         else:
@@ -217,23 +217,23 @@ class MikiEdit(QtWidgets.QTextEdit):
 
         popup_menu = self.createStandardContextMenu()
         paste_action = popup_menu.actions()[6]
-        paste_formatted_action = QAction(self.tr("Paste raw HTML"), popup_menu)
+        paste_formatted_action = QtWidgets.QAction(self.tr("Paste raw HTML"), popup_menu)
         paste_formatted_action.triggered.connect(self.insertFromRawHtml)
-        paste_formatted_action.setShortcut(QKeySequence("Ctrl+Shift+V"))
+        paste_formatted_action.setShortcut(QtGui.QKeySequence("Ctrl+Shift+V"))
         popup_menu.insertAction(paste_action, paste_formatted_action)
 
         # Spellcheck the word under mouse cursor, not self.textCursor
         cursor = self.cursorForPosition(event.pos())
-        cursor.select(QTextCursor.WordUnderCursor)
+        cursor.select(QtGui.QTextCursor.WordUnderCursor)
 
         text = cursor.selectedText()
         if self.speller and text:
             if not self.speller.check(text):
                 lastAction = popup_menu.actions()[0]
                 for word in self.speller.suggest(text)[:10]:
-                    action = QAction(word, popup_menu)
+                    action = QtWidgets.QAction(word, popup_menu)
                     action.triggered.connect(correctWord(cursor, word))
-                    action.setFont(QFont(None, weight=QFont.Bold))
+                    action.setFont(QtGui.QFont(None, weight=QtGui.QFont.Bold))
                     popup_menu.insertAction(lastAction, action)
                 popup_menu.insertSeparator(lastAction)
 
@@ -244,14 +244,14 @@ class MikiEdit(QtWidgets.QTextEdit):
             for other keys, use default implementation
         """
 
-        moddies = QApplication.keyboardModifiers()
+        moddies = QtWidgets.QApplication.keyboardModifiers()
 
         if event.key() == Qt.Key_Tab and Mikibook.settings.value('tabInsertsSpaces', type=bool, defaultValue=True):
             self.insertPlainText(' '*Mikibook.settings.value('tabWidth', type=int, defaultValue=4)) # use the tabWidth for tabstop!
         elif moddies & Qt.ControlModifier and moddies & Qt.ShiftModifier and event.key() == Qt.Key_V:
             self.insertFromRawHtml()
         else:
-            QTextEdit.keyPressEvent(self, event)
+            QtWidgets.QTextEdit.keyPressEvent(self, event)
     '''
     def closeEvent(self, event):
         self.ix.close()
@@ -263,17 +263,17 @@ class MikiEdit(QtWidgets.QTextEdit):
         filePath = self.parent.notesTree.itemToFile(item)
         htmlFile = self.parent.notesTree.itemToHtmlFile(item)
 
-        fh = QFile(filePath)
+        fh = QtCore.QFile(filePath)
         try:
-            if not fh.open(QIODevice.WriteOnly):
+            if not fh.open(QtCore.QIODevice.WriteOnly):
                 raise IOError(fh.errorString())
         except IOError as e:
-            QMessageBox.warning(self, self.tr("Save Error"),
+            QtWidgets.QMessageBox.warning(self, self.tr("Save Error"),
                                 self.tr("Failed to save %s: %s") % (pageName, e))
             raise
         finally:
             if fh is not None:
-                savestream = QTextStream(fh)
+                savestream = QtCore.QTextStream(fh)
                 savestream << self.toPlainText()
                 fh.close()
                 self.document().setModified(False)
@@ -334,7 +334,7 @@ class MikiEdit(QtWidgets.QTextEdit):
         fileDir = os.path.dirname(htmlFile)
         QtCore.QDir().mkpath(fileDir)
 
-        html = QFile(htmlFile)
+        html = QtCore.QFile(htmlFile)
         html.open(QtCore.QIODevice.WriteOnly)
         savestream = QtCore.QTextStream(html)
         savestream << """
