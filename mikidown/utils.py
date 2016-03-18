@@ -5,16 +5,19 @@ import pkgutil
 import markdown
 from markdown.extensions import __path__ as extpath
 from markdown.extensions.headerid import slugify, unique
+
+from Qt import QtCore, QtGui, QtWidgets, Qt
+"""
 from PyQt4.QtCore import Qt, QFile, QRect
 from PyQt4.QtGui import (QDialog, QDialogButtonBox, QGridLayout, QIcon, QLabel, QLineEdit, QMessageBox, QPainter, QPixmap)
-
+"""
 JSCRIPT_TPL = '<script type="text/javascript" src="{}"></script>\n'
 METADATA_CHECKER = re.compile(r'((?: {0,3}[\w\-]+:.*)(?:(?:\n {4,}.+)|(?:\n {0,3}[\w\-]+:.*))*)')
 
 TTPL_COL_DATA = Qt.ToolTipRole
 TTPL_COL_EXTRA_DATA = Qt.UserRole
 
-class ViewedNoteIcon(QIcon):
+class ViewedNoteIcon(QtGui.QIcon):
     def __init__(self, num, parent=None):
         super(ViewedNoteIcon, self).__init__(parent)
         pixmap = QPixmap(16, 16)
@@ -27,7 +30,7 @@ class ViewedNoteIcon(QIcon):
 
 NOTE_EXTS = ['.md', '.markdown', '.mkd']
 IMAGE_EXTS = ['', '.jpg']
-class LineEditDialog(QDialog):
+class LineEditDialog(QtWidgets.QDialog):
     """ A dialog asking for page/file name.
         It also checks for name crash.
     """
@@ -38,22 +41,22 @@ class LineEditDialog(QDialog):
 
         # newPage/newSubpage
         if parent.objectName() in ["mikiWindow", "notesTree"]:
-            editorLabel = QLabel(self.tr("Page Name:"))
+            editorLabel = QtWidgets.QLabel(self.tr("Page Name:"))
             self.extNames = NOTE_EXTS
         # Copy Image to notesEdit
         elif parent.objectName() == "notesEdit":
-            editorLabel = QLabel(self.tr("File Name:"))
+            editorLabel = QtWidgets.QLabel(self.tr("File Name:"))
             self.extNames = IMAGE_EXTS
         else:
             editorLabel = QLabel(self.tr("Template Name:"))
             self.extNames = NOTE_EXTS
 
-        self.editor = QLineEdit()
+        self.editor = QtWidgets.QLineEdit()
         editorLabel.setBuddy(self.editor)
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                          QDialogButtonBox.Cancel)
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
-        layout = QGridLayout()
+        self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok |
+                                                    QtWidgets.QDialogButtonBox.Cancel)
+        self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
+        layout = QtWidgets.QGridLayout()
         layout.addWidget(editorLabel, 0, 0)
         layout.addWidget(self.editor, 0, 1)
         layout.addWidget(self.buttonBox, 1, 1)
@@ -68,7 +71,7 @@ class LineEditDialog(QDialog):
         self.editor.selectAll()
 
     def updateUi(self):
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(
+        self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(
             self.editor.text() != "")
 
     def accept(self):
@@ -76,16 +79,16 @@ class LineEditDialog(QDialog):
 
         acceptable, existPath = doesFileExist(notePath, self.extNames)
         if acceptable:
-            QDialog.accept(self)
+            QtWidgets.QDialog.accept(self)
         else:
-            QMessageBox.warning(self, self.tr("Error"),
+            QtWidgets.QMessageBox.warning(self, self.tr("Error"),
                         self.tr("File already exists: %s") % existPath)
 
 def doesFileExist(path, altExts):
     doesntExist = True
     existPath = None
     for ext in altExts:
-        if QFile.exists(path + ext):
+        if QtCore.QFile.exists(path + ext):
             doesntExist = False
             existPath = path + ext
             break

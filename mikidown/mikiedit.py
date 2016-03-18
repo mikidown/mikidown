@@ -1,9 +1,12 @@
 import os
 from threading import Thread
 from multiprocessing import Process
+from Qt import QtCore, QtGui, QtWidgets, QtNetwork, Qt
+"""
 from PyQt4.QtCore import Qt, QDir, QFile, QFileInfo, QMimeData, QIODevice, QTextStream, QUrl
 from PyQt4.QtGui import QAction, QCursor, QFileDialog, QFont, QTextCursor, QTextEdit, QMessageBox, QKeySequence, QApplication
 from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkRequest
+"""
 import markdown
 from whoosh.index import open_dir
 from whoosh.writing import AsyncWriter
@@ -16,7 +19,7 @@ except ImportError:
 from .utils import LineEditDialog, parseTitle, JSCRIPT_TPL, METADATA_CHECKER
 from .mikibook import Mikibook
 
-class MikiEdit(QTextEdit):
+class MikiEdit(QtWidgets.QTextEdit):
 
     def __init__(self, parent=None):
         super(MikiEdit, self).__init__(parent)
@@ -48,7 +51,7 @@ class MikiEdit(QTextEdit):
         self.documentFilter = "Document (" + self.documentFilter.strip() + ")"
 
         self.downloadAs = ""
-        self.networkManager = QNetworkAccessManager()
+        self.networkManager = QtNetwork.QNetworkAccessManager()
         self.networkManager.finished.connect(self.downloadFinished)
 
 
@@ -298,11 +301,11 @@ class MikiEdit(QTextEdit):
             To be merged with saveNoteAs
         """
         if not htmlFile:
-            (htmlFile, htmlType) = QFileDialog.getSaveFileNameAndFilter(
+            (htmlFile, htmlType) = QtWidgets.QFileDialog.getSaveFileNameAndFilter(
                 self, self.tr("Export to HTML"), "", "Complete;;HTML Only")
         if htmlFile == '':
             return
-        if not QFileInfo(htmlFile).suffix():
+        if not QtCore.QFileInfo(htmlFile).suffix():
             htmlFile += '.html'
 
         if htmlType == "Complete":
@@ -311,16 +314,16 @@ class MikiEdit(QTextEdit):
             self.saveHtmlOnly(htmlFile)
 
     def saveCompleteHtml(self, htmlFile):
-        html = QFile(htmlFile)
-        html.open(QIODevice.WriteOnly)
-        savestream = QTextStream(html)
-        css = QFile(self.settings.cssfile)
-        css.open(QIODevice.ReadOnly)
+        html = QtCore.QFile(htmlFile)
+        html.open(QtCore.QIODevice.WriteOnly)
+        savestream = QtCore.QTextStream(html)
+        css = QtCore.QFile(self.settings.cssfile)
+        css.open(QtCore.QIODevice.ReadOnly)
         # Use a html lib may be a better idea?
         savestream << "<html><head><meta charset='utf-8'></head>"
         # Css is inlined.
         savestream << "<style>"
-        savestream << QTextStream(css).readAll()
+        savestream << QtCore.QTextStream(css).readAll()
         savestream << "</style>"
         # Note content
         savestream << self.toHtml()
@@ -329,11 +332,11 @@ class MikiEdit(QTextEdit):
 
     def saveHtmlOnly(self, htmlFile):
         fileDir = os.path.dirname(htmlFile)
-        QDir().mkpath(fileDir)
+        QtCore.QDir().mkpath(fileDir)
 
         html = QFile(htmlFile)
-        html.open(QIODevice.WriteOnly)
-        savestream = QTextStream(html)
+        html.open(QtCore.QIODevice.WriteOnly)
+        savestream = QtCore.QTextStream(html)
         savestream << """
                       <html><head>
                         <meta charset="utf-8">

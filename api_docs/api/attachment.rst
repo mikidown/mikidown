@@ -1,0 +1,4 @@
+attachment.*
+===================================
+.. automodule:: mikidown.attachment
+

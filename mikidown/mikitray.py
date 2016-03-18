@@ -2,18 +2,20 @@
 Mikidown tray icon module.
 """
 
+from Qt import QtCore, QtGui, QtWidgets, Qt
+"""
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QMenu, QSystemTrayIcon
+"""
 
-
-class MikiTray(QSystemTrayIcon):
+class MikiTray(QtWidgets.QSystemTrayIcon):
     def __init__(self, icon, parent=None):
         super(MikiTray, self).__init__(parent)
         self.parent = parent
         self.setIcon(icon)
         self.setVisible(True)
 
-        menu = QMenu()
+        menu = QtWidgets.QMenu()
         menu.addAction(parent.actions.get('quit'))
         self.setContextMenu(menu)
         self.activated.connect(self.toggleShow)
@@ -21,7 +23,7 @@ class MikiTray(QSystemTrayIcon):
     def toggleShow(self, reason):
         """ Left click tray icon to toggle the display of MainWindow. 
         """
-        if reason != QSystemTrayIcon.Trigger:
+        if reason != QtWidgets.QSystemTrayIcon.Trigger:
             return
         s = self.parent.windowState() 
         if self.parent.isVisible():

@@ -1,0 +1,4 @@
+config.*
+===================================
+.. automodule:: mikidown.config
+

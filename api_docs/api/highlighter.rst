@@ -1,0 +1,4 @@
+highlighter.*
+===================================
+.. automodule:: mikidown.highlighter
+

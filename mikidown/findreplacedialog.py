@@ -1,23 +1,26 @@
-from PyQt4.QtCore import QRegExp, Qt
+
+from Qt import QtCore, QtGui, QtWidgets, Qt
+"""from PyQt4.QtCore import QRegExp, Qt
 from PyQt4.QtGui import QGridLayout, QDialog, QCheckBox, QPushButton, QLabel, QTextDocument, QLineEdit
+"""
 import re
 
-class FindReplaceDialog(QDialog):
+class FindReplaceDialog(QtWidgets.QDialog):
   def __init__(self, parent = None):
     super(FindReplaceDialog, self).__init__(parent)
-    grid = QGridLayout(self)
+    grid = QtWidgets.QGridLayout(self)
     
-    self.searchInput = QLineEdit(self)
-    self.replaceInput = QLineEdit(self)
+    self.searchInput = QtWidgets.QLineEdit(self)
+    self.replaceInput = QtWidgets.QLineEdit(self)
     
-    self.matchCase = QCheckBox(self.tr('Match case'), self)
-    self.wholeWords = QCheckBox(self.tr('Whole words'), self)
-    self.reCheck = QCheckBox(self.tr('Regex'), self)
+    self.matchCase = QtWidgets.QCheckBox(self.tr('Match case'), self)
+    self.wholeWords = QtWidgets.QCheckBox(self.tr('Whole words'), self)
+    self.reCheck = QtWidgets.QCheckBox(self.tr('Regex'), self)
 
-    self.nextButton = QPushButton(self.tr("Next"),self)
-    self.prevButton = QPushButton(self.tr("Previous"),self)
-    self.replaceButton = QPushButton(self.tr("Replace"),self)
-    self.replaceAllButton = QPushButton(self.tr("Replace All"),self)
+    self.nextButton = QtWidgets.QPushButton(self.tr("Next"),self)
+    self.prevButton = QtWidgets.QPushButton(self.tr("Previous"),self)
+    self.replaceButton = QtWidgets.QPushButton(self.tr("Replace"),self)
+    self.replaceAllButton = QtWidgets.QPushButton(self.tr("Replace All"),self)
     
     self.nextButton.clicked.connect(self.find)
     self.prevButton.clicked.connect(lambda: self.find(back=True))
@@ -26,9 +29,9 @@ class FindReplaceDialog(QDialog):
     self.searchInput.returnPressed.connect(self.find)
     self.replaceInput.returnPressed.connect(self.replace)
     
-    grid.addWidget(QLabel(self.tr("Search")),0,0)
-    grid.addWidget(QLabel(self.tr("    Options")),1,0)
-    grid.addWidget(QLabel(self.tr("Replace")),2,0)
+    grid.addWidget(QtWidgets.QLabel(self.tr("Search")),0,0)
+    grid.addWidget(QtWidgets.QLabel(self.tr("    Options")),1,0)
+    grid.addWidget(QtWidgets.QLabel(self.tr("Replace")),2,0)
     
     grid.addWidget(self.searchInput,0,1)
     grid.addWidget(self.nextButton,0,2)

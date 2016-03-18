@@ -1,0 +1,4 @@
+mikisearch.*
+===================================
+.. automodule:: mikidown.mikisearch
+

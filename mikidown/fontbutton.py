@@ -1,33 +1,33 @@
-from PyQt4 import QtCore,QtGui
+from Qt import QtCore, QtGui, QtWidgets, Qt
 
-class QFontButton(QtGui.QWidget):
+class QFontButton(QtWidgets.QWidget):
 
 	fontChanged = QtCore.pyqtSignal('QFont')
 
 	def __init__(self, font=None, parent=None):
 		super().__init__(parent)
 
-		layout=QtGui.QVBoxLayout(self)
-		self.label=QtGui.QLabel("ABCdef123",self)
+		layout = QtWidgets.QVBoxLayout(self)
+		self.label = QtWidgets.QLabel("ABCdef123",self)
 		#self.label.setAutoFillBackground(True)
-		self.button=QtGui.QPushButton(self)
+		self.button = QtWidgets.QPushButton(self)
 		self.button.clicked.connect(lambda x: self.adjustFont())
 		layout.addWidget(self.label)
 		layout.addWidget(self.button)
 
-		if isinstance(font,QtGui.QFont):
-			self.font=font
+		if isinstance(font, QtGui.QFont):
+			self.font = font
 		else:
-			self.font=QtGui.QFont()
+			self.font = QtGui.QFont()
 	
 	def adjustFont(self):
-		self.font,_=QtGui.QFontDialog.getFont(self.font,self,"")
+		self.font,_ = QtWidgets.QFontDialog.getFont(self.font,self,"")
 
 	def font(self):
 		return self._font
 	
 	def setFont(self,font):
-		if isinstance(font,QtGui.QFont): 
+		if isinstance(font, QtGui.QFont): 
 			self._font=font
 			self.button.setText("{} {}".format(font.family(), font.pointSize()))
 			self.label.setFont(font)

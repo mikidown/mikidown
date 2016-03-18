@@ -1,0 +1,4 @@
+slashpleter.*
+===================================
+.. automodule:: mikidown.slashpleter
+
