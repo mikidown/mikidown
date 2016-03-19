@@ -29,8 +29,8 @@ Run mikidown without installing
 
 ## Dependencies
 
-- Python (>3.0)
-- PyQt
+- Python.3+
+- PyQt.5+
 - python-markdown
 - python-whoosh
 - python-html2text ( Optional for HTML to markdown conversion, otherwise, formatted text is pasted as HTML )
@@ -40,7 +40,10 @@ Run mikidown without installing
 
 ## Beautiful notes powered by markdown
 
-In case you are unfamiliar with markdown, you can use this file (**Help->README**) as a simple reference to basic markdown syntax. However, I suggest you take a look at the complete [Markdown Syntax].
+In case you are unfamiliar with markdown, you can use 
+this file (**Help->README**) as a simple reference to 
+basic markdown syntax. However, 
+Its suggested to look at the complete [Markdown Syntax].
 
 ### Markdown extension
 
@@ -73,12 +76,12 @@ All python-markdown [extensions] are supported. To enable/disable extension, edi
 
 [Fork and help] are much appreciated.
 
-[markdown-mark]: https://github.com/dcurtis/markdown-mark
-[Zim]: http://zim-wiki.org/
-[ReText]: http://sourceforge.net/p/retext/
-[Markdown Syntax]: http://daringfireball.net/projects/markdown/syntax
-[Fork and help]: https://github.com/shadowkyogre/mikidown
-[ShadowKyogre]: https://github.com/ShadowKyogre
-[extensions]: http://pythonhosted.org/Markdown/extensions/index.html
+- [markdown-mark]: https://github.com/dcurtis/markdown-mark
+- [Zim]: http://zim-wiki.org/
+- [ReText]: http://sourceforge.net/p/retext/
+- [Markdown Syntax]: http://daringfireball.net/projects/markdown/syntax
+- [Fork and help]: https://github.com/shadowkyogre/mikidown
+- [ShadowKyogre]: https://github.com/ShadowKyogre
+- [extensions]: http://pythonhosted.org/Markdown/extensions/index.html
 
 Want to help? Further details are in the CONTRIBUTING.md file.

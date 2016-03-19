@@ -6,16 +6,7 @@ import shutil
 import re
 from threading import Thread
 from Qt import QtCore, QtGui, QtWidgets, QtWebKitWidgets, QtPrintSupport, Qt
-"""
-from PyQt4.QtCore import (Qt, QDir, QFile, QFileInfo, QIODevice,
-                          QPoint, QSize, QTextStream, QUrl)
-from PyQt4.QtGui import (qApp, QAction, QCheckBox, QDesktopWidget, QDialog,
-    QDockWidget, QFileDialog, QIcon, QLabel, QLineEdit, QMainWindow, QMenuBar,
-    QMessageBox, QKeySequence, QPrintDialog, QPrinter, QStatusBar, QSplitter,
-    QTabWidget, QTextCursor, QTextDocument, QToolBar, QTreeWidgetItem,
-    QTreeWidgetItemIterator, QVBoxLayout, QWidget, QFontMetrics, QSplitter, QPlainTextEdit, QFont)
-from PyQt4.QtWebKit import QWebPage, QWebView
-"""
+
 from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser, RegexPlugin
 from whoosh.writing import AsyncWriter
@@ -38,15 +29,17 @@ class MikiSepNote(QtWidgets.QDockWidget):
     #This is a static widget! It is not meant to dynamically update
     def __init__(self, settings, name, filename, plain_text=False, parent=None):
         super().__init__(parent=parent)
-        splitty = QSplitter(self)
+        splitty = QtWidgets.QSplitter(self)
+
         self.setWidget(splitty)
         self.setWindowTitle(os.path.basename(name))
         self.setFloating(True)
         self.setAttribute(Qt.WA_DeleteOnClose)
+
         self.plain_text = plain_text
         self.notePath = settings.notePath
 
-        fh = QFile(filename)
+        fh = QtCore.QFile(filename)
         try:
             if not fh.open(QIODevice.ReadOnly):
                 raise IOError(fh.errorString())
