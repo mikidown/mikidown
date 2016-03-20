@@ -44,8 +44,8 @@ def main():
         generator.generate()
         sys.exit(0)
     elif args.command == 'sandbox':
-        app = QApplication(sys.argv)
-        translator = QTranslator()
+        app = QtWidgets.QApplication(sys.argv)
+        translator = QtCore.QTranslator()
         tpath = "locale/mikidown_{}.qm".format(QLocale.system().name())
         full_tpath = os.path.join("/usr/share/mikidown", tpath).replace(os.sep, "/")
         if not os.path.exists(full_tpath):

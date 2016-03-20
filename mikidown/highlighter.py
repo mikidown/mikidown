@@ -41,7 +41,7 @@ class MikiHighlighter(QtGui.QSyntaxHighlighter):
         if scale_font_sizes:
             font[2] = QtGui.QFont(baseFontFam, 5.0/3*baseFontSize, QtGui.QFont.Bold)
         else:
-            font[2] = QtGui.QFont(baseFontFam, baseFontSize, QFont.Bold)
+            font[2] = QtGui.QFont(baseFontFam, baseFontSize, QtGui.QFont.Bold)
         # 3: h3 - ###
         regexp[3] = '^###[^#]+'
         color[3] = QtGui.QColor(color_settings[3])

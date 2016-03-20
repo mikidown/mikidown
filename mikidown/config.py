@@ -155,7 +155,7 @@ class Setting():
             notebookDir = QtCore.QDir(self.notebookPath)
 
             # move all markdown files to notes/
-            dirList = notebookDir.entryList(QDir.Dirs | QDir.NoDotAndDotDot)
+            dirList = notebookDir.entryList(QtCore.QDir.Dirs | QtCore.QDir.NoDotAndDotDot)
             if 'css' in dirList:
                 dirList.remove('css')
             fileList = notebookDir.entryList(['*.md', '*.mkd', '*.markdown'])
@@ -172,9 +172,9 @@ class Setting():
 
             # rename notes.css to css/notebook.css
             oldCssFile = os.path.join(self.notebookPath, 'notes.css').replace(os.sep, '/')
-            QDir().mkpath(cssPath)
+            QtCore.QDir().mkpath(cssPath)
             if os.path.exists(oldCssFile):
-                QFile.rename(oldCssFile, self.cssfile)
+                Qtcore.QFile.rename(oldCssFile, self.cssfile)
 
             self.version = '0'
 

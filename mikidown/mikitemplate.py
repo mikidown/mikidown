@@ -153,25 +153,25 @@ class EditBodyTemplateDialog(QtWidgets.QDialog):
             self.templateEdit.setFontPointSize(fntsize)
         h = MikiHighlighter(parent=self.templateEdit, scale_font_sizes=header_scales_font)
         tw = Mikibook.settings.value('tabWidth', type=int, defaultValue=4)
-        qfm = QFontMetrics(h.patterns[0][1].font())
+        qfm = QtGui.QFontMetrics(h.patterns[0][1].font())
         self.templateEdit.setTabStopWidth(tw * qfm.width(' '))
         self.templateEdit.setVisible(True)
 
-        fh = QFile(fpath)
+        fh = QtCore.QFile(fpath)
         try:
             if not fh.open(QIODevice.ReadOnly):
                 raise IOError(fh.errorString())
         except IOError as e:
-            QMessageBox.warning(self, self.tr("Read Error"),
+            QtWidgets.QMessageBox.warning(self, self.tr("Read Error"),
                                 self.tr("Failed to open %s: %s") % (fpath, e))
         finally:
             if fh is not None:
-                noteBody = QTextStream(fh).readAll()
+                noteBody = QtCore.QTextStream(fh).readAll()
                 fh.close()
                 self.templateEdit.setPlainText(noteBody)
                 self.templateEdit.document().setModified(False)
 
-        layout = QVBoxLayout(self)
+        layout = QtWidgets.QVBoxLayout(self)
         layout.addWidget(self.templateEdit)
         layout.addWidget(self.buttonBox)
 
@@ -212,7 +212,7 @@ class ManageTitlesWidget(QtWidgets.QWidget):
     def addItem(self, checked):
         contents = self.titlesList.model()
 
-        item = QStandardItem()
+        item = QtWidgets.QStandardItem()
         item = QtWidgets.QStandardItem()
         item.setText("Test Date Format (YYYYmmdd)")
         item.setData("%Y%m%d_Test_{}", TTPL_COL_DATA)
@@ -254,7 +254,7 @@ class ManageBodiesWidget(QtWidgets.QWidget):
         delButton.clicked.connect(self.deleteItems)
         addButton.clicked.connect(self.addItem)
 
-        layout = QVBoxLayout(self)
+        layout = QtWidgets.QVBoxLayout(self)
         layout.addWidget(self.bodiesList)
         layout.addLayout(self.buttonBox)
 
@@ -267,17 +267,17 @@ class ManageBodiesWidget(QtWidgets.QWidget):
 
         dialog = EditBodyTemplateDialog(filePath, self.settings, parent=self)
         if dialog.exec_():
-            fh = QFile(filePath)
+            fh = Qtcore.QFile(filePath)
             try:
                 if not fh.open(QIODevice.WriteOnly):
                     raise IOError(fh.errorString())
             except IOError as e:
-                QMessageBox.warning(self, self.tr("Save Error"),
+                QtWidgets.QMessageBox.warning(self, self.tr("Save Error"),
                                     self.tr("Failed to save %s: %s") % (path.basename(filepath), e))
                 raise
             finally:
                 if fh is not None:
-                    savestream = QTextStream(fh)
+                    savestream = QtCore.QTextStream(fh)
                     savestream << dialog.templateEdit.toPlainText()
                     fh.close()
 
@@ -379,9 +379,9 @@ class PickTemplateDialog(QtWidgets.QDialog):
         notePath = path.join(self.path, newPageName)
         acceptable, existPath = doesFileExist(notePath, NOTE_EXTS)
         if acceptable:
-            QDialog.accept(self)
+            QtWidgets.QDialog.accept(self)
         else:
-            QMessageBox.warning(self, self.tr("Error"),
+            QtWidgets.QMessageBox.warning(self, self.tr("Error"),
             self.tr("File already exists: %s") % existPath)
 
     def updateUi(self):

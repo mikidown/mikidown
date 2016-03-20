@@ -296,7 +296,7 @@ class MikiTree(QtWidgets.QTreeWidget):
         newDir = os.path.join(targetPage, sourceItem.text(0))
 
         if QtCore.QFile.exists(newFile):
-            QMessageBox.warning(self, self.tr("Error"),
+            QtWidgets.QMessageBox.warning(self, self.tr("Error"),
                                 self.tr("File already exists: %s") % newFile)
             return
 

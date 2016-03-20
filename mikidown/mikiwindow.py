@@ -41,14 +41,14 @@ class MikiSepNote(QtWidgets.QDockWidget):
 
         fh = QtCore.QFile(filename)
         try:
-            if not fh.open(QIODevice.ReadOnly):
+            if not fh.open(QtCore.QIODevice.ReadOnly):
                 raise IOError(fh.errorString())
         except IOError as e:
-            QMessageBox.warning(self, self.tr("Read Error"),
+            QtWidgets.QMessageBox.warning(self, self.tr("Read Error"),
                                 self.tr("Failed to open %s: %s") % (filename, e))
         finally:
             if fh is not None:
-                noteBody = QTextStream(fh).readAll()
+                noteBody = QtCore.QTextStream(fh).readAll()
                 fh.close()
                 self.tocw = TocTree(self)
                 splitty.addWidget(self.tocw)
@@ -65,18 +65,18 @@ class MikiSepNote(QtWidgets.QDockWidget):
                 if 'fenced_code' in settings.extensions or 'extra' in settings.extensions:
                     strip_fence_for_header_parsing = True
                 if plain_text:
-                    note_view = QPlainTextEdit(self)
-                    qfnt = QFont()
+                    note_view = QtWidgets.QPlainTextEdit(self)
+                    qfnt = QtGui.QFont()
                     qfnt.setFamily('monospace')
                     note_view.setFont(qfnt)
                     note_view.setPlainText(noteBody)
                 else:
-                    note_view = QWebView(self)
+                    note_view = QtWebKitWidgets.QWebView(self)
                     note_view.setHtml(settings.md.reset().convert(noteBody)+stuff)
-                    note_view.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
+                    note_view.page().setLinkDelegationPolicy(QtWebKitWidgets.QWebPage.DelegateAllLinks)
                     note_view.linkClicked.connect(self.linkClicked)
                     note_view.settings().setUserStyleSheetUrl( 
-                     QUrl('file://'+self.parent().settings.cssfile))
+                     QtCore.QUrl('file://'+self.parent().settings.cssfile))
                 self.note_view = note_view
                 splitty.addWidget(note_view)
                 self.tocw.updateToc(os.path.basename(name), 
@@ -89,9 +89,9 @@ class MikiSepNote(QtWidgets.QDockWidget):
             return
         pos = int(current.text(1))
         if self.plain_text:
-            self.note_view.moveCursor(QTextCursor.End)
+            self.note_view.moveCursor(QtGui.QTextCursor.End)
             cur = self.note_view.textCursor()
-            cur.setPosition(pos, QTextCursor.MoveAnchor)
+            cur.setPosition(pos, QtGui.QTextCursor.MoveAnchor)
             self.note_view.setTextCursor(cur)
             # Move cursor to END first will ensure
             # header is positioned at the top of visual area.
@@ -106,7 +106,7 @@ class MikiSepNote(QtWidgets.QDockWidget):
         name = qurl.toString()
         http = re.compile('https?://')
         if http.match(name):                        # external uri
-            QDesktopServices.openUrl(qurl)
+            QtGui.QDesktopServices.openUrl(qurl)
             return
 
         #"""
@@ -613,7 +613,7 @@ class MikiWindow(QtWidgets.QMainWindow):
         # header is positioned at the top of visual area.
         self.notesEdit.moveCursor(QTextCursor.End)
         cur = self.notesEdit.textCursor()
-        cur.setPosition(pos, QTextCursor.MoveAnchor)
+        cur.setPosition(pos, QtGui.QTextCursor.MoveAnchor)
         self.notesEdit.setTextCursor(cur)
         self.notesView.load(QUrl(link))
 
@@ -819,8 +819,8 @@ class MikiWindow(QtWidgets.QMainWindow):
         # self.notesView.findText(text, flags)
 
     def findMain(self, text, flags):
-        viewFlags = QWebPage.FindFlags(
-            flags) | QWebPage.FindWrapsAroundDocument
+        viewFlags = QtWebKitWidgets.QWebPage.FindFlags(
+            flags) | QtWebKitWidgets.QWebPage.FindWrapsAroundDocument
         if flags:
             self.notesView.findText(text, viewFlags)
             return self.notesEdit.find(text, flags)

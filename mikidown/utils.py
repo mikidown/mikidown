@@ -20,10 +20,10 @@ TTPL_COL_EXTRA_DATA = Qt.UserRole
 class ViewedNoteIcon(QtGui.QIcon):
     def __init__(self, num, parent=None):
         super(ViewedNoteIcon, self).__init__(parent)
-        pixmap = QPixmap(16, 16)
+        pixmap = QtGui.QPixmap(16, 16)
         pixmap.fill(Qt.cyan)
-        rect = QRect(0, 0, 16, 16)
-        painter = QPainter(pixmap)
+        rect = QtCore.QRect(0, 0, 16, 16)
+        painter = QtGui.QPainter(pixmap)
         painter.drawText(rect, Qt.AlignHCenter | Qt.AlignVCenter, str(num))
         self.addPixmap(pixmap)
         del painter
@@ -48,7 +48,7 @@ class LineEditDialog(QtWidgets.QDialog):
             editorLabel = QtWidgets.QLabel(self.tr("File Name:"))
             self.extNames = IMAGE_EXTS
         else:
-            editorLabel = QLabel(self.tr("Template Name:"))
+            editorLabel = QtWidgets.QLabel(self.tr("Template Name:"))
             self.extNames = NOTE_EXTS
 
         self.editor = QtWidgets.QLineEdit()

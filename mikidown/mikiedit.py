@@ -158,7 +158,7 @@ class MikiEdit(QtWidgets.QTextEdit):
             dialog = LineEditDialog(attDir, self)
             if dialog.exec_():
                 fileName = dialog.editor.text()
-                if not QFileInfo(fileName).suffix():
+                if not QtCore.QFileInfo(fileName).suffix():
                     fileName += '.jpg'
                 filePath = os.path.join(attDir, fileName).replace(os.sep, '/')
                 img.save(filePath)
@@ -185,7 +185,7 @@ class MikiEdit(QtWidgets.QTextEdit):
         relativeFilePath = newFilePath.replace(self.settings.notebookPath, "..")
         if not os.path.exists(attDir):
             os.makedirs(attDir)
-        QFile.copy(filePath, newFilePath)
+        QtCore.QFile.copy(filePath, newFilePath)
         self.parent.updateAttachmentView()
         if fileType == self.imageFilter:
             text = "![%s](%s)" % (filename, relativeFilePath)
@@ -194,7 +194,7 @@ class MikiEdit(QtWidgets.QTextEdit):
         self.insertPlainText(text)
 
     def insertAttachmentWrapper(self):
-        (filePath, fileType) = QFileDialog.getOpenFileNameAndFilter(
+        (filePath, fileType) = QtWidgets.QFileDialog.getOpenFileNameAndFilter(
             self, self.tr('Insert attachment'), '',
             self.imageFilter + ";;" + self.documentFilter)
         if filePath == "":

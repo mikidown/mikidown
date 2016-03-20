@@ -72,17 +72,17 @@ class FindReplaceDialog(QtWidgets.QDialog):
   def find(self, back = False):
     flags = 0x0000
     if self.reCheck.isChecked():
-      search_term = QRegExp(self.searchInput.text())
+      search_term = QtCore.QRegExp(self.searchInput.text())
     else:
       search_term = self.searchInput.text()
     if self.matchCase.isChecked():
-      flags |= QTextDocument.FindCaseSensitively
+      flags |= QtGui.QTextDocument.FindCaseSensitively
     elif self.reCheck.isChecked():
         search_term.setCaseSensitivity(Qt.CaseInsensitive)
     if self.wholeWords.isChecked():
-      flags |= QTextDocument.FindWholeWords
+      flags |= QtGui.QTextDocument.FindWholeWords
     if back:
-      flags |= QTextDocument.FindBackward
+      flags |= QtGui.QTextDocument.FindBackward
     start_here = self.parent().textCursor()
     if flags:
       cursor = self.parent().document().find(search_term, start_here, options=flags)

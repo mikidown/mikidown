@@ -22,7 +22,7 @@ class Generator():
         self.sitepath = os.path.join(notebookPath, "_site").replace(os.sep, '/')
         self.htmlpath = os.path.join(notebookPath, "_site/notes").replace(os.sep, '/')
         self.configfile = os.path.join(self.notebookPath, "notebook.conf").replace(os.sep, '/')
-        self.qsettings = QSettings(self.configfile, QSettings.NativeFormat)
+        self.qsettings = QtCore.QSettings(self.configfile, QtCore.QSettings.NativeFormat)
         self.extName = ['.md', '.mkd', '.markdown']
         if os.path.exists(self.configfile):
             extensions = readListFromSettings(self.qsettings,
@@ -48,7 +48,7 @@ class Generator():
                     os.unlink(file_object_path)
                 else:
                     shutil.rmtree(file_object_path)
-        QDir().mkpath(self.htmlpath)
+        QtCore.QDir().mkpath(self.htmlpath)
         self.initTree(self.notepath, "")
 
         # copy css and attachments folder
@@ -67,13 +67,13 @@ class Generator():
         def recursiveAddPath(filePath):
             """ recursively add files and directories to watcher """
             watcher.addPath(filePath)
-            fileList = QDir(filePath).entryInfoList(QDir.Dirs | QDir.Files | QDir.NoDotAndDotDot)
+            fileList = QtCore.QDir(filePath).entryInfoList(QtCore.QDir.Dirs | QtCore.QDir.Files | QtCore.QDir.NoDotAndDotDot)
             for f in fileList:
                 recursiveAddPath(f.absoluteFilePath())
 
         def directoryChanged(filePath):
             watchedFiles = watcher.directories() + watcher.files()
-            fileList = QDir(filePath).entryInfoList(QDir.Dirs | QDir.Files | QDir.NoDotAndDotDot)
+            fileList = QtCore.QDir(filePath).entryInfoList(QtCore.QDir.Dirs | QtCore.QDir.Files | QtCore.QDir.NoDotAndDotDot)
             for f in fileList:
                 if f.absoluteFilePath() not in watchedFiles:
                     watcher.addPath(f.absoluteFilePath())
@@ -81,8 +81,8 @@ class Generator():
             self.generate()
 
         # QFileSystemWatcher won't work without a QApplication!
-        app = QApplication(sys.argv)
-        watcher = QFileSystemWatcher()
+        app = QtWidgets.QApplication(sys.argv)
+        watcher = QtCore.QFileSystemWatcher()
         recursiveAddPath(self.notepath)
 
         # add/remove file triggers this
@@ -121,27 +121,27 @@ class Generator():
         else:
         # append subpages to page
             htmlfile = os.path.join(self.htmlpath, parent + ".html")
-        html = QFile(htmlfile)
-        html.open(QIODevice.Append)
-        savestream = QTextStream(html)
+        html = QtCore.QFile(htmlfile)
+        html.open(QtCore.QIODevice.Append)
+        savestream = QtCore.QTextStream(html)
 
-        noteDir = QDir(notepath)
+        noteDir = QtCore.QDir(notepath)
         notesList = noteDir.entryInfoList(['*.md', '*.mkd', '*.markdown'],
-                                          QDir.NoFilter,
-                                          QDir.Name|QDir.IgnoreCase)
+                                          QtCore.QDir.NoFilter,
+                                          QtCore.QDir.Name|QtCore.QDir.IgnoreCase)
         nl = [note.completeBaseName() for note in notesList]
         noduplicate = list(set(nl))
         noduplicate.sort(key=str.lower)
         htmlDir = os.path.join(self.htmlpath, parent)
-        if len(noduplicate) > 0 and not QDir(htmlDir).exists():
-            QDir().mkdir(htmlDir)
+        if len(noduplicate) > 0 and not QtCore.QDir(htmlDir).exists():
+            QtCore.QDir().mkdir(htmlDir)
 
         for name in noduplicate:
             path = notepath + '/' + name
             filename = os.path.join(parent, name)
             for ext in self.extName:
                 notefile = os.path.join(self.notepath, filename + ext)
-                if QFile.exists(notefile):
+                if QtCore.QFile.exists(notefile):
                     break
             htmlfile = os.path.join(self.htmlpath, filename + ".html")
             #print(notefile, htmlfile)
@@ -155,11 +155,11 @@ class Generator():
     def convert(self, notefile, htmlfile, page):
 
         self.count += 1
-        note = QFile(notefile)
+        note = QtCore.QFile(notefile)
         note.open(QIODevice.ReadOnly)
-        html = QFile(htmlfile)
+        html = QtCore.QFile(htmlfile)
         html.open(QIODevice.WriteOnly)
-        savestream = QTextStream(html)
+        savestream = QtCore.QTextStream(html)
         savestream << '<html><head>' \
                       '<meta charset="utf-8">' \
                       '<link rel="stylesheet" href="/css/notebook.css" type="text/css" />' \

@@ -19,13 +19,13 @@ class QFontButton(QtWidgets.QWidget):
 			self.font = font
 		else:
 			self.font = QtGui.QFont()
-	
+
 	def adjustFont(self):
 		self.font,_ = QtWidgets.QFontDialog.getFont(self.font,self,"")
 
 	def font(self):
 		return self._font
-	
+
 	def setFont(self,font):
 		if isinstance(font, QtGui.QFont): 
 			self._font=font
