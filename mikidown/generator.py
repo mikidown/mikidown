@@ -6,9 +6,12 @@ import sys
 import shutil
 from multiprocessing import Process
 from threading import Thread
-from Qt import QtCore, QtGui, QtWidgets, Qt
+
+from PyQt5.QtCore import Qt
+from PyQt5 import QtCore, QtGui, QtWidgets
 #from PyQt4.QtCore import QDir, QFile, QFileSystemWatcher, QIODevice, QSettings, QTextStream
 #from PyQt4.QtGui import QApplication
+
 import markdown
 from .config import readListFromSettings, readDictFromSettings
 from .utils import JSCRIPT_TPL

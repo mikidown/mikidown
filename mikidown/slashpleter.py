@@ -1,4 +1,4 @@
-from Qt import QtWidgets
+from PyQt5 import QtWidgets
 
 class SlashPleter(QtWidgets.QCompleter):
     def splitPath(self, path):

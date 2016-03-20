@@ -1,4 +1,5 @@
-from Qt import QtCore, QtGui, QtWidgets, Qt
+from PyQt5.QtCore import Qt
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 class QFontButton(QtWidgets.QWidget):
 

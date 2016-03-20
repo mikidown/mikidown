@@ -1,6 +1,7 @@
 import re
 
-from Qt import QtCore, QtGui, QtWidgets, Qt
+from PyQt5.QtCore import Qt
+from PyQt5 import QtCore, QtGui, QtWidgets
 """
 from PyQt4.QtGui import QSyntaxHighlighter, QColor, QFont, QTextCharFormat
 from PyQt4.QtCore import Qt

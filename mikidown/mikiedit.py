@@ -1,7 +1,9 @@
 import os
 from threading import Thread
 from multiprocessing import Process
-from Qt import QtCore, QtGui, QtWidgets, QtNetwork, Qt
+
+from PyQt5.QtCore import Qt
+from PyQt5 import QtCore, QtGui, QtWidgets, QtNetwork
 """
 from PyQt4.QtCore import Qt, QDir, QFile, QFileInfo, QMimeData, QIODevice, QTextStream, QUrl
 from PyQt4.QtGui import QAction, QCursor, QFileDialog, QFont, QTextCursor, QTextEdit, QMessageBox, QKeySequence, QApplication

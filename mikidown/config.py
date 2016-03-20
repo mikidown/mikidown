@@ -1,7 +1,8 @@
 import os
 import re
 
-from Qt import QtCore, QtGui, QtWidgets, Qt
+from PyQt5.QtCore import Qt
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 #from PyQt4.QtCore import QDir, QFile, QSettings, Qt
 #from PyQt4.QtGui  import QStandardItem, QStandardItemModel, QFileSystemModel

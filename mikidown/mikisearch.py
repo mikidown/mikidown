@@ -3,7 +3,7 @@ Search module
 
 Search results are displayed in a QWebView widget.
 """
-from Qt import QtCore, QtGui, QtWidgets, QtWebKitWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets, QtWebKitWidgets
 """
 from PyQt4.QtCore import QSize, QUrl
 from PyQt4.QtGui import QCursor, QToolTip

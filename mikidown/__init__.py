@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(__file__) + "/../")
 sys.path.append(os.path.dirname(__file__))
 
 
-from Qt import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 #from Qt.QtCore import QSettings, QTranslator, QLocale
 #from Qt.QtGui import QApplication, QIcon, QMessageBox

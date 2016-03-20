@@ -1,6 +1,7 @@
 import re
 
-from Qt import QtCore, QtGui, QtWidgets, QtWebKitWidgets
+from PyQt5.QtCore import Qt
+from PyQt5 import QtCore, QtGui, QtWidgets, QtWebKitWidgets
 """
 from PyQt4.QtCore import QDir, QPoint, QTimer, QUrl
 from PyQt4.QtGui import QDesktopServices

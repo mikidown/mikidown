@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from Qt import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 """
 from PyQt4.QtCore import QSettings
 from PyQt4.QtGui import QApplication

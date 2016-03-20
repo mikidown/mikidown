@@ -4,7 +4,8 @@ from os import path
 import shlex
 import subprocess
 
-from Qt import QtCore, QtGui, QtWidgets, Qt
+from PyQt5.QtCore import Qt
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from .highlighter import MikiHighlighter
 from .mikibook import Mikibook

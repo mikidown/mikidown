@@ -5,7 +5,9 @@ import os
 import shutil
 import re
 from threading import Thread
-from Qt import QtCore, QtGui, QtWidgets, QtWebKitWidgets, QtPrintSupport, Qt
+
+from PyQt5.QtCore import Qt
+from PyQt5 import QtCore, QtGui, QtWidgets, QtWebKitWidgets, QtPrintSupport
 
 from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser, RegexPlugin

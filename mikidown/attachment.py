@@ -1,6 +1,7 @@
 import os
 
-from Qt import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt
+from PyQt5 import QtCore, QtGui, QtWidgets
 """
 from PyQt4.QtCore import Qt, QDir, QFile, QRect, QSize
 from PyQt4.QtGui import (QColor, QFileIconProvider, QFileSystemModel,

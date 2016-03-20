@@ -6,7 +6,8 @@ import markdown
 from markdown.extensions import __path__ as extpath
 from markdown.extensions.headerid import slugify, unique
 
-from Qt import QtCore, QtGui, QtWidgets, Qt
+from PyQt5.QtCore import Qt
+from PyQt5 import QtCore, QtGui, QtWidgets
 """
 from PyQt4.QtCore import Qt, QFile, QRect
 from PyQt4.QtGui import (QDialog, QDialogButtonBox, QGridLayout, QIcon, QLabel, QLineEdit, QMessageBox, QPainter, QPixmap)
