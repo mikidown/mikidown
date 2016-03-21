@@ -1,4 +1,6 @@
 language: python
+sudo: required
+dist: trusty
 
 python:
   - "3.3"
@@ -6,11 +8,9 @@ python:
 virtualenv:
   system_site_packages: true
 
-before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get -y install python3-pyqt5
-
 install:
+  - sudo apt-get update -q
+  - sudo apt-get install python3-pyqt5 -y
   - "pip install markdown whoosh"
 
 before_script:
