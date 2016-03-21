@@ -1,16 +1,20 @@
 language: python
 sudo: required
-dist: trusty
 
 python:
   - "3.3"
 
-virtualenv:
-  system_site_packages: true
+#virtualenv:
+#      system_site_packages: true
+
+before_install:
+  - sudo apt-add-repository ppa:beineri/opt-qt551 -y
+  - sudo apt-get update
+  - sudo apt-get install qt-latest
+  - source /opt/qt55/bin/qt55-env.sh
+  - ./ci/before_install.sh
 
 install:
-  - sudo apt-get update -q
-  - sudo apt-get install python3-pyqt5 -y
   - "pip install markdown whoosh"
 
 before_script:
