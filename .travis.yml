@@ -8,7 +8,7 @@ virtualenv:
 
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install python3-pyqt5
+  - sudo apt-get -y install python3-pyqt5
 
 install:
   - "pip install markdown whoosh"
