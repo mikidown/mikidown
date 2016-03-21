@@ -4,8 +4,7 @@ import glob
 import os
 import sys
 import unittest
-from PyQt4.QtCore import QSettings
-from PyQt4.QtGui import QApplication, QIcon
+from PyQt5.QtWidgets import QApplication
 
 import mikidown
 from mikidown.mikiwindow import MikiWindow
