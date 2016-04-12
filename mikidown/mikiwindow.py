@@ -52,7 +52,9 @@ class MikiSepNote(QDockWidget):
                                 self.tr("Failed to open %s: %s") % (filename, e))
         finally:
             if fh is not None:
-                noteBody = QTextStream(fh).readAll()
+                notestream = QTextStream(fh)
+                notestream.setCodec("UTF-8")
+                noteBody = notestream.readAll()
                 fh.close()
                 self.tocw = TocTree(self)
                 splitty.addWidget(self.tocw)
@@ -576,7 +578,9 @@ class MikiWindow(QMainWindow):
                                 self.tr('Failed to open %s: %s') % (filename, e))
         finally:
             if fh is not None:
-                noteBody = QTextStream(fh).readAll()
+                notestream = QTextStream(fh)
+                notestream.setCodec("UTF-8")
+                noteBody = notestream.readAll()
                 fh.close()
                 self.notesEdit.setPlainText(noteBody)
                 self.notesView.scrollPosition = QPoint(0, 0)
@@ -643,6 +647,7 @@ class MikiWindow(QMainWindow):
         fh = QFile(fileName)
         fh.open(QIODevice.WriteOnly)
         savestream = QTextStream(fh)
+        savestream.setCodec("UTF-8")
         savestream << self.notesEdit.toPlainText()
         fh.close()
 
@@ -680,7 +685,9 @@ class MikiWindow(QMainWindow):
     def importPageCore(self, filename):
         fh = QFile(filename)
         fh.open(QIODevice.ReadOnly)
-        fileBody = QTextStream(fh).readAll()
+        filestream = QTextStream(fh)
+        filestream.setCodec("UTF-8")
+        fileBody = filestream.readAll()
         fh.close()
         page = QFileInfo(filename).completeBaseName()
         fh = QFile(self.notesTree.pageToFile(page))
@@ -696,6 +703,7 @@ class MikiWindow(QMainWindow):
                 return
         fh.open(QIODevice.WriteOnly)
         savestream = QTextStream(fh)
+        savestream.setCodec("UTF-8")
         savestream << fileBody
         fh.close()
         item = QTreeWidgetItem(self.notesTree, [page])

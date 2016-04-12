@@ -55,7 +55,7 @@ class MikiEdit(QTextEdit):
     def updateIndex(self):
         ''' Update whoosh index, which cost much computing resource '''
         page = self.parent.notesTree.currentPage()
-        content = self.toPlainText()        
+        content = self.toPlainText()
         try:
             #writer = self.ix.writer()
             writer = AsyncWriter(self.ix)
@@ -271,6 +271,7 @@ class MikiEdit(QTextEdit):
         finally:
             if fh is not None:
                 savestream = QTextStream(fh)
+                savestream.setCodec("UTF-8")
                 savestream << self.toPlainText()
                 fh.close()
                 self.document().setModified(False)
@@ -314,13 +315,16 @@ class MikiEdit(QTextEdit):
         html = QFile(htmlFile)
         html.open(QIODevice.WriteOnly)
         savestream = QTextStream(html)
+        savestream.setCodec("UTF-8")
         css = QFile(self.settings.cssfile)
         css.open(QIODevice.ReadOnly)
         # Use a html lib may be a better idea?
         savestream << "<html><head><meta charset='utf-8'></head>"
         # Css is inlined.
         savestream << "<style>"
-        savestream << QTextStream(css).readAll()
+        cssstream = QTextStream(css)
+        cssstream.setCodec("UTF-8")
+        savestream << cssstream.readAll()
         savestream << "</style>"
         # Note content
         savestream << self.toHtml()
@@ -334,6 +338,7 @@ class MikiEdit(QTextEdit):
         html = QFile(htmlFile)
         html.open(QIODevice.WriteOnly)
         savestream = QTextStream(html)
+        savestream.setCodec("UTF-8")
         savestream << """
                       <html><head>
                         <meta charset="utf-8">
