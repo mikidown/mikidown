@@ -50,7 +50,9 @@ class MikiSepNote(QtWidgets.QDockWidget):
                                 self.tr("Failed to open %s: %s") % (filename, e))
         finally:
             if fh is not None:
-                noteBody = QtCore.QTextStream(fh).readAll()
+                notestream = QtCore.QTextStream(fh)
+                notestream.setCodec("UTF-8")
+                noteBody = notestream.readAll()
                 fh.close()
                 self.tocw = TocTree(self)
                 splitty.addWidget(self.tocw)
@@ -578,7 +580,9 @@ class MikiWindow(QtWidgets.QMainWindow):
                                 self.tr('Failed to open %s: %s') % (filename, e))
         finally:
             if fh is not None:
-                noteBody = QtCore.QTextStream(fh).readAll()
+                notestream = QtCore.QTextStream(fh)
+                notestream.setCodec("UTF-8")
+                noteBody = notestream.readAll()
                 fh.close()
                 self.notesEdit.setPlainText(noteBody)
                 self.notesView.scrollPosition = QtCore.QPoint(0, 0)
@@ -645,6 +649,7 @@ class MikiWindow(QtWidgets.QMainWindow):
         fh = QtCore.QFile(fileName)
         fh.open(QtCore.QIODevice.WriteOnly)
         savestream = QtCore.QTextStream(fh)
+        savestream.setCodec("UTF-8")
         savestream << self.notesEdit.toPlainText()
         fh.close()
 
@@ -682,6 +687,7 @@ class MikiWindow(QtWidgets.QMainWindow):
     def importPageCore(self, filename):
         fh = QtCore.QFile(filename)
         fh.open(QtCore.QIODevice.ReadOnly)
+        filestream.setCodec("UTF-8")
         fileBody = QtCore.QTextStream(fh).readAll()
         fh.close()
         page = QtCore.QFileInfo(filename).completeBaseName()
@@ -698,6 +704,7 @@ class MikiWindow(QtWidgets.QMainWindow):
                 return
         fh.open(QtCore.QIODevice.WriteOnly)
         savestream = QtCore.QTextStream(fh)
+        savestream.setCodec("UTF-8")
         savestream << fileBody
         fh.close()
         item = QtWidgets.QTreeWidgetItem(self.notesTree, [page])
