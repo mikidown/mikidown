@@ -687,8 +687,9 @@ class MikiWindow(QtWidgets.QMainWindow):
     def importPageCore(self, filename):
         fh = QtCore.QFile(filename)
         fh.open(QtCore.QIODevice.ReadOnly)
+        filestream = QtCore.QTextStream(fh)
         filestream.setCodec("UTF-8")
-        fileBody = QtCore.QTextStream(fh).readAll()
+        fileBody = filestream.readAll()
         fh.close()
         page = QtCore.QFileInfo(filename).completeBaseName()
         fh = QtCore.QFile(self.notesTree.pageToFile(page))
