@@ -127,6 +127,7 @@ class Generator():
         html = QtCore.QFile(htmlfile)
         html.open(QtCore.QIODevice.Append)
         savestream = QtCore.QTextStream(html)
+        savestream.setCodec("UTF-8")
 
         noteDir = QtCore.QDir(notepath)
         notesList = noteDir.entryInfoList(['*.md', '*.mkd', '*.markdown'],
@@ -163,6 +164,11 @@ class Generator():
         html = QtCore.QFile(htmlfile)
         html.open(QIODevice.WriteOnly)
         savestream = QtCore.QTextStream(html)
+        savestream.setCodec("UTF-8")
+
+        note_ts = QtCore.QTextStream(note)
+        note_ts.setCodec("UTF-8" )
+
         savestream << '<html><head>' \
                       '<meta charset="utf-8">' \
                       '<link rel="stylesheet" href="/css/notebook.css" type="text/css" />' \
@@ -171,7 +177,7 @@ class Generator():
         # Note content
         if 'asciimathml' in self.exts:
             savestream << JSCRIPT_TPL.format(self.qsettings.value('mathJax'))
-        savestream << self.md.reset().convert(QTextStream(note).readAll())
+        savestream << self.md.reset().convert(note_ts.readAll())
         savestream << "</html>"
         note.close()
         html.close()

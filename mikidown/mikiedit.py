@@ -60,7 +60,7 @@ class MikiEdit(QtWidgets.QTextEdit):
     def updateIndex(self):
         ''' Update whoosh index, which cost much computing resource '''
         page = self.parent.notesTree.currentPage()
-        content = self.toPlainText()        
+        content = self.toPlainText()
         try:
             #writer = self.ix.writer()
             writer = AsyncWriter(self.ix)
@@ -277,6 +277,7 @@ class MikiEdit(QtWidgets.QTextEdit):
         finally:
             if fh is not None:
                 savestream = QtCore.QTextStream(fh)
+                savestream.setCodec("UTF-8")
                 savestream << self.toPlainText()
                 fh.close()
                 self.document().setModified(False)
@@ -320,13 +321,16 @@ class MikiEdit(QtWidgets.QTextEdit):
         html = QtCore.QFile(htmlFile)
         html.open(QtCore.QIODevice.WriteOnly)
         savestream = QtCore.QTextStream(html)
+        savestream.setCodec("UTF-8")
         css = QtCore.QFile(self.settings.cssfile)
         css.open(QtCore.QIODevice.ReadOnly)
         # Use a html lib may be a better idea?
         savestream << "<html><head><meta charset='utf-8'></head>"
         # Css is inlined.
         savestream << "<style>"
-        savestream << QtCore.QTextStream(css).readAll()
+        cssstream = QtCore.QTextStream(css)
+        cssstream.setCodec("UTF-8")
+        savestream << cssstream.readAll()
         savestream << "</style>"
         # Note content
         savestream << self.toHtml()
@@ -340,6 +344,7 @@ class MikiEdit(QtWidgets.QTextEdit):
         html = QtCore.QFile(htmlFile)
         html.open(QtCore.QIODevice.WriteOnly)
         savestream = QtCore.QTextStream(html)
+        savestream.setCodec("UTF-8")
         savestream << """
                       <html><head>
                         <meta charset="utf-8">
