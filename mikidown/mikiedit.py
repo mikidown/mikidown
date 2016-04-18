@@ -132,7 +132,7 @@ class MikiEdit(QtWidgets.QTextEdit):
                 if QtCore.QUrl(qurl).isLocalFile():
                     if extension.lower() in attachments:
                         nurl = url.replace("file://", "")
-                        QFile.copy(nurl, newFilePath)
+                        QtCore.QFile.copy(nurl, newFilePath)
                         self.parent.updateAttachmentView()
 
                         if extension.lower() in self.settings.attachmentImage:
