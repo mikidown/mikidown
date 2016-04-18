@@ -30,7 +30,7 @@ class AttachmentItemDelegate(QtWidgets.QStyledItemDelegate):
             # Currently not work as intended.
             fileInfo = self.model.fileInfo(index)
             icon = QtWidgets.QFileIconProvider().icon(fileInfo)
-            img = icon.pixmap(QSize(32, 32))
+            img = icon.pixmap(QtCore.QSize(32, 32))
 
         # Scale to height, align center horizontally, align bottom vertically.
         if img.height() > self.thumbHeight:
