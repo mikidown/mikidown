@@ -196,8 +196,8 @@ class MikiEdit(QtWidgets.QTextEdit):
         self.insertPlainText(text)
 
     def insertAttachmentWrapper(self):
-        (filePath, fileType) = QtWidgets.QFileDialog.getOpenFileNameAndFilter(
-            self, self.tr('Insert attachment'), '',
+        (filePath, fileType) = QtWidgets.QFileDialog.getOpenFileName(
+            self, self.tr('Insert attachment'), self.settings.notePath,
             self.imageFilter + ";;" + self.documentFilter)
         if filePath == "":
             return
