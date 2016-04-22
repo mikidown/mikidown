@@ -619,11 +619,11 @@ class MikiWindow(QtWidgets.QMainWindow):
         link = "file://" + self.notePath + "/#" + current.text(2)
         # Move cursor to END first will ensure
         # header is positioned at the top of visual area.
-        self.notesEdit.moveCursor(QTextCursor.End)
+        self.notesEdit.moveCursor(QtGui.QTextCursor.End)
         cur = self.notesEdit.textCursor()
         cur.setPosition(pos, QtGui.QTextCursor.MoveAnchor)
         self.notesEdit.setTextCursor(cur)
-        self.notesView.load(QUrl(link))
+        self.notesView.load(QtCore.QUrl(link))
 
     def switchNote(self, num):
         if num < len(self.viewedListActions):
