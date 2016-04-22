@@ -60,6 +60,10 @@ class MikiTree(QtWidgets.QTreeWidget):
     def pageToItem(self, page):
         """ get item from item hierarchy """
 
+        # if page is empty return current item
+        if page == '':
+            return self.currentItem()
+
         # strip the beginning and ending '/' character
         if page[0] == '/':
             page = page[1:]
