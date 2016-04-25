@@ -160,9 +160,9 @@ class Generator():
 
         self.count += 1
         note = QtCore.QFile(notefile)
-        note.open(QIODevice.ReadOnly)
+        note.open(QtCore.QIODevice.ReadOnly)
         html = QtCore.QFile(htmlfile)
-        html.open(QIODevice.WriteOnly)
+        html.open(QtCore.QIODevice.WriteOnly)
         savestream = QtCore.QTextStream(html)
         savestream.setCodec("UTF-8")
 
