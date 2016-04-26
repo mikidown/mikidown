@@ -124,10 +124,6 @@ class Generator():
         else:
         # append subpages to page
             htmlfile = os.path.join(self.htmlpath, parent + ".html")
-        html = QtCore.QFile(htmlfile)
-        html.open(QtCore.QIODevice.Append)
-        savestream = QtCore.QTextStream(html)
-        savestream.setCodec("UTF-8")
 
         noteDir = QtCore.QDir(notepath)
         notesList = noteDir.entryInfoList(['*.md', '*.mkd', '*.markdown'],
@@ -140,24 +136,51 @@ class Generator():
         if len(noduplicate) > 0 and not QtCore.QDir(htmlDir).exists():
             QtCore.QDir().mkdir(htmlDir)
 
+        children=[]
+
         for name in noduplicate:
             path = notepath + '/' + name
             filename = os.path.join(parent, name)
+
             for ext in self.extName:
                 notefile = os.path.join(self.notepath, filename + ext)
                 if QtCore.QFile.exists(notefile):
                     break
-            htmlfile = os.path.join(self.htmlpath, filename + ".html")
-            #print(notefile, htmlfile)
-            self.convert(notefile, htmlfile, os.path.join(parent,name))
-            self.initTree(path, os.path.join(parent,name))
 
+            chtmlfile = os.path.join(self.htmlpath, filename + ".html")
+            self.convert(notefile, chtmlfile, path, os.path.join(parent,name))
+
+            children.append('<li><a href="/notes/' + filename + '.html">' + name + '</a></li>')
             # append subpages to page
-            savestream << '<li><a href="/notes/' + filename + '.html">' + name + '</a></li>'
+
+        if parent == "":
+            self.writeIndex(htmlfile, children)
+
+        return children
+
+    def writeIndex(self, htmlfile, children):
+        print(htmlfile, children)
+        html = QtCore.QFile(htmlfile)
+        html.open(QtCore.QIODevice.WriteOnly)
+        savestream = QtCore.QTextStream(html)
+        savestream.setCodec("UTF-8")
+        savestream << '<html>\n<head>\n' \
+                      '<meta charset="utf-8">\n' \
+                      '<link rel="stylesheet" href="/css/notebook.css" type="text/css" />\n' \
+                      '</head>\n'
+        savestream << "<body>\n"
+        savestream << "<h1>"
+        savestream << "Mikidown Index"
+        savestream << "</h1>"
+        savestream << "<ul>\n"
+        savestream << "\n".join(children)
+        savestream << "</ul>\n"
+        savestream << "</body>\n"
+        savestream << "</html>\n"
+
         html.close()
 
-    def convert(self, notefile, htmlfile, page):
-
+    def convert(self, notefile, htmlfile, path, page):
         self.count += 1
         note = QtCore.QFile(notefile)
         note.open(QtCore.QIODevice.ReadOnly)
@@ -166,19 +189,26 @@ class Generator():
         savestream = QtCore.QTextStream(html)
         savestream.setCodec("UTF-8")
 
+        children = self.initTree(path, page)
+
         note_ts = QtCore.QTextStream(note)
         note_ts.setCodec("UTF-8" )
 
-        savestream << '<html><head>' \
-                      '<meta charset="utf-8">' \
-                      '<link rel="stylesheet" href="/css/notebook.css" type="text/css" />' \
-                      '</head>'
-        savestream << "<header>" + self.breadcrumb(page) + "</header>"
+        savestream << '<html>\n<head>\n' \
+                      '<meta charset="utf-8">\n' \
+                      '<link rel="stylesheet" href="/css/notebook.css" type="text/css" />\n' \
+                      '</head>\n'
+        savestream << "<body>\n"
+        savestream << "<header>" + self.breadcrumb(page) + "</header>\n"
+        savestream << "<ul>\n"
+        savestream << "\n".join(children)
+        savestream << "</ul>\n"
         # Note content
         if 'asciimathml' in self.exts:
             savestream << JSCRIPT_TPL.format(self.qsettings.value('mathJax'))
         savestream << self.md.reset().convert(note_ts.readAll())
-        savestream << "</html>"
+        savestream << "</body>\n"
+        savestream << "</html>\n"
         note.close()
         html.close()
 
