@@ -12,9 +12,10 @@ before_install:
   - sudo apt-get update
   - sudo apt-get install qt-latest
   - source /opt/qt55/bin/qt55-env.sh
+  - ./ci/before_install.sh
 
 install:
-  - "pip install markdown whoosh pyqt5"
+  - "pip install markdown whoosh"
 
 before_script:
   - "export DISPLAY=:99.0"
