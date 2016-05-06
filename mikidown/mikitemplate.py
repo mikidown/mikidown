@@ -123,7 +123,7 @@ class EditTitleTemplateDialog(QtWidgets.QDialog):
                 else:
                     item.setData(TitleType.FSTRING, TTPL_COL_EXTRA_DATA)
             else:
-                item = QtWidgets.QStandardItem()
+                item = QtGui.QStandardItem()
                 item.setText(self.titleFriendlyName.text())
                 item.setData(tplContent, TTPL_COL_DATA)
                 if self.usesDate.isChecked():
@@ -142,8 +142,8 @@ class EditBodyTemplateDialog(QtWidgets.QDialog):
         self.settings = settings
         self.setWindowTitle(self.tr("Edit body template"))
 
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | 
-                                          QDialogButtonBox.Cancel)
+        self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | 
+                                          QtWidgets.QDialogButtonBox.Cancel)
 
         self.templateEdit = MikiEdit(self)
         fnt = Mikibook.settings.value('editorFont', defaultValue=None)
@@ -213,8 +213,8 @@ class ManageTitlesWidget(QtWidgets.QWidget):
     def addItem(self, checked):
         contents = self.titlesList.model()
 
-        item = QtWidgets.QStandardItem()
-        item = QtWidgets.QStandardItem()
+        item = QtGui.QStandardItem()
+        item = QtGui.QStandardItem()
         item.setText("Test Date Format (YYYYmmdd)")
         item.setData("%Y%m%d_Test_{}", TTPL_COL_DATA)
         item.setData(TitleType.DATETIME, TTPL_COL_EXTRA_DATA)
@@ -391,7 +391,7 @@ class PickTemplateDialog(QtWidgets.QDialog):
         itemIdx = comboModel.index(0, 0, parent=self.bodyTemplates.rootModelIndex())
         singleNotRoot = itemIdx.isValid()
         shouldEnable = rowCount > 1 or singleNotRoot
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(shouldEnable)
+        self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(shouldEnable)
         self.bodyTemplates.setEnabled(shouldEnable)
 
     def updateTitleBody(self, idx):
