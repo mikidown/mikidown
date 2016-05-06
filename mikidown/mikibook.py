@@ -263,7 +263,7 @@ class NotebookSettingsDialog(QtWidgets.QDialog):
         # then make mikidown use these settings NOW
         curitem=self.parent().notesTree.currentItem()
         self.parent().currentItemChangedWrapper(curitem, curitem)
-        QDialog.accept(self)
+        QtGui.QDialog.accept(self)
 
 class NotebookListDialog(QtWidgets.QDialog):
     """Display, create, remove, modify notebookList """
