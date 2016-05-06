@@ -568,8 +568,9 @@ class MikiWindow(QtWidgets.QMainWindow):
     def updateAttachmentView(self):
         # Update attachmentView to show corresponding attachments.
         item = self.notesTree.currentItem()
-        index = self.attachmentView.model.index(
-            self.notesTree.itemToAttachmentDir(item))
+        path = self.notesTree.itemToAttachmentDir(item)
+        self.attachmentView.model.setRootPath(path)
+        index = self.attachmentView.model.index(path)
         self.attachmentView.setRootIndex(index)
 
     def openFile(self, filename):
@@ -607,9 +608,7 @@ class MikiWindow(QtWidgets.QMainWindow):
         self.openFile(currentFile)
 
         # Update attachmentView to show corresponding attachments.
-        index = self.attachmentView.model.index(
-            self.notesTree.itemToAttachmentDir(current))
-        self.attachmentView.setRootIndex(index)
+        self.updateAttachmentView()
 
     def tocNavigate(self, current):
         ''' works for notesEdit now '''
