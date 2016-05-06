@@ -35,6 +35,8 @@ Run mikidown without installing
 - python-whoosh
 - python-html2text ( Optional for HTML to markdown conversion, otherwise, formatted text is pasted as HTML )
 - python-asciimathml ( Optional for asciimathml support )
+    - The default version of python-asciimathml doesn't support Python 3.
+    Please use the one from this repo: <https://github.com/mtahmed/python-asciimathml>
 - python-pyenchant ( Optional for spell checking )
 - slickpicker ( Optional for better color picking for mikidown highlighting colors )
 
