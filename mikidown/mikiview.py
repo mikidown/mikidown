@@ -44,7 +44,17 @@ class MikiView(QtWebKitWidgets.QWebView):
         self.load(qurl)
         name = name.replace('file://', '')
         name = name.replace(self.notePath, '').split('#')
-        item = self.parent.notesTree.pageToItem(name[0])
+
+        if name[0] == '/' and self.notePath in qurl.toString():
+            #allow intersection links on same note to work
+            item = self.parent.notesTree.currentItem()
+        elif name[0] == '/':
+            # it's pretty safe to do this since no matter the circumstances,
+            # one wouldn't want to link to the root of their system
+            return
+        else:
+            item = self.parent.notesTree.pageToItem(name[0])
+
         if not item or item == self.parent.notesTree.currentItem():
             return
         else:
