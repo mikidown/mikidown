@@ -118,7 +118,9 @@ class MikiTree(QtWidgets.QTreeWidget):
         needed and manipulation become easy
         """
         page = self.itemToPage(item)
-        return os.path.join(self.settings.attachmentPath, page)
+        #path = os.path.join(self.settings.attachmentPath, page)
+        path = self.settings.attachmentPath+"/"+page
+        return path
 
     def currentPage(self):
         return self.itemToPage(self.currentItem())
