@@ -13,11 +13,11 @@ the github repo.
 Please provide a backtrace of the relevant errors like in #43. If it's a logic 
 error (as in a variable's set to a wrong value), here's what you can do to help me
 find the error (if I haven't found it yet):
-* Run ```python -m pdb mikidown.py```
-* Set some breakpoints with ```b mikidown/${relevantfile}.py:lineno``` in pdb. lineno
-should be the place just before the relevant variable changes to an unexpected value.
-* Run the program with ```run``` in pdb
-* When you get to the breakpoint, print out the variable values with ```p ${relevantvariable}```
+* Find all of the relevant files you want to set breakpoints at
+* Type this somewhere in that file, properly indented: `from .utils import debugTrace`
+* Set some breakpoints by adding `debugTrace()` in said files. These should be placed just before the relevant variable changes to an unexpected value.
+* Run the program with `python ./mikidown.py`
+* When you get to the breakpoint, print out the variable values with `p ${relevantvariable}`
 
 If you don't know how to do this, please describe in detail what you did in the GUI to
 trigger the error (as in what buttons you pressed, etc.).

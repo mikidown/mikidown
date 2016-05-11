@@ -1,5 +1,6 @@
 # Mikidown Changelogs
 ## Version 0.3.11
+- Added utility function to allow easy debugging without pyqt scrolling the console all over the place.
 - **New Subpage** and **New Page** in the context menu use the item under
 the mouse, NOT the item we're currently looking at.
 - If the user types a slash in the note name, try to automatically create

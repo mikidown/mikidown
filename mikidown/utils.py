@@ -187,3 +187,18 @@ def parseTitle(source, fallback):
         return title.group(1).strip()
     else:
         return fallback
+
+# http://stackoverflow.com/questions/1736015/debugging-a-pyqt4-app
+def debugTrace():
+    from PyQt5.QtCore import pyqtRemoveInputHook, pyqtRestoreInputHook
+    import pdb
+    import sys
+    pyqtRemoveInputHook()
+    try:
+        debugger = pdb.Pdb()
+        debugger.reset()
+        debugger.do_next(None)
+        user_frame = sys._getframe().f_back
+        debugger.interaction(user_frame, None)
+    finally:
+        pyqtRestoreInputHook()
