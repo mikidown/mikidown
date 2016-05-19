@@ -1,5 +1,9 @@
 # Mikidown Changelogs
 ## Version 0.3.11
+- Generate structurally valid HTML from the generator
+- Explicitly document which python-asciimathml to use
+- Fix crash on notebook remove
+- Escape special characters in attachment urls inserted
 - Added utility function to allow easy debugging without pyqt scrolling the console all over the place.
 - **New Subpage** and **New Page** in the context menu use the item under
 the mouse, NOT the item we're currently looking at.
