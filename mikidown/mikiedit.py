@@ -128,6 +128,7 @@ class MikiEdit(QtWidgets.QTextEdit):
                 filename = os.path.basename(filename)
                 newFilePath = os.path.join(attDir, filename + extension).replace(os.sep, '/')
                 relativeFilePath = newFilePath.replace(self.settings.notebookPath, "..")
+                quotedRFPath = urlparse.quote(relativeFilePath)
                 attachments = self.settings.attachmentImage + self.settings.attachmentDocument
 
                 if QtCore.QUrl(qurl).isLocalFile():
@@ -137,9 +138,9 @@ class MikiEdit(QtWidgets.QTextEdit):
                         self.parent.updateAttachmentView()
 
                         if extension.lower() in self.settings.attachmentImage:
-                            text = "![%s](%s)" % (filename, relativeFilePath)
+                            text = "![%s](%s)" % (filename, quotedRFPath)
                         elif extension.lower() in self.settings.attachmentDocument:
-                            text = "[%s%s](%s)\n" % (filename, extension, relativeFilePath)
+                            text = "[%s%s](%s)\n" % (filename, extension, quotedRFPath)
                     else:
                         text = "[%s%s](%s)\n" % (filename, extension, url)
                 else:
@@ -148,9 +149,9 @@ class MikiEdit(QtWidgets.QTextEdit):
                         self.networkManager.get(QNetworkRequest(qurl))
 
                         if extension.lower() in self.settings.attachmentImage:
-                            text = "![%s](%s)" % (filename, relativeFilePath)
+                            text = "![%s](%s)" % (filename, quotedRFPath)
                         elif extension.lower() in self.settings.attachmentDocument:
-                            text = "[%s%s](%s)\n" % (filename, extension, relativeFilePath)
+                            text = "[%s%s](%s)\n" % (filename, extension, quotedRFPath)
                     else:
                         text = "[%s%s](%s)\n" % (filename, extension, url)
 
@@ -166,7 +167,7 @@ class MikiEdit(QtWidgets.QTextEdit):
                 filePath = os.path.join(attDir, fileName).replace(os.sep, '/')
                 img.save(filePath)
                 relativeFilePath = filePath.replace(self.settings.notebookPath, "..")
-                text = "![%s](%s)" % (fileName, relativeFilePath)
+                text = "![%s](%s)" % (fileName, quotedRFPath)
                 super(MikiEdit, self).insertFromMimeData(self.mimeFromText(text))
         elif source.hasHtml():
             html = source.html()
