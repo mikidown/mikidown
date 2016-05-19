@@ -8,6 +8,8 @@ from PyQt4.QtGui import (QColor, QFileIconProvider, QFileSystemModel,
     QListView, QMenu, QPen, QPixmap, QStyle, QStyledItemDelegate)
 """
 
+from urllib import parse as urlparse
+
 class AttachmentItemDelegate(QtWidgets.QStyledItemDelegate):
 
     def __init__(self, parent=None):
@@ -110,7 +112,7 @@ class AttachmentView(QtWidgets.QListView):
             filePath = self.model.filePath(i)
             filePath = filePath.replace(self.settings.notebookPath, "..")
             fileName = os.path.basename(filePath)
-            text = "![%s](%s)" % (fileName, filePath)
+            text = "![%s](%s)" % (fileName, urlparse.quote(filePath))
             self.parent.notesEdit.insertPlainText(text)
 
     def delete(self):

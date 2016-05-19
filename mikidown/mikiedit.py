@@ -18,6 +18,7 @@ try:
 except ImportError:
     HAS_HTML2TEXT=False
 
+from urllib import parse as urlparse
 from .utils import LineEditDialog, parseTitle, JSCRIPT_TPL, METADATA_CHECKER
 from .mikibook import Mikibook
 
@@ -185,14 +186,15 @@ class MikiEdit(QtWidgets.QTextEdit):
         filename = os.path.basename(filename)
         newFilePath = os.path.join(attDir, filename + extension).replace(os.sep, '/')
         relativeFilePath = newFilePath.replace(self.settings.notebookPath, "..")
+        quotedRFPath = urlparse.quote(relativeFilePath)
         if not os.path.exists(attDir):
             os.makedirs(attDir)
         QtCore.QFile.copy(filePath, newFilePath)
         self.parent.updateAttachmentView()
         if fileType == self.imageFilter:
-            text = "![%s](%s)" % (filename, relativeFilePath)
+            text = "![%s](%s)" % (filename, quotedRFPath)
         else:
-            text = "[%s%s](%s)\n" % (filename, extension, relativeFilePath)
+            text = "[%s%s](%s)\n" % (filename, extension, quotedRFPath)
         self.insertPlainText(text)
 
     def insertAttachmentWrapper(self):
