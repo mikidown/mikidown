@@ -666,5 +666,5 @@ class Mikibook():
     @staticmethod
     def remove(name, path):
         notebooks = Mikibook.read()
-        notebooks.remove([name, path])
+        notebooks.remove((name, path))
         Mikibook.write(notebooks)
