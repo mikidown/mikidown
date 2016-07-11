@@ -371,7 +371,7 @@ class NotebookListDialog(QtWidgets.QDialog):
             name = self.notebookList.item(i).data(Qt.DisplayRole)
             path = self.notebookList.item(i).data(Qt.UserRole)
             notebooks.append([name, path])
-            Mikibook.write(notebooks)
+        Mikibook.write(notebooks)
 
         QtWidgets.QDialog.accept(self)
 

@@ -1,5 +1,6 @@
 # Mikidown Changelogs
 ## Version 0.3.11
+- Improve performance when writing notebook list to settings
 - Generate structurally valid HTML from the generator
 - Explicitly document which python-asciimathml to use
 - Fix crash on notebook remove
