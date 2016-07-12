@@ -105,7 +105,7 @@ class NotebookExtSettingsDialog(QtWidgets.QDialog):
         self.extCfgEdit.takeTopLevelItem(row)
 
     def actionAdd(self, checked=False, prop_name='', prop_val=''):
-        item = QTreeWidgetItem(self.extCfgEdit, [prop_name, prop_val])
+        item = QtWidgets.QTreeWidgetItem(self.extCfgEdit, [prop_name, prop_val])
         item.setFlags(item.flags()|Qt.ItemIsEditable)
         #self.extCfgEdit.addTopLevelItem(item)
 

@@ -160,7 +160,7 @@ class EditBodyTemplateDialog(QtWidgets.QDialog):
 
         fh = QtCore.QFile(fpath)
         try:
-            if not fh.open(QIODevice.ReadOnly):
+            if not fh.open(QtCore.QIODevice.ReadOnly):
                 raise IOError(fh.errorString())
         except IOError as e:
             QtWidgets.QMessageBox.warning(self, self.tr("Read Error"),
@@ -268,13 +268,13 @@ class ManageBodiesWidget(QtWidgets.QWidget):
 
         dialog = EditBodyTemplateDialog(filePath, self.settings, parent=self)
         if dialog.exec_():
-            fh = Qtcore.QFile(filePath)
+            fh = QtCore.QFile(filePath)
             try:
-                if not fh.open(QIODevice.WriteOnly):
+                if not fh.open(QtCore.QIODevice.WriteOnly):
                     raise IOError(fh.errorString())
             except IOError as e:
                 QtWidgets.QMessageBox.warning(self, self.tr("Save Error"),
-                                    self.tr("Failed to save %s: %s") % (path.basename(filepath), e))
+                                    self.tr("Failed to save %s: %s") % (path.basename(filePath), e))
                 raise
             finally:
                 if fh is not None:

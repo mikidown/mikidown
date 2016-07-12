@@ -146,7 +146,7 @@ class MikiEdit(QtWidgets.QTextEdit):
                 else:
                     if extension.lower() in attachments:
                         self.downloadAs = newFilePath
-                        self.networkManager.get(QNetworkRequest(qurl))
+                        self.networkManager.get(QtNetwork.QNetworkRequest(qurl))
 
                         if extension.lower() in self.settings.attachmentImage:
                             text = "![%s](%s)" % (filename, quotedRFPath)

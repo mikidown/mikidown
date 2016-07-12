@@ -175,7 +175,7 @@ class Setting():
             oldCssFile = os.path.join(self.notebookPath, 'notes.css').replace(os.sep, '/')
             QtCore.QDir().mkpath(cssPath)
             if os.path.exists(oldCssFile):
-                Qtcore.QFile.rename(oldCssFile, self.cssfile)
+                QtCore.QFile.rename(oldCssFile, self.cssfile)
 
             self.version = '0'
 
