@@ -9,7 +9,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from .highlighter import MikiHighlighter
 from .mikibook import Mikibook
-from .mikiedit import MikiEdit
+from .mikiedit import SimpleMikiEdit
 from .utils import NOTE_EXTS, doesFileExist, LineEditDialog, TTPL_COL_DATA, TTPL_COL_EXTRA_DATA
 
 #BANNED_COMMANDS={'rm', 'cp', 'mv', 'unlink', 'mkdir', 'rmdir'}
@@ -145,7 +145,7 @@ class EditBodyTemplateDialog(QtWidgets.QDialog):
         self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | 
                                           QtWidgets.QDialogButtonBox.Cancel)
 
-        self.templateEdit = MikiEdit(self)
+        self.templateEdit = SimpleMikiEdit(self)
         fnt = Mikibook.settings.value('editorFont', defaultValue=None)
         fntsize = Mikibook.settings.value('editorFontSize', type=int, defaultValue=12)
         header_scales_font = Mikibook.settings.value('headerScaleFont', type=bool, defaultValue=True)
@@ -237,7 +237,6 @@ class ManageBodiesWidget(QtWidgets.QWidget):
         super().__init__(parent=parent)
         self.settings = settings
 
-        layout = QtWidgets.QVBoxLayout(self)
         self.bodiesList = QtWidgets.QListView()
         self.bodiesList.setModel(self.settings.bodyTemplates)
         pathToIdx = self.settings.bodyTemplates.index(self.settings.templatesPath)
