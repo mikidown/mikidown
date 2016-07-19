@@ -9,7 +9,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from whoosh import fields
 import markdown
 
-from .utils import TTPL_COL_DATA, TTPL_COL_EXTRA_DATA
+from .utils import TitleType, TTPL_COL_DATA, TTPL_COL_EXTRA_DATA
 
 NOT_EXT = re.compile(r"Failed to initiate extension '([^']+)': 'module' object has no attribute 'makeExtension'")
 
@@ -74,6 +74,9 @@ class Setting():
                     'content':TTPL_COL_DATA,
                     'type':TTPL_COL_EXTRA_DATA,
                     'id':TTPL_COL_EXTRA_DATA+1,
+                },
+                transforms={
+                    'type': lambda x: TitleType(int(x)),
                 })
             self.bodyTitlePairs = readNestedListFromSettings(self.tplqsettings, 'bodyTitlePairs',
                 {
@@ -203,6 +206,9 @@ class Setting():
                     Qt.DisplayRole:'friendlyName',
                     TTPL_COL_DATA:'content',
                     TTPL_COL_EXTRA_DATA:'type',
+                },
+                transforms={
+                    TTPL_COL_EXTRA_DATA: lambda x: x.value,
                 })
 
     def updateBodyTitlePairs(self):
@@ -229,56 +235,84 @@ def writeListToSettings(settings, key, value):
     else:
         settings.remove(key)
 
-def readNestedListFromSettings(settings, key, props):
+def readNestedListFromSettings(settings, key, props, transforms=None):
     """
     Reads a nested list from settings
     
     :param settings QSettings: Settings object to read from
     :param key str: The section the array resides in
-    :param props dict: A dictionary containing mappings from array item 
-        property names to Qt Item roles. Example of such a parameter:
-        {
-            'testProp' :Qt.DisplayRole,
-            'testProp2':Qt.UserRole,
-            'testProp3':Qt.UserRole+1,
-        }
-        
-    
+    :param props dict: A dict containing mappings from array item
+        property names to Qt Item roles.
+    :param transforms dict: A dict containing mappings from property names
+        to callables that transform it into the right type.
     :return: QStandardItemModel with QStandardItems in the specified roles
+
+    .. tip::
+        Example props parameter.
+
+        .. code-block:: python
+
+            {
+                'testProp' :Qt.DisplayRole,
+                'testProp2':Qt.UserRole,
+                'testProp3':Qt.UserRole+1,
+            }
     """
+
+    if transforms is None:
+        transforms = {}
+
     size = settings.beginReadArray(key)
     model = QtGui.QStandardItemModel()
     for i in range(size):
         settings.setArrayIndex(i)
         item = QtGui.QStandardItem()
         for prop in props:
-            item.setData(settings.value(prop, ''), props[prop])
+            value = settings.value(prop, '')
+            if prop in transforms:
+                value = transforms[prop](value)
+            item.setData(value, props[prop])
         model.appendRow(item)
     settings.endArray()
     return model
 
-def writeNestedListToSettings(settings, key, values, props):
+def writeNestedListToSettings(settings, key, values, props, transforms=None):
     """
     Writes a nested list to settings
     
     :param settings QSettings: Settings object to write from
     :param key str: The section the array will reside in
     :param values QStandardItemModel: The array to write
-    :param props dict: A dictionary containing mappings from Qt Item roles 
-        to array property names. Example of such a parameter:
-        {
-            Qt.DisplayRole:'testProp',
-            Qt.UserRole   :'testProp2',
-            Qt.UserRole+1 :'testProp3',
-        }
+    :param props dict: A dict containing mappings from Qt Item roles
+        to array property names.
+    :param transforms dict: A dict containing mappings from Qt Item roles
+        to callables that transform it into the right type.
+
+    .. tip::
+        Example props parameter.
+
+        .. code-block:: python
+
+            {
+                Qt.DisplayRole:'testProp',
+                Qt.UserRole   :'testProp2',
+                Qt.UserRole+1 :'testProp3',
+            }
     """
+
+    if transforms is None:
+        transforms = {}
+
     settings.beginWriteArray(key)
     size = values.rowCount()
     for i in range(size):
         settings.setArrayIndex(i)
         val = values.item(i)
         for prop in props:
-            settings.setValue(props[prop], val.data(prop))
+            value = val.data(prop)
+            if prop in transforms:
+                value = transforms[prop](value)
+            settings.setValue(props[prop], value)
     settings.endArray()
 
 def readDictFromSettings(settings, key):

@@ -1,3 +1,4 @@
+from enum import Enum
 import os
 import re
 import pkgutil
@@ -14,6 +15,11 @@ from PyQt4.QtGui import (QDialog, QDialogButtonBox, QGridLayout, QIcon, QLabel, 
 """
 JSCRIPT_TPL = '<script type="text/javascript" src="{}"></script>\n'
 METADATA_CHECKER = re.compile(r'((?: {0,3}[\w\-]+:.*)(?:(?:\n {4,}.+)|(?:\n {0,3}[\w\-]+:.*))*)')
+
+class TitleType(Enum):
+    FSTRING  = 0
+    DATETIME = 1
+    #COMMAND  = 2
 
 TTPL_COL_DATA = Qt.ToolTipRole
 TTPL_COL_EXTRA_DATA = Qt.UserRole

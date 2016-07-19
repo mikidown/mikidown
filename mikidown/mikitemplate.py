@@ -1,5 +1,4 @@
 import datetime
-from enum import Enum
 from os import path
 import shlex
 import subprocess
@@ -13,15 +12,11 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from .highlighter import MikiHighlighter
 from .mikibook import Mikibook
 from .mikiedit import SimpleMikiEdit
-from .utils import NOTE_EXTS, doesFileExist, LineEditDialog, TTPL_COL_DATA, TTPL_COL_EXTRA_DATA
+from .utils import TitleType, NOTE_EXTS, doesFileExist, LineEditDialog, TTPL_COL_DATA, TTPL_COL_EXTRA_DATA
 
 #BANNED_COMMANDS={'rm', 'cp', 'mv', 'unlink', 'mkdir', 'rmdir'}
 
 # --- CORE FUNCTIONALITY
-class TitleType(Enum):
-    FSTRING  = 0
-    DATETIME = 1
-    #COMMAND  = 2
 
 def makeDefaultBody(title, dt_in_body_txt):
     dtnow = datetime.datetime.now()
