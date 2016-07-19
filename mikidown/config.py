@@ -73,12 +73,13 @@ class Setting():
                     'friendlyName':Qt.DisplayRole,
                     'content':TTPL_COL_DATA,
                     'type':TTPL_COL_EXTRA_DATA,
+                    'id':TTPL_COL_EXTRA_DATA+1,
                 })
             self.bodyTitlePairs = readNestedListFromSettings(self.tplqsettings, 'bodyTitlePairs',
                 {
                     'friendlyName':Qt.DisplayRole,
                     'bodyTpl':TTPL_COL_DATA,
-                    'titleNum':TTPL_COL_EXTRA_DATA,
+                    'titleID':TTPL_COL_EXTRA_DATA,
                 })
         else:
             os.makedirs(self.templatesPath)
@@ -210,7 +211,7 @@ class Setting():
                 {
                     Qt.DisplayRole:'friendlyName',
                     TTPL_COL_DATA:'bodyTpl',
-                    TTPL_COL_EXTRA_DATA:'titleNum',
+                    TTPL_COL_EXTRA_DATA:'titleID',
                 })
 
 def readListFromSettings(settings, key):

@@ -4,6 +4,9 @@ from os import path
 import shlex
 import subprocess
 
+import base64
+import uuid
+
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -218,6 +221,13 @@ class ManageTitlesWidget(QtWidgets.QWidget):
         item.setText("Test Date Format (YYYYmmdd)")
         item.setData("%Y%m%d_Test_{}", TTPL_COL_DATA)
         item.setData(TitleType.DATETIME, TTPL_COL_EXTRA_DATA)
+
+        # http://stackoverflow.com/a/12270917
+        # In case the user needs to edit config file manually
+        # don't make typing the uuid for a title item a pain
+        item_id = base64.urlsafe_b64encode(uuid.uuid1().bytes).decode("utf-8")
+        item_id = item_id.rstrip('=\n').replace('/', '_')
+        item.setData(item_id, TTPL_COL_EXTRA_DATA+1)
         contents.appendRow(item)
 
         self.settings.updateTitleTemplates()
@@ -396,5 +406,10 @@ class PickTemplateDialog(QtWidgets.QDialog):
     def updateTitleBody(self, idx):
         modelItem = self.bodyTitlePairs.model().item(idx)
         if modelItem is not None:
-            self.titleTemplates.setCurrentIndex(modelItem.data(TTPL_COL_DATA))
-            self.bodyTemplates.setCurrentIndex(self.bodyTemplates.findText(modelItem.data(TTPL_COL_EXTRA_DATA)))
+            titleID = modelItem.data(TTPL_COL_EXTRA_DATA)
+            title_idx = self.titleTemplates.findData(titleID, TTPL_COL_EXTRA_DATA+1)
+            self.titleTemplates.setCurrentIndex(title_idx)
+
+            body_base_fname = modelItem.data(TTPL_COL_DATA)
+            body_idx = self.bodyTemplates.findText(body_base_fname)
+            self.bodyTemplates.setCurrentIndex(body_idx)
