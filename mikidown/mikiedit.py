@@ -22,15 +22,13 @@ from urllib import parse as urlparse
 from .utils import LineEditDialog, parseTitle, JSCRIPT_TPL, METADATA_CHECKER
 from .mikibook import Mikibook
 
-class MikiEdit(QtWidgets.QTextEdit):
-
+class SimpleMikiEdit(QtWidgets.QTextEdit):
     def __init__(self, parent=None):
-        super(MikiEdit, self).__init__(parent)
+        super().__init__(parent)
         self.parent = parent
         self.settings = parent.settings
         self.setFontPointSize(12)
         self.setVisible(False)
-        self.ix = open_dir(self.settings.indexdir)
 
         # Spell checker support
         try:
@@ -43,6 +41,97 @@ class MikiEdit(QtWidgets.QTextEdit):
         except enchant.errors.DictNotFoundError:
             print("Spell checking unavailable. Need to install dictionary (e.g. aspell-en).")
             self.speller = None
+
+    def insertFromRawHtml(self):
+        qclippy = QtWidgets.QApplication.clipboard()
+        if qclippy.mimeData().hasHtml():
+            self.insertFromMimeData(self.mimeFromText(qclippy.mimeData().html()))
+        else:
+            self.insertFromMimeData(qclippy.mimeData())
+
+    def keyPressEvent(self, event):
+        """ for Qt.Key_Tab, expand as 4 spaces (if expandTab is enabled)
+            for other keys, use default implementation
+        """
+
+        moddies = QtWidgets.QApplication.keyboardModifiers()
+        expandTab = Mikibook.settings.value(
+            'tabInsertsSpaces',
+            type=bool,
+            defaultValue=True
+        )
+        if event.key() == Qt.Key_Tab and expandTab:
+            tabWidth = Mikibook.settings.value('tabWidth', type=int, defaultValue=4)
+            self.insertPlainText(' ' * tabWidth) # use the tabWidth for tabstop!
+        elif moddies & Qt.ControlModifier and moddies & Qt.ShiftModifier and event.key() == Qt.Key_V:
+            self.insertFromRawHtml()
+        else:
+            QtWidgets.QTextEdit.keyPressEvent(self, event)
+
+    def contextMenuEvent(self, event):
+
+        def correctWord(cursor, word):
+            # From QTextCursor doc:
+            # if there is a selection, the selection is deleted and replaced
+            return lambda: cursor.insertText(word)
+
+        popup_menu = self.createStandardContextMenu()
+        paste_action = popup_menu.actions()[6]
+        paste_formatted_action = QtWidgets.QAction(self.tr("Paste raw HTML"), popup_menu)
+        paste_formatted_action.triggered.connect(self.insertFromRawHtml)
+        paste_formatted_action.setShortcut(QtGui.QKeySequence("Ctrl+Shift+V"))
+        popup_menu.insertAction(paste_action, paste_formatted_action)
+
+        # Spellcheck the word under mouse cursor, not self.textCursor
+        cursor = self.cursorForPosition(event.pos())
+        cursor.select(QtGui.QTextCursor.WordUnderCursor)
+
+        text = cursor.selectedText()
+        if self.speller and text:
+            if not self.speller.check(text):
+                lastAction = popup_menu.actions()[0]
+                for word in self.speller.suggest(text)[:10]:
+                    action = QtWidgets.QAction(word, popup_menu)
+                    action.triggered.connect(correctWord(cursor, word))
+                    defaultFamily = QtWidgets.QApplication.font().family()
+                    action.setFont(QtGui.QFont(defaultFamily, weight=QtGui.QFont.Bold))
+                    popup_menu.insertAction(lastAction, action)
+                popup_menu.insertSeparator(lastAction)
+
+        popup_menu.exec_(event.globalPos())
+
+    def mimeFromText(self, text):
+        mime = QtCore.QMimeData()
+        mime.setText(text)
+        return mime
+
+    def createMimeDataFromSelection(self):
+        """ Reimplement this to prevent copied text taken as hasHtml() """
+        plaintext = self.textCursor().selectedText()
+
+        # From QTextCursor doc:
+        # if the selection obtained from an editor spans a line break,
+        # the text will contain a Unicode U+2029 paragraph separator character
+        # instead of a newline \n character
+        text = plaintext.replace('\u2029', '\n')
+        return self.mimeFromText(text)
+
+    def insertFromMimeData(self, source):
+        if source.hasHtml():
+            html = source.html()
+            if HAS_HTML2TEXT:
+                backToMarkdown = html2text.HTML2Text()
+                markdown = backToMarkdown.handle(html)
+                super(SimpleMikiEdit, self).insertFromMimeData(self.mimeFromText(markdown))
+            else:
+                super(SimpleMikiEdit, self).insertFromMimeData(self.mimeFromText(source.text()))
+        else:
+            super(SimpleMikiEdit, self).insertFromMimeData(source)
+
+class MikiEdit(SimpleMikiEdit):
+    def __init__(self, parent=None):
+        super(MikiEdit, self).__init__(parent)
+        self.ix = open_dir(self.settings.indexdir)
 
         self.imageFilter = ""
         self.documentFilter = ""
@@ -89,22 +178,6 @@ class MikiEdit(QtWidgets.QTextEdit):
             attFile.close()
             print("Succeeded")
         reply.deleteLater()
-
-    def mimeFromText(self, text):
-        mime = QtCore.QMimeData()
-        mime.setText(text)
-        return mime
-
-    def createMimeDataFromSelection(self):
-        """ Reimplement this to prevent copied text taken as hasHtml() """
-        plaintext = self.textCursor().selectedText()
-
-        # From QTextCursor doc:
-        # if the selection obtained from an editor spans a line break,
-        # the text will contain a Unicode U+2029 paragraph separator character
-        # instead of a newline \n character
-        text = plaintext.replace('\u2029', '\n')
-        return self.mimeFromText(text)
 
     def insertFromMimeData(self, source):
         """ Intended behavior
@@ -169,14 +242,6 @@ class MikiEdit(QtWidgets.QTextEdit):
                 relativeFilePath = filePath.replace(self.settings.notebookPath, "..")
                 text = "![%s](%s)" % (fileName, quotedRFPath)
                 super(MikiEdit, self).insertFromMimeData(self.mimeFromText(text))
-        elif source.hasHtml():
-            html = source.html()
-            if HAS_HTML2TEXT:
-                backToMarkdown = html2text.HTML2Text()
-                markdown = backToMarkdown.handle(html)
-                super(MikiEdit, self).insertFromMimeData(self.mimeFromText(markdown))
-            else:
-                super(MikiEdit, self).insertFromMimeData(self.mimeFromText(source.text()))
         else:
             super(MikiEdit, self).insertFromMimeData(source)
 
@@ -206,58 +271,6 @@ class MikiEdit(QtWidgets.QTextEdit):
             return
         self.insertAttachment(filePath, fileType)
 
-    def insertFromRawHtml(self):
-        qclippy = QtWidgets.QApplication.clipboard()
-        if qclippy.mimeData().hasHtml():
-            self.insertFromMimeData(self.mimeFromText(qclippy.mimeData().html()))
-        else:
-            self.insertFromMimeData(qclippy.mimeData())
-
-    def contextMenuEvent(self, event):
-
-        def correctWord(cursor, word):
-            # From QTextCursor doc:
-            # if there is a selection, the selection is deleted and replaced
-            return lambda: cursor.insertText(word)
-
-        popup_menu = self.createStandardContextMenu()
-        paste_action = popup_menu.actions()[6]
-        paste_formatted_action = QtWidgets.QAction(self.tr("Paste raw HTML"), popup_menu)
-        paste_formatted_action.triggered.connect(self.insertFromRawHtml)
-        paste_formatted_action.setShortcut(QtGui.QKeySequence("Ctrl+Shift+V"))
-        popup_menu.insertAction(paste_action, paste_formatted_action)
-
-        # Spellcheck the word under mouse cursor, not self.textCursor
-        cursor = self.cursorForPosition(event.pos())
-        cursor.select(QtGui.QTextCursor.WordUnderCursor)
-
-        text = cursor.selectedText()
-        if self.speller and text:
-            if not self.speller.check(text):
-                lastAction = popup_menu.actions()[0]
-                for word in self.speller.suggest(text)[:10]:
-                    action = QtWidgets.QAction(word, popup_menu)
-                    action.triggered.connect(correctWord(cursor, word))
-                    defaultFamily = QtWidgets.QApplication.font().family()
-                    action.setFont(QtGui.QFont(defaultFamily, weight=QtGui.QFont.Bold))
-                    popup_menu.insertAction(lastAction, action)
-                popup_menu.insertSeparator(lastAction)
-
-        popup_menu.exec_(event.globalPos())
-
-    def keyPressEvent(self, event):
-        """ for Qt.Key_Tab, expand as 4 spaces (if expandTab is enabled)
-            for other keys, use default implementation
-        """
-
-        moddies = QtWidgets.QApplication.keyboardModifiers()
-
-        if event.key() == Qt.Key_Tab and Mikibook.settings.value('tabInsertsSpaces', type=bool, defaultValue=True):
-            self.insertPlainText(' '*Mikibook.settings.value('tabWidth', type=int, defaultValue=4)) # use the tabWidth for tabstop!
-        elif moddies & Qt.ControlModifier and moddies & Qt.ShiftModifier and event.key() == Qt.Key_V:
-            self.insertFromRawHtml()
-        else:
-            QtWidgets.QTextEdit.keyPressEvent(self, event)
     '''
     def closeEvent(self, event):
         self.ix.close()
