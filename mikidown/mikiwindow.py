@@ -153,6 +153,9 @@ class MikiWindow(QtWidgets.QMainWindow):
     def __init__(self, settings, parent=None):
         super(MikiWindow, self).__init__(parent)
 
+        self.tray = None
+        self.alwaysClose = False
+
         self.setObjectName("mikiWindow")
         self.settings = settings
         self.notePath = settings.notePath
@@ -298,7 +301,7 @@ class MikiWindow(QtWidgets.QMainWindow):
             self.notesTree.delPageWrapper, QtGui.QKeySequence.Delete)
         self.actions.update(delPage=actionDelPage)
 
-        actionQuit = self.act(self.tr('&Quit'), self.close, QtGui.QKeySequence.Quit)
+        actionQuit = self.act(self.tr('&Quit'), self.forceClose, QtGui.QKeySequence.Quit)
         actionQuit.setMenuRole(QtWidgets.QAction.QuitRole)
         self.actions.update(quit=actionQuit)
 
@@ -1059,6 +1062,10 @@ class MikiWindow(QtWidgets.QMainWindow):
         else:
             QtWidgets.QMainWindow.keyPressEvent(self, event)
 
+    def forceClose(self):
+        self.alwaysClose = True
+        self.close()
+
     def closeEvent(self, event):
         """
             saveGeometry: Saves the current geometry and state for
@@ -1066,6 +1073,20 @@ class MikiWindow(QtWidgets.QMainWindow):
             saveState: Restores the state of this mainwindow's toolbars
                        and dockwidgets
         """
+        minimizeToTray = Mikibook.settings.value(
+            'minimizeToTray',
+            type=bool,
+            defaultValue=False
+        )
+        canMinimizeToTray = False
+        if self.tray is not None:
+            canMinimizeToTray = self.tray.isVisible()
+
+        if not self.alwaysClose and minimizeToTray and canMinimizeToTray:
+            self.hide()
+            event.ignore()
+            return
+
         self.saveCurrentNote()
         self.ix.close()
         self.notesEdit.ix.close()
@@ -1091,8 +1112,12 @@ class MikiWindow(QtWidgets.QMainWindow):
                 type=bool,
                 defaultValue=False
             )
-            if self.isMinimized() and minimizeToTray:
+            canMinimizeToTray = False
+            if self.tray is not None:
+                canMinimizeToTray = self.tray.isVisible()
+            if self.isMinimized() and minimizeToTray and canMinimizeToTray:
                 QtCore.QTimer.singleShot(0, self.hide)
+
         super().changeEvent(event)
 
     def toggleShow(self):

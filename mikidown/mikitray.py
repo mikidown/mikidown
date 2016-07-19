@@ -28,9 +28,11 @@ class MikiTray(QtWidgets.QSystemTrayIcon):
             action = self.menu.addAction(window.windowTitle())
             action.triggered.connect(window.toggleShow)
             self.registered_windows[window] = action
+            window.tray = self
 
     def unregisterWindow(self, window):
         action = self.registered_windows.get(window, None)
         if action is not None:
             self.menu.removeAction(action)
+            window.tray = None
             del self.registered_windows[window]
