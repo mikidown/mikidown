@@ -25,7 +25,7 @@ class MikiTray(QtWidgets.QSystemTrayIcon):
 
     def registerWindow(self, window):
         if window not in self.registered_windows:
-            action = self.menu.addAction(window.windowTitle())
+            action = self.menu.addAction(window.settings.notebookName)
             action.triggered.connect(window.toggleShow)
             self.registered_windows[window] = action
             window.tray = self
