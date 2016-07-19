@@ -487,23 +487,31 @@ class MikidownCfgDialog(QtWidgets.QDialog):
         else:
             self.tabToSpaces.setCheckState(Qt.Unchecked)
 
+        self.minimizeToTray = QtWidgets.QCheckBox(self)
+        if Mikibook.settings.value('minimizeToTray', type=bool, defaultValue=False):
+            self.minimizeToTray.setCheckState(Qt.Checked)
+        else:
+            self.minimizeToTray.setCheckState(Qt.Unchecked)
+
         layout = QtWidgets.QGridLayout(self)
-        layout.addWidget(QtWidgets.QLabel(self.tr("# of recently viewed notes to keep")),0,0,1,1)
-        layout.addWidget(self.recentNotesCount,0,1,1,1)
-        layout.addWidget(QtWidgets.QLabel(self.tr("Editor font")), 1, 0, 1, 1)
-        layout.addWidget(self.editorFont, 1, 1, 1, 1)
-        layout.addWidget(QtWidgets.QLabel(self.tr("Header rank scales editor font?")), 2, 0, 1, 1)
-        layout.addWidget(self.headerScalesFont, 2, 1, 1, 1)
+        layout.addWidget(QtWidgets.QLabel(self.tr("Minimize to tray?")),0,0,1,1)
+        layout.addWidget(self.minimizeToTray,0,1,1,1)
+        layout.addWidget(QtWidgets.QLabel(self.tr("# of recently viewed notes to keep")),1,0,1,1)
+        layout.addWidget(self.recentNotesCount,1,1,1,1)
+        layout.addWidget(QtWidgets.QLabel(self.tr("Editor font")), 2, 0, 1, 1)
+        layout.addWidget(self.editorFont, 2, 1, 1, 1)
+        layout.addWidget(QtWidgets.QLabel(self.tr("Header rank scales editor font?")), 3, 0, 1, 1)
+        layout.addWidget(self.headerScalesFont, 3, 1, 1, 1)
         qs = QtWidgets.QScrollArea(self)
         qs.setWidget(self.hltCfg)
-        layout.addWidget(QtWidgets.QLabel(self.tr("Tabs expand to spaces?")), 3, 0, 1, 1)
-        layout.addWidget(self.tabToSpaces, 3, 1, 1, 1)
-        layout.addWidget(QtWidgets.QLabel(self.tr("Tab width")), 4, 0, 1, 1)
-        layout.addWidget(self.tabWidth, 4, 1, 1, 1)
-        layout.addWidget(QtWidgets.QLabel(self.tr("Icon Theme")),5,0,1,1)
-        layout.addWidget(self.iconTheme,5,1,1,1)
-        layout.addWidget(qs,6,0,1,2)
-        layout.addWidget(self.buttonBox,7,0,1,2)
+        layout.addWidget(QtWidgets.QLabel(self.tr("Tabs expand to spaces?")), 4, 0, 1, 1)
+        layout.addWidget(self.tabToSpaces, 4, 1, 1, 1)
+        layout.addWidget(QtWidgets.QLabel(self.tr("Tab width")), 5, 0, 1, 1)
+        layout.addWidget(self.tabWidth, 5, 1, 1, 1)
+        layout.addWidget(QtWidgets.QLabel(self.tr("Icon Theme")),6,0,1,1)
+        layout.addWidget(self.iconTheme,6,1,1,1)
+        layout.addWidget(qs,7,0,1,2)
+        layout.addWidget(self.buttonBox,8,0,1,2)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
 
@@ -521,6 +529,11 @@ class MikidownCfgDialog(QtWidgets.QDialog):
             Mikibook.settings.setValue('tabInsertsSpaces', True)
         else:
             Mikibook.settings.setValue('tabInsertsSpaces', False)
+
+        Mikibook.settings.setValue(
+            'minimizeToTray',
+            self.minimizeToTray.isChecked()
+        )
         Mikibook.setHighlighterColors(self.hltCfg.configToList())
         QtGui.QIcon.setThemeName(self.iconTheme.text())
 

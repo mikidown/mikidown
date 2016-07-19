@@ -1084,6 +1084,17 @@ class MikiWindow(QtWidgets.QMainWindow):
             pass
         self.postClose(self)
 
+    def changeEvent(self, event):
+        if event.type() == QtCore.QEvent.WindowStateChange:
+            minimizeToTray = Mikibook.settings.value(
+                'minimizeToTray',
+                type=bool,
+                defaultValue=False
+            )
+            if self.isMinimized() and minimizeToTray:
+                QtCore.QTimer.singleShot(0, self.hide)
+        super().changeEvent(event)
+
     def toggleShow(self):
         """ Click tray icon item to toggle the display of MainWindow.
         """
