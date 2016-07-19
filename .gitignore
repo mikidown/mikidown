@@ -3,6 +3,7 @@
 *.pyc
 __pycache__/
 build/
+_build/
 dist/
 tags
 MANIFEST

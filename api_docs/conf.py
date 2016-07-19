@@ -69,7 +69,6 @@ extensions = [
     #'sphinx.ext.mathjax',
     #'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
-    'sphinxcontrib.fulltoc'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -195,7 +194,7 @@ html_last_updated_fmt = '%Y-%m-%d'
 html_use_smartypants = False
 
 # Custom sidebar templates, maps document names to template names.
-#html_sidebars = {}
+html_sidebars = { '**': ['globaltoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html'], }
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
