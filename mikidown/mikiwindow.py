@@ -16,7 +16,6 @@ from whoosh.writing import AsyncWriter
 import mikidown.mikidown_rc
 from .slashpleter import SlashPleter
 from .config import __appname__, __version__
-from .event import Event
 from .mikibook import NotebookListDialog, NotebookSettingsDialog, Mikibook, MikidownCfgDialog
 from .mikitree import MikiTree, TocTree
 from .mikiedit import MikiEdit
@@ -26,7 +25,7 @@ from .mikitemplate import ManageTemplatesDialog
 from .attachment import AttachmentView
 from .highlighter import MikiHighlighter
 from .findreplacedialog import FindReplaceDialog
-from .utils import LineEditDialog, ViewedNoteIcon, parseHeaders, parseTitle, METADATA_CHECKER, JSCRIPT_TPL
+from .utils import Event, LineEditDialog, ViewedNoteIcon, parseHeaders, parseTitle, METADATA_CHECKER, JSCRIPT_TPL
 
 class MikiSepNote(QtWidgets.QDockWidget):
     #This is a static widget! It is not meant to dynamically update
