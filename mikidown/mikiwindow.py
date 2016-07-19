@@ -16,6 +16,7 @@ from whoosh.writing import AsyncWriter
 import mikidown.mikidown_rc
 from .slashpleter import SlashPleter
 from .config import __appname__, __version__
+from .event import Event
 from .mikibook import NotebookListDialog, NotebookSettingsDialog, Mikibook, MikidownCfgDialog
 from .mikitree import MikiTree, TocTree
 from .mikiedit import MikiEdit
@@ -134,8 +135,24 @@ class MikiSepNote(QtWidgets.QDockWidget):
         #"""
 
 class MikiWindow(QtWidgets.QMainWindow):
+
+    postInit = Event()
+    '''
+    Class-level handler for when a MikiWindow is successfully created.
+    A simplistic event handler is used in place of a pyqt signal since
+    this needs to happen for every MikiWindow instance.
+    '''
+
+    postClose = Event()
+    '''
+    Class-level handler for when a MikiWindow is closed.
+    A simplistic event handler is used in place of a pyqt signal since
+    this needs to happen for every MikiWindow instance.
+    '''
+
     def __init__(self, settings, parent=None):
         super(MikiWindow, self).__init__(parent)
+
         self.setObjectName("mikiWindow")
         self.settings = settings
         self.notePath = settings.notePath
@@ -204,6 +221,7 @@ class MikiWindow(QtWidgets.QMainWindow):
             self.settings.qsettings.setValue("version", __version__)
             Mikibook.settings.setValue("version", __version__)
 
+        self.postInit(self)
 
     def loadHighlighter(self):
         fnt = Mikibook.settings.value('editorFont', defaultValue=None)
@@ -1064,3 +1082,18 @@ class MikiWindow(QtWidgets.QMainWindow):
             os.remove(self.lockPath)
         except:
             pass
+        self.postClose(self)
+
+    def toggleShow(self):
+        """ Click tray icon item to toggle the display of MainWindow.
+        """
+        s = self.windowState()
+        if self.isVisible():
+            if s == Qt.WindowMinimized:
+                self.showNormal()
+                self.show()
+            else:
+                self.showMaximized
+                self.hide()
+        else:
+            self.show()

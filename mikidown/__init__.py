@@ -103,11 +103,16 @@ def main():
         # Initialize application and main window.
         icon = QtGui.QIcon(":/icons/mikidown.svg")
         app.setWindowIcon(icon)
+
+        tray = MikiTray(icon)
+        tray.show()
+
+        MikiWindow.postInit.append(tray.registerWindow)
+        MikiWindow.postClose.append(tray.unregisterWindow)
+
         window = MikiWindow(settings)
         window.show()
         window.restore()        # Restore after window show.
-        tray = MikiTray(icon, window)
-        tray.show()
 
         #"""
         def cleanup(signum, frame):
