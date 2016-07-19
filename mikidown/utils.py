@@ -28,6 +28,7 @@ class Event(list):
     Source: http://stackoverflow.com/a/2022629
 
     Example Usage:
+
     >>> def f(x):
     ...     print 'f(%s)' % x
     >>> def g(x):
