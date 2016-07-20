@@ -289,7 +289,7 @@ class ManageBodyTitlePairsWidget(BaseCRUDListView):
 
         if ret == QtWidgets.QMessageBox.Yes:
             for idx in reversed(items):
-                contents.takeRow(idx.row())
+                contents.removeRow(idx.row())
 
             self.settings.updateBodyTitlePairs()
 
@@ -338,7 +338,7 @@ class ManageTitlesWidget(BaseCRUDListView):
 
         if ret == QtWidgets.QMessageBox.Yes:
             for idx in reversed(items):
-                contents.takeRow(idx.row())
+                contents.removeRow(idx.row())
 
             self.settings.updateTitleTemplates()
 
