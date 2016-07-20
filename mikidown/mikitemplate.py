@@ -242,7 +242,7 @@ class ManageBodyTitlePairsWidget(BaseCRUDListView):
         item.setData(item_id, TTPL_COL_EXTRA_DATA+1)
         contents.appendRow(item)
 
-        self.settings.updateTitleTemplates()
+        self.settings.updateBodyTitlePairs()
 
     def deleteItems(self, checked):
         items = self.listWidget.selectedIndexes()
