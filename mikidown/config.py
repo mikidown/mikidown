@@ -14,7 +14,7 @@ from .utils import TitleType, TTPL_COL_DATA, TTPL_COL_EXTRA_DATA
 NOT_EXT = re.compile(r"Failed to initiate extension '([^']+)': 'module' object has no attribute 'makeExtension'")
 
 __appname__ = 'mikidown'
-__version__ = '0.3.10' # we should really change this to a tuple
+__version__ = '0.3.11' # we should really change this to a tuple
 
 class Setting():
     def __init__(self, notebooks):
