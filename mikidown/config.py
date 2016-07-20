@@ -206,6 +206,7 @@ class Setting():
                     Qt.DisplayRole:'friendlyName',
                     TTPL_COL_DATA:'content',
                     TTPL_COL_EXTRA_DATA:'type',
+                    TTPL_COL_EXTRA_DATA + 1:'id',
                 },
                 transforms={
                     TTPL_COL_EXTRA_DATA: lambda x: x.value,
