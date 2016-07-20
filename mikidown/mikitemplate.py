@@ -12,7 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from .highlighter import MikiHighlighter
 from .mikibook import Mikibook
 from .mikiedit import SimpleMikiEdit
-from .utils import TitleType, NOTE_EXTS, doesFileExist, LineEditDialog, TTPL_COL_DATA, TTPL_COL_EXTRA_DATA
+from .utils import TitleType, NOTE_EXTS, doesFileExist, LineEditDialog, confirmAction, TTPL_COL_DATA, TTPL_COL_EXTRA_DATA
 
 #BANNED_COMMANDS={'rm', 'cp', 'mv', 'unlink', 'mkdir', 'rmdir'}
 
@@ -177,14 +177,13 @@ class EditBodyTemplateDialog(QtWidgets.QDialog):
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
 
-class ManageTitlesWidget(QtWidgets.QWidget):
-    def __init__(self, settings, parent=None):
+
+class BaseCRUDListView(QtWidgets.QWidget):
+    def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.settings = settings
 
         layout = QtWidgets.QVBoxLayout(self)
-        self.titlesList = QtWidgets.QListView()
-        self.titlesList.setModel(self.settings.titleTemplates)
+        self.listWidget = QtWidgets.QListView()
 
         self.buttonBox = QtWidgets.QHBoxLayout()
         editButton = QtWidgets.QPushButton(self.tr("Edit"))
@@ -198,8 +197,26 @@ class ManageTitlesWidget(QtWidgets.QWidget):
         delButton.clicked.connect(self.deleteItems)
         addButton.clicked.connect(self.addItem)
 
-        layout.addWidget(self.titlesList)
+        layout.addWidget(self.listWidget)
         layout.addLayout(self.buttonBox)
+
+    def editItem(self, check):
+        pass
+
+    def deleteItems(self, check):
+        pass
+
+    def addItem(self, check):
+        pass
+
+
+class ManageBodyTitlePairsWidget(BaseCRUDListView):
+    def __init__(self, settings, parent=None):
+        super().__init__(parent=parent)
+        self.settings = settings
+
+        layout = QtWidgets.QVBoxLayout(self)
+        self.listWidget.setModel(self.settings.bodyTitlePairs)
 
     def editItem(self, checked):
         idx = self.titlesList.currentIndex()
@@ -228,19 +245,64 @@ class ManageTitlesWidget(QtWidgets.QWidget):
         self.settings.updateTitleTemplates()
 
     def deleteItems(self, checked):
-        items = self.titlesList.selectedIndexes()
-        contents = self.titlesList.model()
+        items = self.listWidget.selectedIndexes()
+        contents = self.listWidget.model()
 
-        ret = QtWidgets.QMessageBox.question(
-            None,
+        ret = confirmAction(
+            "mikidown - delete body title pairs",
+            (
+                "Are you sure you want to delete {0} body title pair(s)?"
+            ).format(len(items)),
+        )
+
+        if ret == QtWidgets.QMessageBox.Yes:
+            for idx in reversed(items):
+                contents.takeRow(idx.row())
+
+            self.settings.updateBodyTitlePairs()
+
+class ManageTitlesWidget(BaseCRUDListView):
+    def __init__(self, settings, parent=None):
+        super().__init__(parent=parent)
+        self.settings = settings
+
+        self.listWidget.setModel(self.settings.titleTemplates)
+
+    def editItem(self, checked):
+        idx = self.listWidget.currentIndex()
+        dialog = EditTitleTemplateDialog(idx.row(), self.settings, parent=self)
+
+        if dialog.exec_():
+            self.settings.updateTitleTemplates()
+
+    def addItem(self, checked):
+        contents = self.listWidget.model()
+
+        item = QtGui.QStandardItem()
+        item = QtGui.QStandardItem()
+        item.setText("Test Date Format (YYYYmmdd)")
+        item.setData("%Y%m%d_Test_{}", TTPL_COL_DATA)
+        item.setData(TitleType.DATETIME, TTPL_COL_EXTRA_DATA)
+
+        # http://stackoverflow.com/a/12270917
+        # In case the user needs to edit config file manually
+        # don't make typing the uuid for a title item a pain
+        item_id = base64.urlsafe_b64encode(uuid.uuid1().bytes).decode("utf-8")
+        item_id = item_id.rstrip('=\n').replace('/', '_')
+        item.setData(item_id, TTPL_COL_EXTRA_DATA+1)
+        contents.appendRow(item)
+
+        self.settings.updateTitleTemplates()
+
+    def deleteItems(self, checked):
+        items = self.listWidget.selectedIndexes()
+        contents = self.listWidget.model()
+
+        ret = confirmAction(
             "mikidown - delete title templates",
             (
                 "Are you sure you want to delete {0} title template(s)?"
-            ).format(len(items)),
-            buttons=(
-                QtWidgets.QMessageBox.Yes
-                | QtWidgets.QMessageBox.No
-            )
+            ).format(len(items))
         )
 
         if ret == QtWidgets.QMessageBox.Yes:
@@ -250,35 +312,19 @@ class ManageTitlesWidget(QtWidgets.QWidget):
             self.settings.updateTitleTemplates()
 
 
-class ManageBodiesWidget(QtWidgets.QWidget):
+class ManageBodiesWidget(BaseCRUDListView):
     def __init__(self, settings, parent=None):
         super().__init__(parent=parent)
         self.settings = settings
 
         self.bodiesList = QtWidgets.QListView()
-        self.bodiesList.setModel(self.settings.bodyTemplates)
+        self.listWidget.setModel(self.settings.bodyTemplates)
         pathToIdx = self.settings.bodyTemplates.index(self.settings.templatesPath)
-        self.bodiesList.setRootIndex(pathToIdx)
-
-        self.buttonBox = QtWidgets.QHBoxLayout()
-        editButton = QtWidgets.QPushButton(self.tr("Edit"))
-        addButton = QtWidgets.QPushButton("+")
-        delButton = QtWidgets.QPushButton("-")
-        self.buttonBox.addWidget(editButton)
-        self.buttonBox.addWidget(addButton)
-        self.buttonBox.addWidget(delButton)
-
-        editButton.clicked.connect(self.editItem)
-        delButton.clicked.connect(self.deleteItems)
-        addButton.clicked.connect(self.addItem)
-
-        layout = QtWidgets.QVBoxLayout(self)
-        layout.addWidget(self.bodiesList)
-        layout.addLayout(self.buttonBox)
+        self.listWidget.setRootIndex(pathToIdx)
 
     def editItem(self, checked):
-        idx = self.bodiesList.currentIndex()
-        model = self.bodiesList.model()
+        idx = self.listWidget.currentIndex()
+        model = self.listWidget.model()
         filePath = model.filePath(idx)
         if not path.isfile(filePath):
             return
@@ -300,19 +346,14 @@ class ManageBodiesWidget(QtWidgets.QWidget):
                     fh.close()
 
     def deleteItems(self, checked):
-        items = self.bodiesList.selectedIndexes()
-        contents = self.bodiesList.model()
+        items = self.listWidget.selectedIndexes()
+        contents = self.listWidget.model()
 
-        ret = QtWidgets.QMessageBox.question(
-            None,
+        ret = confirmAction(
             "mikidown - delete body templates",
             (
                 "Are you sure you want to delete {0} body template(s)?"
             ).format(len(items)),
-            buttons=(
-                QtWidgets.QMessageBox.Yes
-                | QtWidgets.QMessageBox.No
-            )
         )
 
         if ret == QtWidgets.QMessageBox.Yes:
@@ -337,16 +378,18 @@ class ManageTemplatesDialog(QtWidgets.QDialog):
         self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Close)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
-        self.templatePages = QtWidgets.QTabWidget()
+        self.templateCols = QtWidgets.QSplitter()
 
         self.titlesPage = ManageTitlesWidget(settings)
         self.bodiesPage = ManageBodiesWidget(settings)
+        self.bodyTitlePairsPage = ManageBodyTitlePairsWidget(settings)
 
-        self.templatePages.addTab(self.titlesPage, self.tr("Titles"))
-        self.templatePages.addTab(self.bodiesPage, self.tr("Bodies"))
+        self.templateCols.addWidget(self.titlesPage)
+        self.templateCols.addWidget(self.bodiesPage)
+        self.templateCols.addWidget(self.bodyTitlePairsPage)
 
         layout = QtWidgets.QVBoxLayout(self)
-        layout.addWidget(self.templatePages)
+        layout.addWidget(self.templateCols)
         layout.addWidget(self.buttonBox)
 
 

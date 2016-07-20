@@ -14,13 +14,14 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 #from Qt.QtGui import QApplication, QIcon, QMessageBox
 
 import mikidown.mikidown_rc
+
 from .config import Setting
 from .generator import Generator
 from .mikitray import MikiTray
 from .mikiwindow import MikiWindow
 from .mikibook import Mikibook
 from .sandbox import Sandbox
-
+from .utils import confirmAction
 
 
 # http://code.activestate.com/recipes/578453-python-single-instance-cross-platform/
@@ -85,9 +86,14 @@ def main():
     if notebooks:
         #"""
         if os.path.exists(Mikibook.lockpath) and args.command != 'index':
-            ret = QtWidgets.QMessageBox.question(None, "mikidown - lock file exists", ("It looks like the lock file for "
-                "mikidown already exists. Is mikidown currently running? "
-                "Click no to remove the lock file before rerunning mikidown."), buttons=QtWidgets.QMessageBox.Yes|QtWidgets.QMessageBox.No)
+            ret = confirmAction(
+                    "mikidown - lock file exists",
+                    (
+                        "It looks like the lock file for "
+                        "mikidown already exists. Is mikidown currently running? "
+                        "Click no to remove the lock file before rerunning mikidown."
+                    )
+                )
             if ret == QtWidgets.QMessageBox.Yes:
                 sys.exit(1)
             else:

@@ -73,6 +73,17 @@ class ViewedNoteIcon(QtGui.QIcon):
         self.addPixmap(pixmap)
         del painter
 
+def confirmAction(title, msg, parent=None):
+    return QtWidgets.QMessageBox.question(
+        parent,
+        title, msg,
+        buttons=(
+            QtWidgets.QMessageBox.Yes
+            | QtWidgets.QMessageBox.No
+        )
+    )
+
+
 NOTE_EXTS = ['.md', '.markdown', '.mkd']
 IMAGE_EXTS = ['', '.jpg']
 class LineEditDialog(QtWidgets.QDialog):
