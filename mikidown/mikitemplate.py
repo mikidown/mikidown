@@ -229,7 +229,6 @@ class ManageBodyTitlePairsWidget(BaseCRUDListView):
         contents = self.titlesList.model()
 
         item = QtGui.QStandardItem()
-        item = QtGui.QStandardItem()
         item.setText("Test Date Format (YYYYmmdd)")
         item.setData("%Y%m%d_Test_{}", TTPL_COL_DATA)
         item.setData(TitleType.DATETIME, TTPL_COL_EXTRA_DATA)
@@ -278,7 +277,6 @@ class ManageTitlesWidget(BaseCRUDListView):
     def addItem(self, checked):
         contents = self.listWidget.model()
 
-        item = QtGui.QStandardItem()
         item = QtGui.QStandardItem()
         item.setText("Test Date Format (YYYYmmdd)")
         item.setData("%Y%m%d_Test_{}", TTPL_COL_DATA)
