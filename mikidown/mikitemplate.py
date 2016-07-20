@@ -231,10 +231,23 @@ class ManageTitlesWidget(QtWidgets.QWidget):
         items = self.titlesList.selectedIndexes()
         contents = self.titlesList.model()
 
-        for idx in reversed(items):
-            contents.takeRow(idx.row())
+        ret = QtWidgets.QMessageBox.question(
+            None,
+            "mikidown - delete title templates",
+            (
+                "Are you sure you want to delete {0} title template(s)?"
+            ).format(len(items)),
+            buttons=(
+                QtWidgets.QMessageBox.Yes
+                | QtWidgets.QMessageBox.No
+            )
+        )
 
-        self.settings.updateTitleTemplates()
+        if ret == QtWidgets.QMessageBox.Yes:
+            for idx in reversed(items):
+                contents.takeRow(idx.row())
+
+            self.settings.updateTitleTemplates()
 
 
 class ManageBodiesWidget(QtWidgets.QWidget):
@@ -290,8 +303,21 @@ class ManageBodiesWidget(QtWidgets.QWidget):
         items = self.bodiesList.selectedIndexes()
         contents = self.bodiesList.model()
 
-        for idx in reversed(items):
-            contents.remove(idx)
+        ret = QtWidgets.QMessageBox.question(
+            None,
+            "mikidown - delete body templates",
+            (
+                "Are you sure you want to delete {0} body template(s)?"
+            ).format(len(items)),
+            buttons=(
+                QtWidgets.QMessageBox.Yes
+                | QtWidgets.QMessageBox.No
+            )
+        )
+
+        if ret == QtWidgets.QMessageBox.Yes:
+            for idx in reversed(items):
+                contents.remove(idx)
 
     def addItem(self, checked):
         dialog = LineEditDialog(self.settings.templatesPath, self)
