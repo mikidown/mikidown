@@ -17,7 +17,7 @@ def build_translations():
     print('running build_translations')
     error = None
     try:
-        check_call(('lrelease-qt4', 'mikidown.pro'))
+        check_call(('lrelease-qt5', 'mikidown.pro'))
     except Exception as e:
         error = e
     if error:
