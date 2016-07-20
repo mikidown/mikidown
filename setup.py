@@ -69,7 +69,7 @@ setup(
                 ('share/applications', ['mikidown.desktop']),
                 ('share/mikidown/locale', glob.glob(os.path.join('locale', '*.qm'))),
                 ],
-    requires=['PyQt', 'markdown', 'whoosh'],
+    requires=['PyQt5', 'markdown', 'whoosh'],
     install_requires=['Markdown >= 2.3.1', 'Whoosh >= 2.5.2'],
     cmdclass={
         'sdist': miki_sdist,
