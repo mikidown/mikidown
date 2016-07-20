@@ -41,7 +41,7 @@ def makeTemplateTitle(title_type, title, dtnow=None, userinput=""):
     return filled_title
 
 def makeTemplateBody(filled_title, dt_in_body=True, dtnow=None,
-        dt_in_body_fmt="%Y-%m-%d", dt_in_body_txt="Created {}", 
+        dt_in_body_fmt="%Y-%m-%d", dt_in_body_txt="Created {}",
         userinput="", body=""):
     if dtnow is None:
         dtnow = datetime.datetime.now()
@@ -66,8 +66,10 @@ class EditTitleTemplateDialog(QtWidgets.QDialog):
         self.titleTemplateContent = QtWidgets.QLineEdit(self)
         self.titleTemplateContent.textChanged.connect(self.updateUi)
         self.usesDate = QtWidgets.QCheckBox(self)
-        self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | 
-                                          QtWidgets.QDialogButtonBox.Cancel)
+        self.buttonBox = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok
+            | QtWidgets.QDialogButtonBox.Cancel
+        )
         self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
         self.settings = settings
 
@@ -140,8 +142,10 @@ class EditBodyTemplateDialog(QtWidgets.QDialog):
         self.settings = settings
         self.setWindowTitle(self.tr("Edit body template"))
 
-        self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | 
-                                          QtWidgets.QDialogButtonBox.Cancel)
+        self.buttonBox = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok
+            | QtWidgets.QDialogButtonBox.Cancel
+        )
 
         self.templateEdit = SimpleMikiEdit(self)
         fnt = Mikibook.settings.value('editorFont', defaultValue=None)
@@ -373,7 +377,9 @@ class ManageTemplatesDialog(QtWidgets.QDialog):
         self.setWindowTitle(self.tr("Manage templates"))
         self.settings = settings
 
-        self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Close)
+        self.buttonBox = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Close
+        )
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
         self.templateCols = QtWidgets.QSplitter()
