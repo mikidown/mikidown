@@ -223,27 +223,56 @@ class ManageBodyTitlePairsWidget(BaseCRUDListView):
         self.listWidget.setModel(self.settings.bodyTitlePairs)
 
     def editItem(self, checked):
-        idx = self.titlesList.currentIndex()
-        dialog = EditTitleTemplateDialog(idx.row(), self.settings, parent=self)
+        idx = self.listWidget.currentIndex()
+        dialog = PickTemplateDialog(
+            None,
+            self.settings,
+            parent=self,
+            forNoteCreation=False
+        )
+
+        body_fname = idx.data(TTPL_COL_DATA)
+        title_id = idx.data(TTPL_COL_EXTRA_DATA)
+        pair_label = idx.data(Qt.DisplayRole)
+
+        dialog.pickBodyByName(body_fname)
+        dialog.pickTitleById(title_id)
+        dialog.titleTemplateParameter.setText(pair_label)
 
         if dialog.exec_():
-            self.settings.updateTitleTemplates()
+            item = self.listWidget.model().itemFromIndex(idx)
+            pair_label = dialog.titleTemplateParameter.text()
+            title_id = dialog.titleTemplates.currentData(
+                TTPL_COL_EXTRA_DATA + 1
+            )
+            body_fname = dialog.bodyTemplates.currentText()
+
+            item.setText(pair_label)
+            item.setData(body_fname, TTPL_COL_DATA)
+            item.setData(title_id, TTPL_COL_EXTRA_DATA)
+            self.settings.updateBodyTitlePairs()
 
     def addItem(self, checked):
-        contents = self.titlesList.model()
+        contents = self.listWidget.model()
+        dialog = PickTemplateDialog(
+            None,
+            self.settings,
+            parent=self,
+            forNoteCreation=False
+        )
 
-        item = QtGui.QStandardItem()
-        item.setText("Test Date Format (YYYYmmdd)")
-        item.setData("%Y%m%d_Test_{}", TTPL_COL_DATA)
-        item.setData(TitleType.DATETIME, TTPL_COL_EXTRA_DATA)
+        if dialog.exec_():
+            pair_label = dialog.titleTemplateParameter.text()
+            title_id = dialog.titleTemplates.currentData(
+                TTPL_COL_EXTRA_DATA + 1
+            )
+            body_fname = dialog.bodyTemplates.currentText()
 
-        # http://stackoverflow.com/a/12270917
-        # In case the user needs to edit config file manually
-        # don't make typing the uuid for a title item a pain
-        item_id = base64.urlsafe_b64encode(uuid.uuid1().bytes).decode("utf-8")
-        item_id = item_id.rstrip('=\n').replace('/', '_')
-        item.setData(item_id, TTPL_COL_EXTRA_DATA+1)
-        contents.appendRow(item)
+            item = QtGui.QStandardItem()
+            item.setText(pair_label)
+            item.setData(body_fname, TTPL_COL_DATA)
+            item.setData(title_id, TTPL_COL_EXTRA_DATA)
+            contents.appendRow(item)
 
         self.settings.updateBodyTitlePairs()
 
@@ -398,46 +427,66 @@ class ManageTemplatesDialog(QtWidgets.QDialog):
 
 
 class PickTemplateDialog(QtWidgets.QDialog):
-    def __init__(self, path, settings, parent=None):
+    def __init__(self, path, settings, parent=None, forNoteCreation=True):
         super().__init__(parent=parent)
         self.setWindowTitle(self.tr("Create note from template"))
         self.path = path
 
         self.titleTemplates = QtWidgets.QComboBox(self)
         self.bodyTemplates  = QtWidgets.QComboBox(self)
-        self.bodyTitlePairs = QtWidgets.QComboBox(self)
+
+        self.bodyTitlePairs = None
         self.titleTemplateParameter = QtWidgets.QLineEdit(self)
-        self.bodyTitlePairs.currentIndexChanged.connect(self.updateTitleBody)
-        
-        self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok |
-                                                    QtWidgets.QDialogButtonBox.Cancel)
+        self.forNoteCreation = forNoteCreation
+
+        if forNoteCreation:
+            self.bodyTitlePairs = QtWidgets.QComboBox(self)
+            self.bodyTitlePairs.currentIndexChanged.connect(self._updateTitleBody)
+
+        self.buttonBox = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok
+            | QtWidgets.QDialogButtonBox.Cancel
+        )
         self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
-        
+
         self.settings = settings
 
         self.titleTemplates.setModel(self.settings.titleTemplates)
+
         self.bodyTemplates.setModel(self.settings.bodyTemplates)
         pathToIdx = self.settings.bodyTemplates.index(self.settings.templatesPath)
         self.bodyTemplates.setRootModelIndex(pathToIdx)
         self.bodyTemplates.model().directoryLoaded.connect(self.updateUi)
-        self.bodyTitlePairs.setModel(self.settings.bodyTitlePairs)
+
+        if forNoteCreation:
+            self.bodyTitlePairs.setModel(self.settings.bodyTitlePairs)
 
         layout = QtWidgets.QGridLayout(self)
-        layout.addWidget(QtWidgets.QLabel(self.tr("Title template:")), 0, 0)
-        layout.addWidget(self.titleTemplates, 0, 1)
 
-        layout.addWidget(QtWidgets.QLabel(self.tr("Title parameter:")), 1, 0)
-        layout.addWidget(self.titleTemplateParameter, 1, 1)
+        if forNoteCreation:
+            layout.addWidget(QtWidgets.QLabel(self.tr("Title template:")), 0, 0)
+            layout.addWidget(self.titleTemplates, 0, 1)
+            label = QtWidgets.QLabel(self.tr("Title parameter:"))
+            layout.addWidget(label, 1, 0)
+            layout.addWidget(self.titleTemplateParameter, 1, 1)
+        else:
+            label = QtWidgets.QLabel(self.tr("Pair label:"))
+            layout.addWidget(label, 0, 0)
+            layout.addWidget(self.titleTemplateParameter, 0, 1)
+            layout.addWidget(QtWidgets.QLabel(self.tr("Title template:")), 1, 0)
+            layout.addWidget(self.titleTemplates, 1, 1)
 
         layout.addWidget(QtWidgets.QLabel(self.tr("Body template:")), 2, 0)
         layout.addWidget(self.bodyTemplates, 2, 1)
 
-        tmpLabel = QtWidgets.QLabel(self.tr("--- OR ---"))
-        tmpLabel.setAlignment(Qt.AlignCenter)
-        layout.addWidget(tmpLabel, 3, 0, 1, 2)
+        if forNoteCreation:
+            tmpLabel = QtWidgets.QLabel(self.tr("--- OR ---"))
+            tmpLabel.setAlignment(Qt.AlignCenter)
+            layout.addWidget(tmpLabel, 3, 0, 1, 2)
 
-        layout.addWidget(QtWidgets.QLabel(self.tr("Quick pick pair...")), 4, 0)
-        layout.addWidget(self.bodyTitlePairs, 4, 1)
+            layout.addWidget(QtWidgets.QLabel(self.tr("Quick pick pair...")), 4, 0)
+            layout.addWidget(self.bodyTitlePairs, 4, 1)
+
         layout.addWidget(self.buttonBox, 5, 0, 1, 2)
 
         self.buttonBox.accepted.connect(self.accept)
@@ -446,21 +495,32 @@ class PickTemplateDialog(QtWidgets.QDialog):
         self.updateUi()
 
     def accept(self):
-        dtnow = datetime.datetime.now()
-        curTitleIdx = self.titleTemplates.currentIndex()
-        titleItem = self.titleTemplates.model().item(curTitleIdx)
-        titleItemContent = titleItem.data(TTPL_COL_DATA)
-        titleItemType = titleItem.data(TTPL_COL_EXTRA_DATA)
-        titleParameter = self.titleTemplateParameter.text()
-        newPageName = makeTemplateTitle(titleItemType, 
-            titleItemContent, dtnow=dtnow, userinput=titleParameter)
-        notePath = path.join(self.path, newPageName)
-        acceptable, existPath = doesFileExist(notePath, NOTE_EXTS)
-        if acceptable:
-            QtWidgets.QDialog.accept(self)
+        if self.forNoteCreation:
+            dtnow = datetime.datetime.now()
+            curTitleIdx = self.titleTemplates.currentIndex()
+            titleItem = self.titleTemplates.model().item(curTitleIdx)
+            titleItemContent = titleItem.data(TTPL_COL_DATA)
+            titleItemType = titleItem.data(TTPL_COL_EXTRA_DATA)
+            titleParameter = self.titleTemplateParameter.text()
+            newPageName = makeTemplateTitle(titleItemType,
+                titleItemContent, dtnow=dtnow, userinput=titleParameter)
+            notePath = path.join(self.path, newPageName)
+            acceptable, existPath = doesFileExist(notePath, NOTE_EXTS)
+            if acceptable:
+                QtWidgets.QDialog.accept(self)
+            else:
+                QtWidgets.QMessageBox.warning(self, self.tr("Error"),
+                self.tr("File already exists: %s") % existPath)
         else:
-            QtWidgets.QMessageBox.warning(self, self.tr("Error"),
-            self.tr("File already exists: %s") % existPath)
+            pairName = self.titleTemplateParameter.text()
+            if pairName:
+                QtWidgets.QDialog.accept(self)
+            else:
+                QtWidgets.QMessageBox.warning(
+                    self,
+                    self.tr("Error"),
+                    self.tr("Please give your title pair a label")
+                )
 
     def updateUi(self):
         comboModel = self.bodyTemplates.model()
@@ -471,13 +531,19 @@ class PickTemplateDialog(QtWidgets.QDialog):
         self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(shouldEnable)
         self.bodyTemplates.setEnabled(shouldEnable)
 
-    def updateTitleBody(self, idx):
+    def pickBodyByName(self, fname):
+        body_idx = self.bodyTemplates.findText(fname)
+        self.bodyTemplates.setCurrentIndex(body_idx)
+
+    def pickTitleById(self, title_id):
+        title_idx = self.titleTemplates.findData(title_id, TTPL_COL_EXTRA_DATA+1)
+        self.titleTemplates.setCurrentIndex(title_idx)
+
+    def _updateTitleBody(self, idx):
         modelItem = self.bodyTitlePairs.model().item(idx)
         if modelItem is not None:
-            titleID = modelItem.data(TTPL_COL_EXTRA_DATA)
-            title_idx = self.titleTemplates.findData(titleID, TTPL_COL_EXTRA_DATA+1)
-            self.titleTemplates.setCurrentIndex(title_idx)
+            title_id = modelItem.data(TTPL_COL_EXTRA_DATA)
+            self.pickTitleById(title_id)
 
             body_base_fname = modelItem.data(TTPL_COL_DATA)
-            body_idx = self.bodyTemplates.findText(body_base_fname)
-            self.bodyTemplates.setCurrentIndex(body_idx)
+            self.pickBodyByName(body_base_fname)
