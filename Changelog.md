@@ -122,7 +122,7 @@ will result in asciimathml not being enabled.
 - markdown extensions that the user doesn't have, but has listed in their mikidown notebook config are temporarily disabled and marked in red.
 - There's a GUI for configuring the markdown extensions. Just click "Edit Settings for this extension" after selecting an extension to configure.
 - Single instance per user to prevent weirdness with notes. I'm currently trying to figure out how to raise the already existing window if there is one in a cross-platform manner.
-- Improvements to the HTML tag detection in syntax highlighting. Now you can properly distinguish <https://github.com/rnons/mikidown> from <i>I am a block of html stuff!</i>.
+- Improvements to the HTML tag detection in syntax highlighting. Now you can properly distinguish <https://github.com/ShadowKyogre/mikidown> from <i>I am a block of html stuff!</i>.
 - A few more fixes for setext header syntax highlighting.
 - Numbered lists are included in the syntax highlighting.
 - Search results can now be styled.
@@ -173,6 +173,6 @@ $$
         mikidown preview
 
 
-[#23]: https://github.com/rnons/mikidown/issues/23
-[#24]: https://github.com/rnons/mikidown/issues/24
+[#23]: https://github.com/ShadowKyogre/mikidown/issues/23
+[#24]: https://github.com/ShadowKyogre/mikidown/issues/24
 [pyenchant]: https://pypi.python.org/pypi/pyenchant
