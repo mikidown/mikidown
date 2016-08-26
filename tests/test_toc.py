@@ -63,7 +63,7 @@ class TOCTest(unittest.TestCase):
             for (lvl, item) in tree_iter
         ]
 
-        self.assertEquals(expected, results)
+        self.assertEqual(results, expected)
 
 def main():
     unittest.main()
