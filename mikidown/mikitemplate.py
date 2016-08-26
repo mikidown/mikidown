@@ -413,13 +413,34 @@ class ManageTemplatesDialog(QtWidgets.QDialog):
         self.buttonBox.rejected.connect(self.reject)
         self.templateCols = QtWidgets.QSplitter()
 
+        splitter_color = self.palette().text().color().name()
+        self.setStyleSheet(
+            "QSplitter::handle {{ border-left: 1px dashed {0}; }}".format(
+                splitter_color
+            )
+        )
+
         self.titlesPage = ManageTitlesWidget(settings)
         self.bodiesPage = ManageBodiesWidget(settings)
         self.bodyTitlePairsPage = ManageBodyTitlePairsWidget(settings)
 
-        self.templateCols.addWidget(self.titlesPage)
-        self.templateCols.addWidget(self.bodiesPage)
-        self.templateCols.addWidget(self.bodyTitlePairsPage)
+        gbox = QtWidgets.QGroupBox(self.tr("Titles"))
+        gbox_layout = QtWidgets.QVBoxLayout(gbox)
+        gbox_layout.setContentsMargins(0, 0, 0, 0)
+        gbox_layout.addWidget(self.titlesPage)
+        self.templateCols.addWidget(gbox)
+
+        gbox = QtWidgets.QGroupBox(self.tr("Bodies"))
+        gbox_layout = QtWidgets.QVBoxLayout(gbox)
+        gbox_layout.setContentsMargins(0, 0, 0, 0)
+        gbox_layout.addWidget(self.bodiesPage)
+        self.templateCols.addWidget(gbox)
+
+        gbox = QtWidgets.QGroupBox(self.tr("Title body pairs"))
+        gbox_layout = QtWidgets.QVBoxLayout(gbox)
+        gbox_layout.setContentsMargins(0, 0, 0, 0)
+        gbox_layout.addWidget(self.bodyTitlePairsPage)
+        self.templateCols.addWidget(gbox)
 
         layout = QtWidgets.QVBoxLayout(self)
         layout.addWidget(self.templateCols)
