@@ -428,14 +428,21 @@ class TocTree(QtWidgets.QTreeWidget):
 
     def updateToc(self, root, entries):
         self.clear()
-        item = QtWidgets.QTreeWidgetItem(self, [root, '0'])
+        item = QtWidgets.QTreeWidgetItem(self, [root, '0', None, '0'])
         curLevel = 0
+
         for (level, h, p, a) in entries:
-            val = [h, str(p), a]
+            # we'll need to keep track of parsed level
+            val = [h, str(p), a, str(level)]
             if level == curLevel:
                 item = QtWidgets.QTreeWidgetItem(item.parent(), val)
             elif level < curLevel:
-                item = QtWidgets.QTreeWidgetItem(item.parent().parent(), val)
+                parent = item
+
+                while parent is not None and int(parent.text(3)) >= level:
+                    parent = parent.parent()
+
+                item = QtWidgets.QTreeWidgetItem(parent, val)
                 curLevel = level
             else:
                 item = QtWidgets.QTreeWidgetItem(item, val)
