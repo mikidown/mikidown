@@ -18,10 +18,12 @@ class FindReplaceDialog(QtWidgets.QDialog):
         self.wholeWords = QtWidgets.QCheckBox(self.tr('Whole words'), self)
         self.reCheck = QtWidgets.QCheckBox(self.tr('Regex'), self)
 
-        self.nextButton = QtWidgets.QPushButton(self.tr("Next"),self)
-        self.prevButton = QtWidgets.QPushButton(self.tr("Previous"),self)
-        self.replaceButton = QtWidgets.QPushButton(self.tr("Replace"),self)
-        self.replaceAllButton = QtWidgets.QPushButton(self.tr("Replace All"),self)
+        self.nextButton = QtWidgets.QPushButton(self.tr("Next"), self)
+        self.prevButton = QtWidgets.QPushButton(self.tr("Previous"), self)
+        self.replaceButton = QtWidgets.QPushButton(self.tr("Replace"), self)
+        self.replaceAllButton = QtWidgets.QPushButton(
+            self.tr("Replace All"), self
+        )
 
         self.nextButton.clicked.connect(self.find)
         self.prevButton.clicked.connect(lambda: self.find(back=True))
@@ -30,21 +32,57 @@ class FindReplaceDialog(QtWidgets.QDialog):
         self.searchInput.returnPressed.connect(self.find)
         self.replaceInput.returnPressed.connect(self.replace)
 
-        grid.addWidget(QtWidgets.QLabel(self.tr("Search")),0,0)
-        grid.addWidget(QtWidgets.QLabel(self.tr("        Options")),1,0)
-        grid.addWidget(QtWidgets.QLabel(self.tr("Replace")),2,0)
+        grid.addWidget(
+            QtWidgets.QLabel(self.tr("Search")),
+            0, 0
+        )
+        grid.addWidget(
+            QtWidgets.QLabel(self.tr("        Options")),
+            1, 0
+        )
+        grid.addWidget(
+            QtWidgets.QLabel(self.tr("Replace")),
+            2, 0
+        )
 
-        grid.addWidget(self.searchInput,0,1)
-        grid.addWidget(self.nextButton,0,2)
-        grid.addWidget(self.prevButton,0,3)
+        grid.addWidget(
+            self.searchInput,
+            0, 1
+        )
+        grid.addWidget(
+            self.nextButton,
+            0, 2
+        )
+        grid.addWidget(
+            self.prevButton,
+            0, 3
+        )
 
-        grid.addWidget(self.matchCase,1,1)
-        grid.addWidget(self.wholeWords,1,2)
-        grid.addWidget(self.reCheck,1,3)
+        grid.addWidget(
+            self.matchCase,
+            1, 1
+        )
+        grid.addWidget(
+            self.wholeWords,
+            1, 2
+        )
+        grid.addWidget(
+            self.reCheck,
+            1, 3
+        )
 
-        grid.addWidget(self.replaceInput,2,1)
-        grid.addWidget(self.replaceButton,2,2)
-        grid.addWidget(self.replaceAllButton,2,3)
+        grid.addWidget(
+            self.replaceInput,
+            2, 1
+        )
+        grid.addWidget(
+            self.replaceButton,
+            2, 2
+        )
+        grid.addWidget(
+            self.replaceAllButton,
+            2, 3
+        )
 
     def replace(self, autofind=True):
         if autofind:
@@ -58,12 +96,18 @@ class FindReplaceDialog(QtWidgets.QDialog):
 
         replace_term = self.replaceInput.text()
         flags = 0
+
         if not self.matchCase.isChecked():
             flags = re.IGNORECASE
         if self.wholeWords.isChecked():
             search_term = r'\b{}\b'.format(search_term)
 
-        contents = re.sub(search_term,replace_term,contents,flags=flags)
+        contents = re.sub(
+            search_term,
+            replace_term,
+            contents,
+            flags=flags
+        )
         self.parent().textCursor().insertText(contents)
 
     def replaceAll(self):
@@ -90,7 +134,11 @@ class FindReplaceDialog(QtWidgets.QDialog):
         start_here = self.parent().textCursor()
 
         if flags:
-            cursor = self.parent().document().find(search_term, start_here, options=flags)
+            cursor = self.parent().document().find(
+                search_term,
+                start_here,
+                options=flags
+            )
         else:
             cursor = self.parent().document().find(search_term, start_here)
         self.parent().setTextCursor(cursor)
