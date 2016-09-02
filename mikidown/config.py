@@ -14,7 +14,15 @@ from .utils import TitleType, TTPL_COL_DATA, TTPL_COL_EXTRA_DATA
 NOT_EXT = re.compile(r"Failed to initiate extension '([^']+)': 'module' object has no attribute 'makeExtension'")
 
 __appname__ = 'mikidown'
-__version__ = '0.3.11' # we should really change this to a tuple
+__version_info__ = (
+    # major
+    0,
+    # minor
+    3,
+    # patch
+    11,
+)
+__version__ = '.'.join(map(str, __version_info__))
 
 class Setting():
     def __init__(self, notebooks):
@@ -47,7 +55,10 @@ class Setting():
             self.fileExt = self.qsettings.value("fileExt")
             self.attachmentImage = self.qsettings.value("attachmentImage")
             self.attachmentDocument = self.qsettings.value("attachmentDocument")
-            self.version = self.qsettings.value("version")
+            self.version = tuple(map(
+                int,
+                self.qsettings.value("version").split(".")
+            ))
             self.geometry = self.qsettings.value("geometry")
             self.windowstate = self.qsettings.value("windowstate")
             self.mathjax = self.qsettings.value('mathJax')

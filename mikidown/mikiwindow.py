@@ -15,7 +15,7 @@ from whoosh.writing import AsyncWriter
 
 import mikidown.mikidown_rc
 from .slashpleter import SlashPleter
-from .config import __appname__, __version__
+from .config import __appname__, __version__, __version_info__
 from .mikibook import NotebookListDialog, NotebookSettingsDialog, Mikibook, MikidownCfgDialog
 from .mikitree import MikiTree, TocTree
 from .mikiedit import MikiEdit
@@ -218,7 +218,16 @@ class MikiWindow(QtWidgets.QMainWindow):
         self.setupMainWindow()
 
         # show changelogs after upgrade mikidown
-        if self.settings.version < __version__ or Mikibook.settings.value("version", defaultValue="0") < __version__:
+
+        ui_version = tuple(map(
+            int,
+            Mikibook.settings.value(
+                "version",
+                defaultValue="0"
+            ).split(".")
+        ))
+
+        if self.settings.version < __version_info__ or ui_version < __version_info__:
             self.changelogHelp()
             self.settings.qsettings.setValue("version", __version__)
             Mikibook.settings.setValue("version", __version__)
