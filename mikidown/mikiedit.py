@@ -19,7 +19,7 @@ except ImportError:
     HAS_HTML2TEXT=False
 
 from urllib import parse as urlparse
-from .utils import LineEditDialog, parseTitle, JSCRIPT_TPL, METADATA_CHECKER
+from .utils import LineEditDialog, parseTitle, createJS, METADATA_CHECKER
 from .mikibook import Mikibook
 
 class SimpleMikiEdit(QtWidgets.QTextEdit):
@@ -309,7 +309,7 @@ class MikiEdit(SimpleMikiEdit):
         '''
         htmltext = self.toPlainText()
         if 'asciimathml' in self.settings.extensions:
-            stuff=JSCRIPT_TPL.format(self.settings.mathjax)
+            stuff=createJS(self.settings.mathjax)
         else:
             stuff=''
         return self.settings.md.reset().convert(htmltext)+stuff

@@ -25,7 +25,7 @@ from .mikitemplate import ManageTemplatesDialog
 from .attachment import AttachmentView
 from .highlighter import MikiHighlighter
 from .findreplacedialog import FindReplaceDialog
-from .utils import Event, LineEditDialog, ViewedNoteIcon, parseHeaders, parseTitle, METADATA_CHECKER, JSCRIPT_TPL
+from .utils import Event, LineEditDialog, ViewedNoteIcon, parseHeaders, parseTitle, METADATA_CHECKER, createJS
 
 class MikiSepNote(QtWidgets.QDockWidget):
     #This is a static widget! It is not meant to dynamically update
@@ -62,7 +62,7 @@ class MikiSepNote(QtWidgets.QDockWidget):
 
                 self.tocw.itemClicked.connect(self.tocNavigate)
                 if 'asciimathml' in settings.extensions:
-                    stuff=JSCRIPT_TPL.format(settings.mathjax)
+                    stuff=createJS(settings.mathjax)
                     strip_math_for_header_parsing = True
                 else:
                     stuff=''

@@ -1,3 +1,4 @@
+from xml.etree import ElementTree as ET
 from enum import Enum
 import os
 import re
@@ -13,16 +14,15 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt4.QtCore import Qt, QFile, QRect
 from PyQt4.QtGui import (QDialog, QDialogButtonBox, QGridLayout, QIcon, QLabel, QLineEdit, QMessageBox, QPainter, QPixmap)
 """
-JSCRIPT_TPL = '<script type="text/javascript" src="{}"></script>\n'
 METADATA_CHECKER = re.compile(r'((?: {0,3}[\w\-]+:.*)(?:(?:\n {4,}.+)|(?:\n {0,3}[\w\-]+:.*))*)')
+
+TTPL_COL_DATA = Qt.ToolTipRole
+TTPL_COL_EXTRA_DATA = Qt.UserRole
 
 class TitleType(Enum):
     FSTRING  = 0
     DATETIME = 1
     #COMMAND  = 2
-
-TTPL_COL_DATA = Qt.ToolTipRole
-TTPL_COL_EXTRA_DATA = Qt.UserRole
 
 class Event(list):
     """
@@ -257,3 +257,14 @@ def debugTrace():
         debugger.interaction(user_frame, None)
     finally:
         pyqtRestoreInputHook()
+
+def createJS(src):
+    return ET.tostring(
+        ET.Element(
+            'script',
+            src=src,
+            type='text/javascript'
+        ),
+        encoding='unicode',
+        short_empty_elements=False
+    )

@@ -10,7 +10,7 @@ import mikidown
 from mikidown.mikiwindow import MikiWindow
 from mikidown.mikibook import Mikibook
 from mikidown.config import Setting
-from mikidown.utils import allMDExtensions, JSCRIPT_TPL
+from mikidown.utils import allMDExtensions, createJS
 import shutil
 
 app = QApplication(sys.argv)
@@ -49,8 +49,7 @@ class Monolithic(unittest.TestCase):
         self.window.notesView.updateView()
 
         #self.window.notesView.setVisible(True)
-        elemCol = self.window.notesView.page(
-        ).mainFrame().findAllElements("a")
+        elemCol = self.window.notesView.page().mainFrame().findAllElements("a")
         element = elemCol.at(2)
 #        print(self.window.notesView.page().mainFrame().toHtml())
 #        print(element.attribute("href"))
@@ -91,12 +90,12 @@ class Monolithic(unittest.TestCase):
             print("    asciimathml should be enabled in defaults since we found it")
             self.assertTrue('asciimathml' in self.settings.extensions)
             print("    did we auto-attach the configured javascript too?")
-            self.assertTrue(JSCRIPT_TPL.format(self.settings.mathjax)[:-1] in self.window.notesView.page().mainFrame().toHtml())
+            self.assertTrue(createJS(self.settings.mathjax) in self.window.notesView.page().mainFrame().toHtml())
         else:
             print("    asciimathml should not be enabled in defaults since we found it")
             self.assertFalse('asciimathml' in self.settings.extensions)
             print("    did we not auto-attach the configured javascript too?")
-            self.assertFalse(JSCRIPT_TPL.format(self.settings.mathjax)[:-1] in self.window.notesView.page().mainFrame().toHtml())
+            self.assertFalse(createJS(self.settings.mathjax) in self.window.notesView.page().mainFrame().toHtml())
         #print(exts)
 
     def step6(self):

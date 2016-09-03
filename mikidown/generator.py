@@ -1,6 +1,8 @@
 """
 A simple static site generator for mikidown.
 """
+
+from xml.etree import ElementTree as ET
 import os
 import sys
 import shutil
@@ -14,7 +16,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 import markdown
 from .config import readListFromSettings, readDictFromSettings
-from .utils import JSCRIPT_TPL
+from .utils import createJS
 
 
 class Generator():
@@ -150,7 +152,10 @@ class Generator():
             chtmlfile = os.path.join(self.htmlpath, filename + ".html")
             self.convert(notefile, chtmlfile, path, os.path.join(parent,name))
 
-            children.append('<li><a href="/notes/' + filename + '.html">' + name + '</a></li>')
+            li = ET.Element('li')
+            link = ET.SubElement(li, 'a', href="/notes/{0}.html".format(filename))
+            link.text = name
+            children.append(ET.tostring(li, encoding='unicode'))
             # append subpages to page
 
         if parent == "":
@@ -194,20 +199,27 @@ class Generator():
         note_ts = QtCore.QTextStream(note)
         note_ts.setCodec("UTF-8" )
 
-        savestream << '<html>\n<head>\n' \
-                      '<meta charset="utf-8">\n' \
-                      '<link rel="stylesheet" href="/css/notebook.css" type="text/css" />\n' \
-                      '</head>\n'
+        savestream << (
+            '<!DOCTYPE html>\n'
+            '<html>\n<head>\n'
+            '<meta charset="utf-8">\n'
+            '<link rel="stylesheet" href="/css/notebook.css" type="text/css" />\n'
+            '</head>\n'
+        )
+
         savestream << "<body>\n"
         savestream << "<header>" + self.breadcrumb(page) + "</header>\n"
-        savestream << "<ul>\n"
+        savestream << "\n<ul>\n"
         savestream << "\n".join(children)
         savestream << "</ul>\n"
         # Note content
-        if 'asciimathml' in self.exts:
-            savestream << JSCRIPT_TPL.format(self.qsettings.value('mathJax'))
         savestream << self.md.reset().convert(note_ts.readAll())
-        savestream << "</body>\n"
+
+        if 'asciimathml' in self.exts:
+            savestream << createJS(self.qsettings.value('mathJax'))
+            savestream << '\n'
+
+        savestream << "\n</body>\n"
         savestream << "</html>\n"
         note.close()
         html.close()
@@ -222,6 +234,13 @@ class Generator():
         crumb = ['<a href="/">Index</a>']
         for i, part in enumerate(parts):
             crumb.append(' / ')
-            crumb.append('<a href="/notes/' + '/'.join(parts[0:i+1]) + '.html">' + part + '</a>')
+            link_dummy = ET.Element(
+                'a',
+                href="/notes/{0}.html".format(
+                    '/'.join(parts[0:i+1])
+                )
+            )
+            link_dummy.text = part
+            crumb.append(ET.tostring(link_dummy, encoding='unicode'))
 
         return ''.join(crumb)
