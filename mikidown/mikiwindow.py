@@ -46,8 +46,11 @@ class MikiSepNote(QtWidgets.QDockWidget):
             if not fh.open(QtCore.QIODevice.ReadOnly):
                 raise IOError(fh.errorString())
         except IOError as e:
-            QtWidgets.QMessageBox.warning(self, self.tr("Read Error"),
-                                self.tr("Failed to open %s: %s") % (filename, e))
+            QtWidgets.QMessageBox.warning(
+                self,
+                self.tr("Read Error"),
+                self.tr("Failed to open %s: %s") % (filename, e)
+            )
         finally:
             if fh is not None:
                 notestream = QtCore.QTextStream(fh)
@@ -61,13 +64,16 @@ class MikiSepNote(QtWidgets.QDockWidget):
                 strip_fence_for_header_parsing = False
 
                 self.tocw.itemClicked.connect(self.tocNavigate)
+
                 if 'asciimathml' in settings.extensions:
                     stuff=createJS(settings.mathjax)
                     strip_math_for_header_parsing = True
                 else:
                     stuff=''
+
                 if 'fenced_code' in settings.extensions or 'extra' in settings.extensions:
                     strip_fence_for_header_parsing = True
+
                 if plain_text:
                     note_view = QtWidgets.QPlainTextEdit(self)
                     qfnt = QtGui.QFont()
@@ -76,16 +82,28 @@ class MikiSepNote(QtWidgets.QDockWidget):
                     note_view.setPlainText(noteBody)
                 else:
                     note_view = QtWebKitWidgets.QWebView(self)
-                    note_view.setHtml(settings.md.reset().convert(noteBody)+stuff)
-                    note_view.page().setLinkDelegationPolicy(QtWebKitWidgets.QWebPage.DelegateAllLinks)
+                    note_view.setHtml(
+                        ''.join([
+                            settings.md.reset().convert(noteBody), stuff
+                        ])
+                    )
+                    note_view.page().setLinkDelegationPolicy(
+                        QtWebKitWidgets.QWebPage.DelegateAllLinks
+                    )
                     note_view.linkClicked.connect(self.linkClicked)
                     note_view.settings().setUserStyleSheetUrl( 
                      QtCore.QUrl('file://'+self.parent().settings.cssfile))
+
                 self.note_view = note_view
                 splitty.addWidget(note_view)
-                self.tocw.updateToc(os.path.basename(name), 
-                    parseHeaders(noteBody, strip_fenced_block=strip_fence_for_header_parsing,
-                        strip_ascii_math=strip_math_for_header_parsing))
+                self.tocw.updateToc(
+                    os.path.basename(name),
+                    parseHeaders(
+                        noteBody,
+                        strip_fenced_block=strip_fence_for_header_parsing,
+                        strip_ascii_math=strip_math_for_header_parsing
+                    )
+                )
 
     def tocNavigate(self, current):
         ''' works for notesEdit now '''
@@ -104,7 +122,11 @@ class MikiSepNote(QtWidgets.QDockWidget):
             self.note_view.page().mainFrame().scrollToAnchor(current.text(2))
 
     def findItemByAnchor(self, anchor):
-        return self.tocw.findItems(anchor, Qt.MatchExactly|Qt.MatchRecursive, column=2)
+        return self.tocw.findItems(
+            anchor,
+            Qt.MatchExactly | Qt.MatchRecursive,
+            column=2
+        )
 
     def linkClicked(self, qurl):
         name = qurl.toString()
@@ -162,7 +184,10 @@ class MikiWindow(QtWidgets.QMainWindow):
         print("Path: ", self.lockPath)
         print("existst: ", os.path.exists(self.lockPath))
         if not os.path.exists(self.lockPath):
-            self.lockPathFH = os.open(self.lockPath, os.O_CREAT | os.O_EXCL | os.O_RDWR)
+            self.lockPathFH = os.open(
+                self.lockPath,
+                os.O_CREAT | os.O_EXCL | os.O_RDWR
+            )
         ################ Setup core components ################
         self.notesTree = MikiTree(self)
         self.quickNoteNav = QtWidgets.QLineEdit()
@@ -236,12 +261,23 @@ class MikiWindow(QtWidgets.QMainWindow):
 
     def loadHighlighter(self):
         fnt = Mikibook.settings.value('editorFont', defaultValue=None)
-        fntsize = Mikibook.settings.value('editorFontSize', type=int, defaultValue=12)
-        header_scales_font = Mikibook.settings.value('headerScaleFont', type=bool, defaultValue=True)
+        fntsize = Mikibook.settings.value(
+            'editorFontSize',
+            type=int,
+            defaultValue=12
+        )
+        header_scales_font = Mikibook.settings.value(
+            'headerScaleFont',
+            type=bool,
+            defaultValue=True
+        )
         if fnt is not None:
             self.notesEdit.setFontFamily(fnt)
             self.notesEdit.setFontPointSize(fntsize)
-        h = MikiHighlighter(parent=self.notesEdit, scale_font_sizes=header_scales_font)
+        h = MikiHighlighter(
+            parent=self.notesEdit,
+            scale_font_sizes=header_scales_font
+        )
         tw = Mikibook.settings.value('tabWidth', type=int, defaultValue=4)
         qfm = QtGui.QFontMetrics(h.patterns[0][1].font())
         self.notesEdit.setTabStopWidth(tw * qfm.width(' '))
@@ -258,58 +294,98 @@ class MikiWindow(QtWidgets.QMainWindow):
 
         ################ Menu Actions ################
         # actions in menuFile
-        actionNewPage = self.act(self.tr('&New Page...'),
-            self.notesTree.newPage, QtGui.QKeySequence.New)
+        actionNewPage = self.act(
+            self.tr('&New Page...'),
+            self.notesTree.newPage,
+            QtGui.QKeySequence.New
+        )
         self.actions.update(newPage=actionNewPage)
 
-        actionNewSubpage = self.act(self.tr('New Sub&page...'),
-            self.notesTree.newSubpage, self.tr('Ctrl+Shift+N'))
+        actionNewSubpage = self.act(
+            self.tr('New Sub&page...'),
+            self.notesTree.newSubpage,
+            self.tr('Ctrl+Shift+N')
+        )
         self.actions.update(newSubpage=actionNewSubpage)
 
-        actionImportPage = self.act(self.tr('&Import Page...'), self.importPage)
+        actionImportPage = self.act(
+            self.tr('&Import Page...'),
+            self.importPage
+        )
         self.actions.update(importPage=actionImportPage)
 
-        actionNBSettings = self.act(self.tr('Notebook Set&tings...'), self.notebookSettings)
+        actionNBSettings = self.act(
+            self.tr('Notebook Set&tings...'),
+            self.notebookSettings
+        )
         self.actions.update(NBSettings=actionNBSettings)
 
-        actionNBTemplates = self.act(self.tr('Notebook Temp&lates...'), self.notebookTemplates)
+        actionNBTemplates = self.act(
+            self.tr('Notebook Temp&lates...'),
+            self.notebookTemplates
+        )
         self.actions.update(NBTemplates=actionNBTemplates)
 
-        actionMDSettings = self.act(self.tr('&Mikidown Settings...'), self.mikidownSettings)
+        actionMDSettings = self.act(
+            self.tr('&Mikidown Settings...'),
+            self.mikidownSettings
+        )
         self.actions.update(MDSettings=actionMDSettings)
 
-        actionOpenNotebook = self.act(self.tr('&Open Notebook...'),
-            self.openNotebook, QtGui.QKeySequence.Open)
+        actionOpenNotebook = self.act(
+            self.tr('&Open Notebook...'),
+            self.openNotebook,
+            QtGui.QKeySequence.Open
+        )
         self.actions.update(openNotebook=actionOpenNotebook)
 
         actionReIndex = self.act(self.tr('Re-index'), self.reIndex)
         self.actions.update(reIndex=actionReIndex)
 
-        actionSave = self.act(self.tr('&Save'),
-            self.saveCurrentNote, QtGui.QKeySequence.Save)
+        actionSave = self.act(
+            self.tr('&Save'),
+            self.saveCurrentNote,
+            QtGui.QKeySequence.Save
+        )
         actionSave.setEnabled(False)
         self.actions.update(save=actionSave)
 
-        actionSaveAs = self.act(self.tr('Save &As...'),
-            self.saveNoteAs, QtGui.QKeySequence.SaveAs)
+        actionSaveAs = self.act(
+            self.tr('Save &As...'),
+            self.saveNoteAs,
+            QtGui.QKeySequence.SaveAs
+        )
         self.actions.update(saveAs=actionSaveAs)
 
         actionHtml = self.act(self.tr('to &HTML'), self.notesEdit.saveAsHtml)
         self.actions.update(html=actionHtml)
 
-        actionPrint = self.act(self.tr('&Print'),
-            self.printNote, QtGui.QKeySequence.Print)
+        actionPrint = self.act(
+            self.tr('&Print'),
+            self.printNote,
+            QtGui.QKeySequence.Print
+        )
         self.actions.update(print_=actionPrint)
 
-        actionRenamePage = self.act(self.tr('&Rename Page...'),
-            self.notesTree.renamePage, 'F2')
+        actionRenamePage = self.act(
+            self.tr('&Rename Page...'),
+            self.notesTree.renamePage,
+            'F2'
+        )
         self.actions.update(renamePage=actionRenamePage)
 
-        actionDelPage = self.act(self.tr('&Delete Page'),
-            self.notesTree.delPageWrapper, QtGui.QKeySequence.Delete)
+        actionDelPage = self.act(
+            self.tr('&Delete Page'),
+            self.notesTree.delPageWrapper,
+            QtGui.QKeySequence.Delete
+        )
         self.actions.update(delPage=actionDelPage)
 
-        actionQuit = self.act(self.tr('&Quit'), self.forceClose, QtGui.QKeySequence.Quit)
+        actionQuit = self.act(
+            self.tr('&Quit'),
+            self.forceClose,
+            QtGui.QKeySequence.Quit
+        )
         actionQuit.setMenuRole(QtWidgets.QAction.QuitRole)
         self.actions.update(quit=actionQuit)
 
@@ -330,23 +406,35 @@ class MikiWindow(QtWidgets.QMainWindow):
             self.findBar.setVisible, QtGui.QKeySequence.Find, True)
         self.actions.update(findText=actionFindText)
 
-        actionFindRepl = self.act(self.tr('Find and Replace'),
-                FindReplaceDialog(self.notesEdit).open, QtGui.QKeySequence.Replace)
+        actionFindRepl = self.act(
+            self.tr('Find and Replace'),
+            FindReplaceDialog(self.notesEdit).open,
+            QtGui.QKeySequence.Replace
+        )
         self.actions.update(findRepl=actionFindRepl)
 
-        actionFind = self.act(self.tr('Next'),
-            self.findText, QtGui.QKeySequence.FindNext)
+        actionFind = self.act(
+            self.tr('Next'),
+            self.findText,
+            QtGui.QKeySequence.FindNext
+        )
         self.actions.update(find=actionFind)
 
-        actionFindPrev = self.act(self.tr('Previous'),
-            lambda: self.findText(back=True), QtGui.QKeySequence.FindPrevious)
+        actionFindPrev = self.act(
+            self.tr('Previous'),
+            lambda: self.findText(back=True),
+            QtGui.QKeySequence.FindPrevious
+        )
         self.actions.update(findPrev=actionFindPrev)
 
         actionSortLines = self.act(self.tr('&Sort Lines'), self.sortLines)
         self.actions.update(sortLines=actionSortLines)
 
-        actionQuickNav = self.act(self.tr("&Quick Open Note"),
-                        self.quickNoteNav.setFocus, self.tr('Ctrl+G'))
+        actionQuickNav = self.act(
+            self.tr("&Quick Open Note"),
+            self.quickNoteNav.setFocus,
+            self.tr('Ctrl+G')
+        )
         self.addAction(actionQuickNav)
 
         actionInsertImage = self.act(self.tr('&Insert Attachment'),
@@ -355,18 +443,37 @@ class MikiWindow(QtWidgets.QMainWindow):
         self.actions.update(insertImage=actionInsertImage)
 
         # actions in menuView
-        QtGui.QIcon.setThemeName(Mikibook.settings.value('iconTheme', QtGui.QIcon.themeName()))
+        QtGui.QIcon.setThemeName(
+            Mikibook.settings.value(
+                'iconTheme',
+                QtGui.QIcon.themeName()
+            )
+        )
         #print(QIcon.themeName())
-        actionEdit = self.act(self.tr('Edit'), self.edit, self.tr('Ctrl+E'),
-            True, QtGui.QIcon.fromTheme('document-edit'), self.tr('Edit mode (Ctrl+E)'))
+        actionEdit = self.act(
+            self.tr('Edit'),
+            self.edit,
+            self.tr('Ctrl+E'),
+            True,
+            QtGui.QIcon.fromTheme('document-edit'),
+            self.tr('Edit mode (Ctrl+E)')
+        )
         self.actions.update(edit=actionEdit)
 
-        actionSplit = self.act(self.tr('Split'), self.liveView, self.tr('Ctrl+R'),
-            True, QtGui.QIcon.fromTheme('view-split-left-right'), self.tr('Split mode (Ctrl+R)'))
+        actionSplit = self.act(
+            self.tr('Split'),
+            self.liveView,
+            self.tr('Ctrl+R'),
+            True,
+            QtGui.QIcon.fromTheme('view-split-left-right'),
+            self.tr('Split mode (Ctrl+R)')
+        )
         self.actions.update(split=actionSplit)
 
-        actionFlipEditAndView = self.act(self.tr('Flip Edit and View'),
-            self.flipEditAndView)
+        actionFlipEditAndView = self.act(
+            self.tr('Flip Edit and View'),
+            self.flipEditAndView
+        )
         actionFlipEditAndView.setEnabled(False)
         self.actions.update(flipEditAndView=actionFlipEditAndView)
 
@@ -378,7 +485,10 @@ class MikiWindow(QtWidgets.QMainWindow):
         # self.actionUpAndDown.setEnabled(False)
 
         # actions in menuHelp
-        actionReadme = self.act(self.tr('README'), self.readmeHelp)
+        actionReadme = self.act(
+            self.tr('README'),
+            self.readmeHelp
+        )
         self.actions.update(readme=actionReadme)
 
         actionChangelog = self.act(self.tr('Changelog'), self.changelogHelp)
@@ -392,8 +502,10 @@ class MikiWindow(QtWidgets.QMainWindow):
         self.resize(800, 600)
         screen = QtWidgets.QDesktopWidget().screenGeometry()
         size = self.geometry()
-        self.move((
-            screen.width()-size.width())/2, (screen.height()-size.height())/2)
+        self.move(
+            (screen.width() - size.width()) / 2,
+            (screen.height() - size.height()) / 2
+        )
         self.setWindowTitle(
             '{} - {}'.format(self.settings.notebookName, __appname__))
 
@@ -524,13 +636,25 @@ class MikiWindow(QtWidgets.QMainWindow):
             self.notesTree.setCurrentItem(item)
 
     def newNoteDisplay(self, item, anchor=None):
-        msn = MikiSepNote(self.settings, item.text(0), self.notesTree.itemToFile(item), plain_text=False, parent=self)
+        msn = MikiSepNote(
+            self.settings,
+            item.text(0),
+            self.notesTree.itemToFile(item),
+            plain_text=False,
+            parent=self
+        )
         if anchor:
             msn.note_view.page().mainFrame().scrollToAnchor(anchor)
         msn.show()
 
     def newPlainTextNoteDisplay(self, item, anchor=None):
-        msn = MikiSepNote(self.settings, item.text(0), self.notesTree.itemToFile(item), plain_text=True, parent=self)
+        msn = MikiSepNote(
+            self.settings,
+            item.text(0),
+            self.notesTree.itemToFile(item),
+            plain_text=True,
+            parent=self
+        )
         if anchor:
             item = msn.findItemByAnchor(anchor)[0]
             msn.tocNavigate(item)
@@ -568,9 +692,11 @@ class MikiWindow(QtWidgets.QMainWindow):
         if not QtCore.QDir(notePath).exists():
             return
         notebookDir = QtCore.QDir(notePath)
-        notesList = notebookDir.entryInfoList(['*.md', '*.mkd', '*.markdown'],
-                                               QtCore.QDir.NoFilter,
-                                               QtCore.QDir.Name|QtCore.QDir.IgnoreCase)
+        notesList = notebookDir.entryInfoList(
+            ['*.md', '*.mkd', '*.markdown'],
+            QtCore.QDir.NoFilter,
+            QtCore.QDir.Name | QtCore.QDir.IgnoreCase
+        )
         nl = [note.completeBaseName() for note in notesList]
         noduplicate = list(set(nl))
         for name in noduplicate:
@@ -585,13 +711,21 @@ class MikiWindow(QtWidgets.QMainWindow):
         root = self.notesTree.currentPage()
         strip_math_for_header_parsing = False
         strip_fence_for_header_parsing = False
+
         if 'asciimathml' in self.settings.extensions:
             strip_math_for_header_parsing = True
+
         if 'fenced_code' in self.settings.extensions or 'extra' in self.settings.extensions:
             strip_fence_for_header_parsing = True
-        self.tocTree.updateToc(root, parseHeaders(self.notesEdit.toPlainText(), 
-                        strip_fenced_block=strip_fence_for_header_parsing,
-                        strip_ascii_math=strip_math_for_header_parsing))
+
+        self.tocTree.updateToc(
+            root,
+            parseHeaders(
+                self.notesEdit.toPlainText(),
+                strip_fenced_block=strip_fence_for_header_parsing,
+                strip_ascii_math=strip_math_for_header_parsing
+            )
+        )
 
 
     def updateAttachmentView(self):
@@ -670,8 +804,14 @@ class MikiWindow(QtWidgets.QMainWindow):
 
     def saveNoteAs(self):
         self.saveCurrentNote()
-        fileName = QtWidgets.QFileDialog.getSaveFileName(self, self.tr('Save as'), '',
-            '(*.md *.mkd *.markdown);;'+self.tr('All files(*)'))
+        fileName = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            self.tr('Save as'),
+            '',
+            '(*.md *.mkd *.markdown);;{0}'.format(
+                self.tr('All files(*)')
+            )
+        )
         if fileName == '':
             return
         if not QtCore.QFileInfo(fileName).suffix():
@@ -684,8 +824,10 @@ class MikiWindow(QtWidgets.QMainWindow):
         fh.close()
 
     def printNote(self):
-        printer = QtPrintSupport.QPrinter(QtPrintSupport.QPrinter.HighResolution)
-        printer.setCreator(__appname__ + ' ' + __version__)
+        printer = QtPrintSupport.QPrinter(
+            QtPrintSupport.QPrinter.HighResolution
+        )
+        printer.setCreator(' '.join([__appname__, __version__]))
         printer.setDocName(self.notesTree.currentItem().text(0))
         printdialog = QtPrintSupport.QPrintDialog(printer, self)
         if printdialog.exec() == QtWidgets.QDialog.Accepted:
@@ -906,7 +1048,9 @@ class MikiWindow(QtWidgets.QMainWindow):
             matches = []
             queryp = QueryParser("content", self.ix.schema)
             #allow escaped qutoes when regex searching
-            queryp.add_plugin(RegexPlugin(expr=r'r"(?P<text>[^"\\]*(\\.[^"\\]*)*)"'))
+            queryp.add_plugin(
+                RegexPlugin(expr=r'r"(?P<text>[^"\\]*(\\.[^"\\]*)*)"')
+            )
             # ~~r"pattern" is the desired regex term format~~ Don't autoforce regexing
             query = queryp.parse(pattern)
             #print("durp durp", query)
@@ -950,7 +1094,12 @@ class MikiWindow(QtWidgets.QMainWindow):
                     path=name, title=parseTitle(content, name), content=no_metadata_content,
                     tags=','.join(self.settings.md.Meta.get('tags', [])).strip())
             else:
-                writer.add_document(path=name, title=parseTitle(content, name), content=content, tags='')
+                writer.add_document(
+                    path=name,
+                    title=parseTitle(content, name),
+                    content=content,
+                    tags=''
+                )
            
             it += 1
         writer.commit()
@@ -974,7 +1123,11 @@ class MikiWindow(QtWidgets.QMainWindow):
                 notes.remove(f)
         notes.insert(0, name)
 
-        recent_notes_n = Mikibook.settings.value('recentNotesNumber',type=int, defaultValue=20)
+        recent_notes_n = Mikibook.settings.value(
+            'recentNotesNumber',
+            type=int,
+            defaultValue=20
+        )
         if len(notes) > recent_notes_n:
             del notes[recent_notes_n:]
         self.settings.updateRecentViewedNotes(notes)
@@ -996,18 +1149,31 @@ class MikiWindow(QtWidgets.QMainWindow):
                 existedNotes.append(f)
                 names = f.split('/')
                 if self.altPressed and i in range(1, 10):
-                    action = self.act(names[-1], self.openFunction(f),
-                        'Alt+'+str(i), True, ViewedNoteIcon(i), 'Alt+'+str(i))
+                    key_combo = 'Alt+{0}'.format(i)
+                    action = self.act(
+                        names[-1],
+                        self.openFunction(f),
+                        key_combo,
+                        True,
+                        ViewedNoteIcon(i),
+                        key_combo
+                    )
                 else:
-                    action = self.act(names[-1], self.openFunction(f),
-                        None, True)
+                    action = self.act(
+                        names[-1],
+                        self.openFunction(f),
+                        None,
+                        True
+                    )
                 self.viewedListActions.append(action)
                 i += 1
 
         if not self.altPressed:
             self.settings.updateRecentViewedNotes(existedNotes)
+
         for action in self.viewedListActions:
             self.viewedList.addAction(action)
+
         if len(self.viewedListActions):
             self.viewedListActions[0].setChecked(True)
 
@@ -1045,14 +1211,18 @@ class MikiWindow(QtWidgets.QMainWindow):
         readmeFile = '/usr/share/mikidown/README.mkd'
         if not os.path.exists(readmeFile):
             readmeFile = os.path.join(
-                os.path.dirname(os.path.dirname(__file__)), 'README.mkd').replace(os.sep, '/')
+                os.path.dirname(os.path.dirname(__file__)),
+                'README.mkd'
+            ).replace(os.sep, '/')
         self.importPageCore(readmeFile)
 
     def changelogHelp(self):
         changeLog = "/usr/share/mikidown/Changelog.md"
         if not os.path.exists(changeLog):
             changeLog = os.path.join(
-                os.path.dirname(os.path.dirname(__file__)), 'Changelog.md').replace(os.sep, '/')
+                os.path.dirname(os.path.dirname(__file__)),
+                'Changelog.md'
+            ).replace(os.sep, '/')
         self.importPageCore(changeLog)
 
     def keyPressEvent(self, event):

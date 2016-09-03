@@ -30,7 +30,12 @@ class QFontButton(QtWidgets.QWidget):
     def setFont(self,font):
         if isinstance(font, QtGui.QFont):
             self._font=font
-            self.button.setText("{} {}".format(font.family(), font.pointSize()))
+            self.button.setText(
+                "{0} {1}".format(
+                    font.family(),
+                    font.pointSize()
+                )
+            )
             self.label.setFont(font)
             self.fontChanged.emit(self.font)
         else:

@@ -16,7 +16,11 @@ class MikiHighlighter(QtGui.QSyntaxHighlighter):
 
     def __init__(self, parent=None, scale_font_sizes=True):
         super(MikiHighlighter, self).__init__(parent)
-        baseFontSize = Mikibook.settings.value('editorFontSize', type=int, defaultValue=12)
+        baseFontSize = Mikibook.settings.value(
+            'editorFontSize',
+            type=int,
+            defaultValue=12
+        )
         baseFontFam = Mikibook.settings.value('editorFont', defaultValue=None)
         NUM = 16
         self.patterns = []
@@ -29,6 +33,7 @@ class MikiHighlighter(QtGui.QSyntaxHighlighter):
         regexp[0] = r'</?\w+((\s+\w+(\s*=\s*(?:".*?"|\'.*?\'|[^\'">\s]+))?)+\s*|\s*)/?>'
         font[0] = QtGui.QFont(baseFontFam, baseFontSize, -1)
         color[0] = QtGui.QColor(color_settings[0])
+
         # 1: h1 - #
         regexp[1] = '^#[^#]+'
         color[1] = QtGui.QColor(color_settings[1])
@@ -36,6 +41,7 @@ class MikiHighlighter(QtGui.QSyntaxHighlighter):
             font[1] = QtGui.QFont(baseFontFam, 2*baseFontSize, QtGui.QFont.Bold)
         else:
             font[1] = QtGui.QFont(baseFontFam, baseFontSize, QtGui.QFont.Bold)
+
         # 2: h2 - ##
         regexp[2] = '^##[^#]+'
         color[2] = QtGui.QColor(color_settings[2])
@@ -43,6 +49,7 @@ class MikiHighlighter(QtGui.QSyntaxHighlighter):
             font[2] = QtGui.QFont(baseFontFam, 5.0/3*baseFontSize, QtGui.QFont.Bold)
         else:
             font[2] = QtGui.QFont(baseFontFam, baseFontSize, QtGui.QFont.Bold)
+
         # 3: h3 - ###
         regexp[3] = '^###[^#]+'
         color[3] = QtGui.QColor(color_settings[3])
@@ -50,49 +57,60 @@ class MikiHighlighter(QtGui.QSyntaxHighlighter):
             font[3] = QtGui.QFont(baseFontFam, 4.0/3*baseFontSize, QtGui.QFont.Bold)
         else:
             font[3] = QtGui.QFont(baseFontFam, baseFontSize, QtGui.QFont.Bold)
+
         # 4: h4 and more - ####
         regexp[4] = '^####.+'
         color[4] = QtGui.QColor(color_settings[4])
         font[4] = QtGui.QFont(baseFontFam, baseFontSize, QtGui.QFont.Bold)
+
         # 5: html symbols - &gt;
         regexp[5] = '&[^; ].+;'
         color[5] = QtGui.QColor(color_settings[5])
         font[5] = QtGui.QFont(baseFontFam, baseFontSize, -1)
+
         # 6: html comments - <!-- -->
         regexp[6] = '<!--.+-->'
         color[6] = QtGui.QColor(color_settings[6])
         font[6] = QtGui.QFont(baseFontFam, baseFontSize, -1)
+
         # 7: delete - ~~delete~~
         regexp[7] = DEL_RE
         color[7] = QtGui.QColor(color_settings[7])
         font[7] = QtGui.QFont(baseFontFam, baseFontSize, -1)
+
         # 8: insert - __insert__
         regexp[8] = INS_RE
         font[8] = QtGui.QFont(baseFontFam, baseFontSize, -1)
         font[8].setUnderline(True)
+
         # 9: strong - **strong**
         regexp[9] = STRONG_RE
         color[9] = QtGui.QColor(color_settings[9])
         font[9] = QtGui.QFont(baseFontFam, baseFontSize, QtGui.QFont.Bold)
+
         # 10: emphasis - //emphasis//
         regexp[10] = EMPH_RE
         color[10] = QtGui.QColor(color_settings[10])
         font[10] = QtGui.QFont(baseFontFam, baseFontSize, -1, True)
+
         # 11: links - (links) after [] or links after []:
         regexp[11] = (r'(?<=(\]\())[^\(\)]*(?=\))|'
                     '(<https?://[^>]+>)|'
                     '(<[^ >]+@[^ >]+>)')
         font[11] = QtGui.QFont(baseFontFam, baseFontSize, -1, True)
         font[11].setUnderline(True)
+
         #.setUnderlineColor("#204A87")
         # 12: link/image references - [] or ![]
         regexp[12] = r'!?\[[^\[\]]*\]'
         color[12] = QtGui.QColor(color_settings[12])
         font[12] = QtGui.QFont(baseFontFam, baseFontSize, -1)
+
         # 13: blockquotes and lists -  > or - or * or 0.
         regexp[13] = r'(^>+)|(^(?:    |\t)*[0-9]+\. )|(^(?:    |\t)*- )|(^(?:    |\t)*\* )'
         color[13] = QtGui.QColor(color_settings[13])
         font[13] = QtGui.QFont(baseFontFam, baseFontSize, -1)
+
         # 14: fence - ``` or ~~~
         regexp[14] = '^(?:~{3,}|`{3,}).*$'
         color[14] = QtGui.QColor(color_settings[14])
@@ -137,7 +155,9 @@ class MikiHighlighter(QtGui.QSyntaxHighlighter):
             if self.speller and not self.speller.check(word_object.group()):
                 current_format = self.format(word_object.start())
                 current_format.setUnderlineColor(Qt.red)
-                current_format.setUnderlineStyle(QtGui.QTextCharFormat.SpellCheckUnderline)
+                current_format.setUnderlineStyle(
+                    QtGui.QTextCharFormat.SpellCheckUnderline
+                )
                 self.setFormat(word_object.start(),
                     word_object.end() - word_object.start(), current_format)
 
@@ -149,7 +169,9 @@ class MikiHighlighter(QtGui.QSyntaxHighlighter):
                 self.setFormat(
                     match.start(), match.end() - match.start(), p[1])
 
-        if text == '' and self.currentBlock().next().text() != '':
+        next_block = self.currentBlock().next()
+
+        if text == '' and next_block.text() != '':
             self.setCurrentBlockState(self.previousBlockState()) 
             #this is turned highlighting back on accidentally, by setting it to 5
         elif self.previousBlockState() == 3:
@@ -172,10 +194,10 @@ class MikiHighlighter(QtGui.QSyntaxHighlighter):
                 elif m2 and not (text[m2.start():m2.end()].endswith("$$") and not text == "$$"):
                     self.setCurrentBlockState(2)
                 else:
-                    if self.settext_h1.match(self.currentBlock().next().text()) and text != '':
+                    if self.settext_h1.match(next_block.text()) and text != '':
                         self.setFormat(0, len(text), self.patterns[1][1])
                         self.setCurrentBlockState(3)
-                    elif self.settext_h2.match(self.currentBlock().next().text()) and text != '':
+                    elif self.settext_h2.match(next_block.text()) and text != '':
                         self.setFormat(0, len(text), self.patterns[2][1])
                         self.setCurrentBlockState(4)
 

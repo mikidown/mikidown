@@ -46,8 +46,14 @@ class Setting():
         cssPath = os.path.join(self.notebookPath, "css").replace(os.sep, '/')
         self.cssfile = os.path.join(cssPath, "notebook.css").replace(os.sep, '/')
         self.searchcssfile = os.path.join(cssPath, "search-window.css").replace(os.sep, '/')
-        self.qsettings = QtCore.QSettings(self.configfile, QtCore.QSettings.IniFormat)
-        self.tplqsettings = QtCore.QSettings(self.templatesConfigfile, QtCore.QSettings.IniFormat)
+        self.qsettings = QtCore.QSettings(
+            self.configfile,
+            QtCore.QSettings.IniFormat
+        )
+        self.tplqsettings = QtCore.QSettings(
+            self.templatesConfigfile,
+            QtCore.QSettings.IniFormat
+        )
 
         if os.path.exists(self.configfile):
             self.extensions = readListFromSettings(self.qsettings,
@@ -63,10 +69,20 @@ class Setting():
             self.windowstate = self.qsettings.value("windowstate")
             self.mathjax = self.qsettings.value('mathJax')
             if 'extensionsConfig' not in set(self.qsettings.childGroups()):
-                self.extcfg = self.qsettings.value('extensionsConfig',  defaultValue={})
-                writeDictToSettings(self.qsettings, 'extensionsConfig', self.extcfg)
+                self.extcfg = self.qsettings.value(
+                    'extensionsConfig',
+                     defaultValue={}
+                 )
+                writeDictToSettings(
+                    self.qsettings,
+                    'extensionsConfig',
+                    self.extcfg
+                )
             else:
-                self.extcfg = readDictFromSettings(self.qsettings, 'extensionsConfig')
+                self.extcfg = readDictFromSettings(
+                    self.qsettings,
+                    'extensionsConfig'
+                )
         else:
             self.extensions = []
             self.fileExt = ""
@@ -79,7 +95,9 @@ class Setting():
             self.extcfg = {}
 
         if os.path.exists(self.templatesPath):
-            self.titleTemplates = readNestedListFromSettings(self.tplqsettings, 'titleTemplates',
+            self.titleTemplates = readNestedListFromSettings(
+                self.tplqsettings,
+                'titleTemplates',
                 {
                     'friendlyName':Qt.DisplayRole,
                     'content':TTPL_COL_DATA,
@@ -89,7 +107,9 @@ class Setting():
                 transforms={
                     'type': lambda x: TitleType(int(x)),
                 })
-            self.bodyTitlePairs = readNestedListFromSettings(self.tplqsettings, 'bodyTitlePairs',
+            self.bodyTitlePairs = readNestedListFromSettings(
+                self.tplqsettings,
+                'bodyTitlePairs',
                 {
                     'friendlyName':Qt.DisplayRole,
                     'bodyTpl':TTPL_COL_DATA,
@@ -164,14 +184,20 @@ class Setting():
         # Inserted as link
         if not self.attachmentDocument:
             self.attachmentDocument = [".pdf", ".doc", ".odt"]
-            self.qsettings.setValue("attachmentDocument", self.attachmentDocument)
+            self.qsettings.setValue(
+                "attachmentDocument",
+                self.attachmentDocument
+            )
 
         # Migrate notebookPath to v0.3.0 folder structure
         if not self.version:
             notebookDir = QtCore.QDir(self.notebookPath)
 
             # move all markdown files to notes/
-            dirList = notebookDir.entryList(QtCore.QDir.Dirs | QtCore.QDir.NoDotAndDotDot)
+            dirList = notebookDir.entryList(
+                QtCore.QDir.Dirs
+                | QtCore.QDir.NoDotAndDotDot
+            )
             if 'css' in dirList:
                 dirList.remove('css')
             fileList = notebookDir.entryList(['*.md', '*.mkd', '*.markdown'])
@@ -180,7 +206,9 @@ class Setting():
                 notebookDir.rename(d, os.path.join('notes', d).replace(os.sep, '/'))
 
             # remove .indexdir folder
-            oldIndexDir = QtCore.QDir(os.path.join(self.notebookPath, '.indexdir'.replace(os.sep, '/')))
+            oldIndexDir = QtCore.QDir(
+                os.path.join(self.notebookPath, '.indexdir'.replace(os.sep, '/'))
+            )
             indexFileList = oldIndexDir.entryList()
             for f in indexFileList:
                 oldIndexDir.remove(f)

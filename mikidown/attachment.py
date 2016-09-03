@@ -56,9 +56,17 @@ class AttachmentItemDelegate(QtWidgets.QStyledItemDelegate):
         if option.state & QtWidgets.QStyle.State_Selected:
             painter.setBrush(self.parent().palette().highlight())
             painter.drawRoundedRect(rect, 5, 5)
-            pen = QtGui.QPen(self.parent().palette().highlightedText(), 1, Qt.SolidLine)
+            pen = QtGui.QPen(
+                self.parent().palette().highlightedText(),
+                1,
+                Qt.SolidLine
+            )
         else:
-            pen = QtGui.QPen(self.parent().palette().text(), 1, Qt.SolidLine)
+            pen = QtGui.QPen(
+                self.parent().palette().text(),
+                1,
+                Qt.SolidLine
+            )
 
         painter.setPen(pen)
         painter.drawText(rect, flag, fileName)

@@ -27,7 +27,10 @@ class Generator():
         self.sitepath = os.path.join(notebookPath, "_site").replace(os.sep, '/')
         self.htmlpath = os.path.join(notebookPath, "_site/notes").replace(os.sep, '/')
         self.configfile = os.path.join(self.notebookPath, "notebook.conf").replace(os.sep, '/')
-        self.qsettings = QtCore.QSettings(self.configfile, QtCore.QSettings.NativeFormat)
+        self.qsettings = QtCore.QSettings(
+            self.configfile,
+            QtCore.QSettings.NativeFormat
+        )
         self.extName = ['.md', '.mkd', '.markdown']
         if os.path.exists(self.configfile):
             extensions = readListFromSettings(self.qsettings,
@@ -38,7 +41,10 @@ class Generator():
                 self.extName.remove(defExt)
                 self.extName.insert(0, defExt)
                 self.exts = extensions
-                self.md = markdown.Markdown(extensions, extension_configs=extCfg)
+                self.md = markdown.Markdown(
+                    extensions,
+                    extension_configs=extCfg
+                )
         else:
             print("ERROR: Not a valid mikidown notebook folder")
             sys.exit(1)
@@ -72,13 +78,21 @@ class Generator():
         def recursiveAddPath(filePath):
             """ recursively add files and directories to watcher """
             watcher.addPath(filePath)
-            fileList = QtCore.QDir(filePath).entryInfoList(QtCore.QDir.Dirs | QtCore.QDir.Files | QtCore.QDir.NoDotAndDotDot)
+            fileList = QtCore.QDir(filePath).entryInfoList(
+                QtCore.QDir.Dirs
+                | QtCore.QDir.Files
+                | QtCore.QDir.NoDotAndDotDot
+            )
             for f in fileList:
                 recursiveAddPath(f.absoluteFilePath())
 
         def directoryChanged(filePath):
             watchedFiles = watcher.directories() + watcher.files()
-            fileList = QtCore.QDir(filePath).entryInfoList(QtCore.QDir.Dirs | QtCore.QDir.Files | QtCore.QDir.NoDotAndDotDot)
+            fileList = QtCore.QDir(filePath).entryInfoList(
+                QtCore.QDir.Dirs
+                | QtCore.QDir.Files
+                | QtCore.QDir.NoDotAndDotDot
+            )
             for f in fileList:
                 if f.absoluteFilePath() not in watchedFiles:
                     watcher.addPath(f.absoluteFilePath())
@@ -128,9 +142,11 @@ class Generator():
             htmlfile = os.path.join(self.htmlpath, parent + ".html")
 
         noteDir = QtCore.QDir(notepath)
-        notesList = noteDir.entryInfoList(['*.md', '*.mkd', '*.markdown'],
-                                          QtCore.QDir.NoFilter,
-                                          QtCore.QDir.Name|QtCore.QDir.IgnoreCase)
+        notesList = noteDir.entryInfoList(
+            ['*.md', '*.mkd', '*.markdown'],
+            QtCore.QDir.NoFilter,
+            QtCore.QDir.Name | QtCore.QDir.IgnoreCase
+        )
         nl = [note.completeBaseName() for note in notesList]
         noduplicate = list(set(nl))
         noduplicate.sort(key=str.lower)
@@ -169,10 +185,14 @@ class Generator():
         html.open(QtCore.QIODevice.WriteOnly)
         savestream = QtCore.QTextStream(html)
         savestream.setCodec("UTF-8")
-        savestream << '<html>\n<head>\n' \
-                      '<meta charset="utf-8">\n' \
-                      '<link rel="stylesheet" href="/css/notebook.css" type="text/css" />\n' \
-                      '</head>\n'
+        savestream << (
+            '<!DOCTYPE html>\n'
+            '<html>\n'
+            '<head>\n'
+            '<meta charset="utf-8">\n'
+            '<link rel="stylesheet" href="/css/notebook.css" type="text/css" />\n'
+            '</head>\n'
+        )
         savestream << "<body>\n"
         savestream << "<h1>"
         savestream << "Mikidown Index"
@@ -201,7 +221,8 @@ class Generator():
 
         savestream << (
             '<!DOCTYPE html>\n'
-            '<html>\n<head>\n'
+            '<html>\n'
+            '<head>\n'
             '<meta charset="utf-8">\n'
             '<link rel="stylesheet" href="/css/notebook.css" type="text/css" />\n'
             '</head>\n'

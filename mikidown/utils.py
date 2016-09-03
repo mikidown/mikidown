@@ -109,8 +109,10 @@ class LineEditDialog(QtWidgets.QDialog):
 
         self.editor = QtWidgets.QLineEdit()
         editorLabel.setBuddy(self.editor)
-        self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok |
-                                                    QtWidgets.QDialogButtonBox.Cancel)
+        self.buttonBox = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok
+            | QtWidgets.QDialogButtonBox.Cancel
+        )
         self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
         layout = QtWidgets.QGridLayout()
         layout.addWidget(editorLabel, 0, 0)
@@ -184,13 +186,15 @@ def parseHeaders(source, strip_fenced_block=False, strip_ascii_math=False):
 
     # copied from the fenced block code
     FENCED_BLOCK_RE = re.compile(r'''
-(?P<fence>^(?:~{3,}|`{3,}))[ ]*         # Opening ``` or ~~~
-(\{?\.?(?P<lang>[a-zA-Z0-9_+-]*))?[ ]*  # Optional {, and lang
+        (?P<fence>^(?:~{3,}|`{3,}))[ ]*         # Opening ``` or ~~~
+        (\{?\.?(?P<lang>[a-zA-Z0-9_+-]*))?[ ]*  # Optional {, and lang
 # Optional highlight lines, single- or double-quote-delimited
-(hl_lines=(?P<quot>"|')(?P<hl_lines>.*?)(?P=quot))?[ ]*
-}?[ ]*\n                                # Optional closing }
-(?P<code>.*?)(?<=\n)
-(?P=fence)[ ]*$''', re.MULTILINE | re.DOTALL | re.VERBOSE)
+        (hl_lines=(?P<quot>"|')(?P<hl_lines>.*?)(?P=quot))?[ ]*
+        }?[ ]*\n                                # Optional closing }
+        (?P<code>.*?)(?<=\n)
+        (?P=fence)[ ]*$''',
+        re.MULTILINE| re.DOTALL | re.VERBOSE
+    )
 
     filtered_source = source
     #if applicable, strip out any trouble text before we start parsing the headers
@@ -198,14 +202,22 @@ def parseHeaders(source, strip_fenced_block=False, strip_ascii_math=False):
         m = FENCED_BLOCK_RE.search(filtered_source)
         while m is not None:
             nfillers = (m.end() - m.start())
-            filtered_source = FENCED_BLOCK_RE.sub("\n"*nfillers, filtered_source, count=1)
+            filtered_source = FENCED_BLOCK_RE.sub(
+                "\n" * nfillers,
+                filtered_source,
+                count=1
+            )
             m = FENCED_BLOCK_RE.search(filtered_source)
 
     if strip_ascii_math:
         m = ASCIIMATHML_RE.search(filtered_source)
         while m is not None:
             nfillers = (m.end() - m.start())
-            filtered_source = ASCIIMATHML_RE.sub("\n"*nfillers, filtered_source, count=1)
+            filtered_source = ASCIIMATHML_RE.sub(
+                "\n" * nfillers,
+                filtered_source,
+                count=1
+            )
             m = ASCIIMATHML_RE.search(filtered_source)
 
 

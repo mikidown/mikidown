@@ -43,10 +43,14 @@ class Sandbox():
 
     def setText(self):
         self.window.liveView(True)
-        self.window.notesEdit.setText("# head1\n\n"
-                                      "## head2\n"
-                                      "[subpageOne](pageOne/subpageOne)")
-        self.window.notesEdit.document().setModified() #isn't flagged as modified if programatically changed
+        self.window.notesEdit.setText(
+            "# head1\n\n"
+            "## head2\n"
+            "[subpageOne](pageOne/subpageOne)"
+        )
+
+        #isn't flagged as modified if programatically changed
+        self.window.notesEdit.document().setModified()
         self.window.saveCurrentNote()
         self.window.notesView.updateView()
 
@@ -56,7 +60,11 @@ class Sandbox():
         element = elemCol.at(2)
         # see http://stackoverflow.com/questions/1219880/how-to-follow-a-link-in-qwebkit
         # for more info
-        element.evaluateJavaScript("var evObj = document.createEvent('MouseEvents');evObj.initEvent( 'click', true, true );this.dispatchEvent(evObj);")
+        element.evaluateJavaScript(
+            "var evObj = document.createEvent('MouseEvents');"
+            "evObj.initEvent( 'click', true, true );"
+            "this.dispatchEvent(evObj);"
+        )
 
         noteName = self.window.notesTree.currentItem().text(0)
 
@@ -65,13 +73,18 @@ class Sandbox():
 
     def pageLink(self):
         self.window.notesEdit.setText("[head2](pageTwo#head2)")
-        self.window.notesEdit.document().setModified() #isn't flagged as modified if programatically changed
+
+        #isn't flagged as modified if programatically changed
+        self.window.notesEdit.document().setModified()
         self.window.saveCurrentNote()
         self.window.notesView.updateView()
 
-        element = self.window.notesView.page(
-        ).mainFrame().findFirstElement("a")
-        element.evaluateJavaScript("var evObj = document.createEvent('MouseEvents');evObj.initEvent( 'click', true, true );this.dispatchEvent(evObj);")
+        element = self.window.notesView.page().mainFrame().findFirstElement("a")
+        element.evaluateJavaScript(
+            "var evObj = document.createEvent('MouseEvents');"
+            "evObj.initEvent( 'click', true, true );"
+            "this.dispatchEvent(evObj);"
+        )
 
         noteName = self.window.notesTree.currentItem().text(0)
         assert(noteName == "pageTwo")
