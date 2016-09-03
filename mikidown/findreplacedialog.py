@@ -1,9 +1,5 @@
-
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore, QtGui, QtWidgets
-"""from PyQt4.QtCore import QRegExp, Qt
-from PyQt4.QtGui import QGridLayout, QDialog, QCheckBox, QPushButton, QLabel, QTextDocument, QLineEdit
-"""
 import re
 
 class FindReplaceDialog(QtWidgets.QDialog):
