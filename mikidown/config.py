@@ -72,7 +72,7 @@ class Setting():
             self.fileExt = ""
             self.attachmentImage = []
             self.attachmentDocument = []
-            self.version = None
+            self.version = (0,)
             self.geometry = None
             self.windowstate = None
             self.mathjax = ''
