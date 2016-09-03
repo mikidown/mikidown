@@ -1,6 +1,7 @@
 """
 The mainwindow module.
 """
+from xml.etree import ElementTree as ET
 import os
 import shutil
 import re
@@ -1065,12 +1066,25 @@ class MikiWindow(QtWidgets.QMainWindow):
                 term = r.highlights("content")
                 results.append([title, path, term])
 
-            html = ""
+            html = []
             for title, path, hi in results:
-                html += ("<p><a href='" + path + "'>" + title +
-                         "</a><br/><span class='path'>" +
-                         path + "</span><br/>" + hi + "</p>")
-            self.searchView.setHtml(html)
+                link = ET.Element('a', href=path)
+                link.text = title
+
+                pspan = ET.Element('span', attrib={'class': 'path'})
+                pspan.text = path
+                search_result = '<p>{0}</p>'.format(
+                    '<br/>'.join(
+                        [
+                            ET.tostring(link, encoding='unicode'),
+                            ET.tostring(pspan, encoding='unicode'),
+                            hi,
+                        ]
+                    )
+                )
+
+                html.append(search_result)
+            self.searchView.setHtml(''.join(html))
             print("Finished searching", pattern)
 
     def whoosh_index(self):
