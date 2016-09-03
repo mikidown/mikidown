@@ -226,8 +226,9 @@ class MikiWindow(QtWidgets.QMainWindow):
                 defaultValue="0"
             ).split(".")
         ))
+        nb_version = tuple(map(int, self.settings.version.split(".")))
 
-        if self.settings.version < __version_info__ or ui_version < __version_info__:
+        if nb_version < __version_info__ or ui_version < __version_info__:
             self.changelogHelp()
             self.settings.qsettings.setValue("version", __version__)
             Mikibook.settings.setValue("version", __version__)
