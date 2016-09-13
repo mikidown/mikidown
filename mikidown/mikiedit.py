@@ -4,11 +4,7 @@ from multiprocessing import Process
 
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore, QtGui, QtWidgets, QtNetwork
-"""
-from PyQt4.QtCore import Qt, QDir, QFile, QFileInfo, QMimeData, QIODevice, QTextStream, QUrl
-from PyQt4.QtGui import QAction, QCursor, QFileDialog, QFont, QTextCursor, QTextEdit, QMessageBox, QKeySequence, QApplication
-from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkRequest
-"""
+
 import markdown
 from whoosh.index import open_dir
 from whoosh.writing import AsyncWriter
