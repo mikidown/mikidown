@@ -10,8 +10,6 @@ sys.path.append(os.path.dirname(__file__))
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-#from Qt.QtCore import QSettings, QTranslator, QLocale
-#from Qt.QtGui import QApplication, QIcon, QMessageBox
 
 import mikidown.mikidown_rc
 

@@ -23,8 +23,14 @@ os.environ["__GEN_DOCS__"] = "1"
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
 
+# Were in api_docs/ is HERE
 HERE_PATH =  os.path.abspath( os.path.dirname( __file__ ))
+
+# ROOT_PATH is "parent" above HERE
 ROOT_PATH = os.path.abspath( HERE_PATH + "/../")
+# If the ROOT path is not in sys.path, then add it
+# eg it might be an install, so this forces this
+# repos dir to be the first to "find"
 if sys.path.count(ROOT_PATH) == 0:
 	sys.path.insert(0, ROOT_PATH)
 

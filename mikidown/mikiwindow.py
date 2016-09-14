@@ -1264,7 +1264,15 @@ class MikiWindow(QtWidgets.QMainWindow):
                           top-level widgets
             saveState: Restores the state of this mainwindow's toolbars
                        and dockwidgets
+            BUG: here cos we want a quit or minimize to tray and a popup
+                 we dont wanna crash the application with out warning and WTF atmo
+                 this is dark stuff.. across xpatform btw so help useful.. said pedro..
+                 We also want to expose the settings in a simple way....
+                 Am not comfartable with the Qt.ini.. stuff
+                 and even using yaml, json, etc even in markdown
+
         """
+
         minimizeToTray = Mikibook.settings.value(
             'minimizeToTray',
             type=bool,
