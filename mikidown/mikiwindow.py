@@ -1278,6 +1278,8 @@ class MikiWindow(QtWidgets.QMainWindow):
             type=bool,
             defaultValue=False
         )
+        print("minimizeToTray", minimizeToTray)
+
         canMinimizeToTray = False
         if self.tray is not None:
             canMinimizeToTray = self.tray.isVisible()
@@ -1287,6 +1289,8 @@ class MikiWindow(QtWidgets.QMainWindow):
             event.ignore()
             return
 
+        ## @pedro ntoes that the bug is here
+        ## cos we want to minimize to trray and not Quit. .unless warned..
         self.saveCurrentNote()
         self.ix.close()
         self.notesEdit.ix.close()

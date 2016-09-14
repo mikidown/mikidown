@@ -12,6 +12,7 @@ def docs_build():
 
     # copy some stuff
     #local("cp ./images/favicon.* ./api_docs/_static/")
+    docs_gen_rst_index()
 
     ## run build
     local("/usr/bin/python3 /usr/local/bin/sphinx-build -a  -b html ./api_docs/ ./build/api_docs")
