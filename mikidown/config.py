@@ -4,8 +4,7 @@ import re
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-#from PyQt4.QtCore import QDir, QFile, QSettings, Qt
-#from PyQt4.QtGui  import QStandardItem, QStandardItemModel, QFileSystemModel
+
 from whoosh import fields
 import markdown
 
@@ -15,6 +14,9 @@ NOT_EXT = re.compile(
     r"Failed to initiate extension '([^']+)':"
     " 'module' object has no attribute 'makeExtension'"
 )
+
+## @pedro says.. this is out "definitive version".. and a pain cos it should be in __init__
+## othersie whole module has to be loaded
 
 __appname__ = 'mikidown'
 __version_info__ = (

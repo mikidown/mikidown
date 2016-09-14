@@ -8,13 +8,6 @@ from copy import deepcopy
 
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore, QtGui, QtWidgets
-"""
-from PyQt4.QtCore import Qt, QDir, QFile, QSettings, QSize
-from PyQt4.QtGui import (QAbstractItemDelegate, QAbstractItemView, QColor, QDialog, QDialogButtonBox, 
-                         QFileDialog, QFont, QGridLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem,
-                         QPen, QPushButton, QStyle, QVBoxLayout, QTabWidget, QWidget, QBrush, QTreeWidget,
-                         QTreeWidgetItem, QSpinBox, QScrollArea, QCheckBox, QIcon, QPalette, QFont)
-"""
 import mikidown
 
 ## TODO look at using QColorDialog ?

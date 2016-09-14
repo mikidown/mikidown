@@ -16,15 +16,20 @@ def docs_build():
     ## run build
     local("/usr/bin/python3 /usr/local/bin/sphinx-build -a  -b html ./api_docs/ ./build/api_docs")
 
-def docs_gen_rst():
-    """Generetes .rst files for each py file"""
+def docs_gen_rst_index():
+    """Generetes an .rst files for each py file in source cos sphinx is stupid"""
+
+    ## The "files" and "namespace" we do not want to document
     no_docs = [
         "Qt", 
         "mikidown_rc"
     ]
+
     mikidown_api = []
     mdx = []
-    
+
+    ## Get a list of all the files in the mikidown/ dir
+    ## Then generate and write the "automodule" .rst "index" stuff for sphinx
     for file in sorted(os.listdir("%s/mikidown" % HERE_PATH)):
         if file.endswith(".py"):
             fn = file[0:-3]
@@ -63,5 +68,4 @@ def docs_gen_rst():
     make_write_toc("api_markdown.rst", "Markdown Extentions", mdx)
         
 
-        
         

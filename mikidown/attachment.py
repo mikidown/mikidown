@@ -2,11 +2,6 @@ import os
 
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore, QtGui, QtWidgets
-"""
-from PyQt4.QtCore import Qt, QDir, QFile, QRect, QSize
-from PyQt4.QtGui import (QColor, QFileIconProvider, QFileSystemModel,
-    QListView, QMenu, QPen, QPixmap, QStyle, QStyledItemDelegate)
-"""
 
 from urllib import parse as urlparse
 
@@ -75,7 +70,7 @@ class AttachmentItemDelegate(QtWidgets.QStyledItemDelegate):
         return QtCore.QSize(self.width + 16, self.height + 16)
 
 class AttachmentView(QtWidgets.QListView):
-    """A dockwidget displaying attachments of the current note."""
+    """AttachmentView displaying attachments of the current note. Can be embedded in a DockView"""
 
     def __init__(self, parent=None):
         super(AttachmentView, self).__init__(parent)
