@@ -55,7 +55,7 @@ class Setting():
             self.attachmentDocument = self.qsettings.value("attachmentDocument")
             self.version = tuple(map(
                 int,
-                self.qsettings.value("version").split(".")
+                self.qsettings.value("version", defaultValue="0").split(".")
             ))
             self.geometry = self.qsettings.value("geometry")
             self.windowstate = self.qsettings.value("windowstate")
