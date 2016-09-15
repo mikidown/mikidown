@@ -13,9 +13,9 @@ if __name__ == '__main__':
         sys.exit("ERROR: `mikidown` requires Python3")
 
     ## py3 is running, so import mikidown which would fail with py2
-    import mikidown
+    import mikidown.__main__
     try:
-        mikidown.main()
+        mikidown.__main__.main()
     except KeyboardInterrupt:
         print('Interrupt', file=sys.stderr)
         sys.exit(1)

@@ -16,17 +16,6 @@ NOT_EXT = re.compile(
     " 'module' object has no attribute 'makeExtension'"
 )
 
-__appname__ = 'mikidown'
-__version_info__ = (
-    # major
-    0,
-    # minor
-    3,
-    # patch
-    11,
-)
-__version__ = '.'.join(map(str, __version_info__))
-
 class Setting():
     def __init__(self, notebooks):
         # Index directory of whoosh, located in notebookPath.

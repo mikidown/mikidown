@@ -10,7 +10,7 @@ import os
 import sys
 from subprocess import check_call
 
-from mikidown.config import __version__
+from mikidown import __version__
 
 # http://sourceforge.net/p/retext/git/ci/master/tree/setup.py
 def build_translations():

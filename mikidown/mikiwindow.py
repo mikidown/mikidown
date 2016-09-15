@@ -16,7 +16,7 @@ from whoosh.writing import AsyncWriter
 
 import mikidown.mikidown_rc
 from .slashpleter import SlashPleter
-from .config import __appname__, __version__, __version_info__
+from .import __appname__, __version__, __version_info__
 from .mikibook import NotebookListDialog, NotebookSettingsDialog, Mikibook, MikidownCfgDialog
 from .mikitree import MikiTree, TocTree
 from .mikiedit import MikiEdit
