@@ -13,6 +13,8 @@ class MikiTray(QtWidgets.QSystemTrayIcon):
     """MikiTray is the little icon on the "systemtray", and like a simple
        background app to show or launch a markdown book
     """
+    DEFAULT_TIMEOUT = 4000
+
     def __init__(self, icon):
         super(MikiTray, self).__init__()
 
@@ -32,7 +34,7 @@ class MikiTray(QtWidgets.QSystemTrayIcon):
 
         self.menu.addAction("Quit", self.on_quit)
 
-        ## Fire up a welcome message after windows start a few sex.later
+        ## Fire up a welcome message after windows start a few secs later
         QtCore.QTimer.singleShot(1000, self.on_after)
         self.activated.connect(self.on_sys_tray_activated )
 
@@ -62,9 +64,8 @@ class MikiTray(QtWidgets.QSystemTrayIcon):
         print("quit")
 
     def on_after(self):
-        s = "We, we, we, Wellcome to `MikiDown`, keep smiling"
-        print(s)
-        print(sss)
+        self.showMessage("Welcome", ".. to mikidown", QtWidgets.QSystemTrayIcon.Information, self.DEFAULT_TIMEOUT)
 
-    def on_sys_tray_activated(self):
-        yes
+
+    def on_sys_tray_activated(self, reason):
+        pass

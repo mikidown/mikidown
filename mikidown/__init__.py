@@ -42,6 +42,7 @@ def main():
         generator = Generator(os.getcwd())
         generator.generate()
         sys.exit(0)
+
     elif args.command == 'sandbox':
         app = QtWidgets.QApplication(sys.argv)
         translator = QtCore.QTranslator()
@@ -54,6 +55,7 @@ def main():
         sandbox = Sandbox()
         app.aboutToQuit.connect(sandbox.cleanUp)
         sys.exit(app.exec_())
+
     elif args.command == 'preview':
         generator = Generator(os.getcwd())
         if args.port:
