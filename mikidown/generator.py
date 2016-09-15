@@ -11,8 +11,7 @@ from threading import Thread
 
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore, QtGui, QtWidgets
-#from PyQt4.QtCore import QDir, QFile, QFileSystemWatcher, QIODevice, QSettings, QTextStream
-#from PyQt4.QtGui import QApplication
+
 
 import markdown
 from .config import readListFromSettings, readDictFromSettings
@@ -23,6 +22,9 @@ class Generator():
 
     def __init__(self, notebookPath):
         self.notebookPath = notebookPath
+
+        # @TODO this dont feel right for pedro.. maybe need Qt to make seperators etc
+        # https://github.com/ShadowKyogre/mikidown/issues/79
         self.notepath = os.path.join(notebookPath, "notes").replace(os.sep, '/')
         self.sitepath = os.path.join(notebookPath, "_site").replace(os.sep, '/')
         self.htmlpath = os.path.join(notebookPath, "_site/notes").replace(os.sep, '/')

@@ -18,20 +18,20 @@ class MikiTray(QtWidgets.QSystemTrayIcon):
     def __init__(self, icon):
         super(MikiTray, self).__init__()
 
+        ## initialize "pointers" to open windows
+        self.registered_windows = OrderedDict([])
+
         ## set icon for systray and make it visible
         self.setIcon(icon)
         self.setVisible(True)
 
         ## Create the systray menu and dropdown
         self.menu = QtWidgets.QMenu()
-
-        ## initialize its "pointers" to open windows
-        self.registered_windows = OrderedDict([])
-
-        ## The the Menu for le systray backend staff
         self.setContextMenu(self.menu)
 
-
+        ## add standard menu items
+        self.menu.addSeparator()
+        self.menu.addAction("Settings", self.on_settings)
         self.menu.addAction("Quit", self.on_quit)
 
         ## Fire up a welcome message after windows start a few secs later
@@ -58,14 +58,23 @@ class MikiTray(QtWidgets.QSystemTrayIcon):
             del self.registered_windows[window]
 
 
+
+    def on_after(self):
+        self.showMessage("Welcome", ".. to mikidown click me for more", QtWidgets.QSystemTrayIcon.Information, self.DEFAULT_TIMEOUT)
+
+
+    def on_sys_tray_activated(self, reason):
+        if reason == QtWidgets.QSystemTrayIcon.Trigger:
+            #self.raise_()
+            self.menu.show()
+
+
     def on_quit(self):
         ## how dow we kill ?
         ## todo list definate
         print("quit")
 
-    def on_after(self):
-        self.showMessage("Welcome", ".. to mikidown", QtWidgets.QSystemTrayIcon.Information, self.DEFAULT_TIMEOUT)
+    def on_settings(self):
+        ## todo list definate
+        print("TODO: show settings")
 
-
-    def on_sys_tray_activated(self, reason):
-        pass

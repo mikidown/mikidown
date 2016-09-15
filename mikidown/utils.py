@@ -10,10 +10,8 @@ from markdown.extensions.headerid import slugify, unique
 
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore, QtGui, QtWidgets
-"""
-from PyQt4.QtCore import Qt, QFile, QRect
-from PyQt4.QtGui import (QDialog, QDialogButtonBox, QGridLayout, QIcon, QLabel, QLineEdit, QMessageBox, QPainter, QPixmap)
-"""
+
+
 METADATA_CHECKER = re.compile(r'((?: {0,3}[\w\-]+:.*)(?:(?:\n {4,}.+)|(?:\n {0,3}[\w\-]+:.*))*)')
 
 TTPL_COL_DATA = Qt.ToolTipRole
@@ -62,6 +60,7 @@ class Event(list):
     def __repr__(self):
         return "Event(%s)" % list.__repr__(self)
 
+
 class ViewedNoteIcon(QtGui.QIcon):
     def __init__(self, num, parent=None):
         super(ViewedNoteIcon, self).__init__(parent)
@@ -83,9 +82,11 @@ def confirmAction(title, msg, parent=None):
         )
     )
 
-
+# @TODO all these constants need to be in __init__ said pedro
 NOTE_EXTS = ['.md', '.markdown', '.mkd']
 IMAGE_EXTS = ['', '.jpg']
+
+
 class LineEditDialog(QtWidgets.QDialog):
     """ A dialog asking for page/file name.
         It also checks for name crash.
