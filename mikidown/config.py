@@ -17,7 +17,6 @@ NOT_EXT = re.compile(
 
 ## @pedro says.. this is out "definitive version".. and a pain cos it should be in __init__
 ## othersie whole module has to be loaded
-
 __appname__ = 'mikidown'
 __version_info__ = (
     # major
@@ -28,6 +27,7 @@ __version_info__ = (
     11,
 )
 __version__ = '.'.join(map(str, __version_info__))
+
 
 class Setting():
     def __init__(self, notebooks):
@@ -199,14 +199,21 @@ class Setting():
 
         # Image file types that will be copied to attachmentDir
         # Inserted as image link
+        # @TOdo said pedro.. make all these a constants.. eg is_img(filename)
+        # whether in utils, or even settings.. is dilema..
         if not self.attachmentImage:
+            #@ TODO make into constants and a matching "case insesitive" valid..
+            # we also need to chack it its binary,vs test eg someone saving a cool jpeg as .md
+            # is_image() might be cool
             self.attachmentImage = [".jpg", ".jpeg", ".png", ".gif", ".svg"]
+            # we need to chack valuse before write.. thinks @pedro
             self.qsettings.setValue("attachmentImage", self.attachmentImage)
 
         # Document file types that will be copied to attachmentDir
         # Inserted as link
         if not self.attachmentDocument:
-            self.attachmentDocument = [".pdf", ".doc", ".odt"]
+            ## @todo we need to have these and valid as sonct as above..
+            self.attachmentDocument = ["Pdf", "PDFF", ".pdf", ".doc", ".odt"]
             self.qsettings.setValue(
                 "attachmentDocument",
                 self.attachmentDocument
@@ -245,6 +252,7 @@ class Setting():
 
             self.version = '0'
 
+        ## This is why @pedromorgan register mathjax, so we ensure its versioned ;-)
         if not self.mathjax:
             self.mathjax = 'http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
             self.qsettings.setValue('mathJax', self.mathjax)

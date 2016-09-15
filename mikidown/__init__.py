@@ -34,7 +34,7 @@ from .utils import confirmAction
 
 def main():
 
-    parser = argparse.ArgumentParser(description='A note taking application, featuring markdown syntax')
+    parser = argparse.ArgumentParser(description='`mikidown` is a note taking application using markdown for syntax and content')
     subparsers = parser.add_subparsers(dest='command')
 
     parser_generate = subparsers.add_parser('generate',
