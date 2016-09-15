@@ -382,6 +382,8 @@ class MikiWindow(QtWidgets.QMainWindow):
         )
         self.actions.update(delPage=actionDelPage)
 
+        ## @todo This action needs to be callable globally.. probably in tray
+        ## so this whould not be here, but instead a "signal to launcher object"
         actionQuit = self.act(
             self.tr('&Quit'),
             self.forceClose,
@@ -911,19 +913,31 @@ class MikiWindow(QtWidgets.QMainWindow):
         shutil.rmtree(self.settings.indexdir)
         self.setupWhoosh()
 
-    def act(self, name, trig, shortcut=None, checkable=False,
+    def act(self, text, trig, shortcut=None, checkable=False,
             icon=None, tooltip=None):
-        """ A wrapper to several QAction methods """
+        """A quick way to add "global" actions, and a wrapper to several QAction items/callbacks """
+
+        ## Create action with text and icon if there is one
+        action = QtWidgets.QAction(text, self)
         if icon:
-            action = QtWidgets.QAction(icon, name, self)
-        else:
-            action = QtWidgets.QAction(name, self)
+            action.setIcon(icon)
+
+
+        ## Add shortcut if its set
         if shortcut:
             action.setShortcut(QtGui.QKeySequence(shortcut))
+
+        ## set checkable
         action.setCheckable(checkable)
+
+        ## set tooltip if set
         if tooltip:
             action.setToolTip(tooltip)
+
+        ## Connect action to callback
         action.triggered.connect(trig)
+
+        ## return configured action ;-)
         return action
 
     def edit(self, viewmode):
@@ -1290,12 +1304,15 @@ class MikiWindow(QtWidgets.QMainWindow):
             return
 
         ## @pedro ntoes that the bug is here
-        ## cos we want to minimize to trray and not Quit. .unless warned..
+        ## cos we want to minimize to tray and not Quit. .unless warned..
         self.saveCurrentNote()
         self.ix.close()
         self.notesEdit.ix.close()
         if hasattr(self.notesTree, 'ix'):
             self.notesTree.ix.close()
+
+        # @pedro notes this is probalby problem..
+        ## we want to save first the data, and confirm lock path..
         self.settings.saveGeometry(self.saveGeometry())
         self.settings.saveWindowState(self.saveState())
         event.accept()
