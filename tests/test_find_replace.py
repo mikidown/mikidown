@@ -5,7 +5,6 @@ from PyQt5.QtWidgets import QApplication, QTextEdit
 
 import mikidown
 
-from mikidown.mikitree import TocTree
 from mikidown.findreplacedialog import FindReplaceDialog
 
 app = QApplication(sys.argv)
