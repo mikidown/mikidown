@@ -15,7 +15,6 @@ from PyQt4.QtGui import (QAbstractItemDelegate, QAbstractItemView, QColor, QDial
                          QPen, QPushButton, QStyle, QVBoxLayout, QTabWidget, QWidget, QBrush, QTreeWidget,
                          QTreeWidgetItem, QSpinBox, QScrollArea, QCheckBox, QIcon, QPalette, QFont)
 """
-import mikidown
 
 ## TODO look at using QColorDialog ?
 try:
@@ -24,6 +23,8 @@ try:
 except ImportError as e:
     print("Can't find slickpicker, falling back to QLineEdit for editing mikidown colors")
     BETTER_COLOR_PICKER = False
+
+from . import mikiwindow
 from .utils import allMDExtensions
 from .config import Setting, readListFromSettings, writeListToSettings, writeDictToSettings
 from .fontbutton import QFontButton
@@ -363,7 +364,7 @@ class NotebookListDialog(QtWidgets.QDialog):
         notebookName = self.notebookList.currentItem().data(Qt.DisplayRole)
 
         settings = Setting([[notebookName, notebookPath]])
-        window = mikidown.MikiWindow(settings)
+        window = mikiwindow.MikiWindow(settings)
         window.show()
         count = self.notebookList.count()
         notebooks = []
