@@ -15,8 +15,8 @@ from whoosh.qparser import QueryParser, RegexPlugin
 from whoosh.writing import AsyncWriter
 
 import mikidown.mikidown_rc
+from . import __appname__, __version__, __version_info__
 from .slashpleter import SlashPleter
-from .import __appname__, __version__, __version_info__
 from .mikibook import NotebookListDialog, NotebookSettingsDialog, Mikibook, MikidownCfgDialog
 from .mikitree import MikiTree, TocTree
 from .mikiedit import MikiEdit
