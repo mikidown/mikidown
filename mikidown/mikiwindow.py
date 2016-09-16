@@ -277,7 +277,10 @@ class MikiWindow(QtWidgets.QMainWindow):
             self.notesEdit.setFontPointSize(fntsize)
         h = MikiHighlighter(
             parent=self.notesEdit,
-            scale_font_sizes=header_scales_font
+            scale_font_sizes=header_scales_font,
+            baseFontFam=fnt,
+            baseFontSize=fntsize,
+            color_settings=Mikibook.highlighterColors()
         )
         tw = Mikibook.settings.value('tabWidth', type=int, defaultValue=4)
         qfm = QtGui.QFontMetrics(h.patterns[0][1].font())

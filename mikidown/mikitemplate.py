@@ -154,7 +154,13 @@ class EditBodyTemplateDialog(QtWidgets.QDialog):
         if fnt is not None:
             self.templateEdit.setFontFamily(fnt)
             self.templateEdit.setFontPointSize(fntsize)
-        h = MikiHighlighter(parent=self.templateEdit, scale_font_sizes=header_scales_font)
+        h = MikiHighlighter(
+            parent=self.templateEdit,
+            scale_font_sizes=header_scales_font,
+            baseFontFam=fnt,
+            baseFontSize=fntsize,
+            color_settings=Mikibook.highlighterColors()
+        )
         tw = Mikibook.settings.value('tabWidth', type=int, defaultValue=4)
         qfm = QtGui.QFontMetrics(h.patterns[0][1].font())
         self.templateEdit.setTabStopWidth(tw * qfm.width(' '))

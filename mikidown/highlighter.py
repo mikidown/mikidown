@@ -14,20 +14,14 @@ class MikiHighlighter(QtGui.QSyntaxHighlighter):
 
     WORDS = r'(?iu)[\w\']+'
 
-    def __init__(self, parent=None, scale_font_sizes=True):
+    def __init__(self, parent=None, scale_font_sizes=True, baseFontFam=None, baseFontSize=12, color_settings=None):
         super(MikiHighlighter, self).__init__(parent)
-        baseFontSize = Mikibook.settings.value(
-            'editorFontSize',
-            type=int,
-            defaultValue=12
-        )
-        baseFontFam = Mikibook.settings.value('editorFont', defaultValue=None)
         NUM = 16
         self.patterns = []
         regexp = [0] * NUM
         font = [0]*NUM
         color = [0]*NUM
-        color_settings = Mikibook.highlighterColors()
+
         # 0: html tags - <pre></pre>
         # less naive html regex
         regexp[0] = r'</?\w+((\s+\w+(\s*=\s*(?:".*?"|\'.*?\'|[^\'">\s]+))?)+\s*|\s*)/?>'
