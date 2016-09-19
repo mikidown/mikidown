@@ -16,6 +16,8 @@ from whoosh.writing import AsyncWriter
 
 import mikidown.mikidown_rc
 from . import __appname__, __version__, __version_info__
+
+from .config import Setting
 from .slashpleter import SlashPleter
 from .mikibook import NotebookListDialog, NotebookSettingsDialog, Mikibook, MikidownCfgDialog
 from .mikitree import MikiTree, TocTree
@@ -27,6 +29,26 @@ from .attachment import AttachmentView
 from .highlighter import MikiHighlighter
 from .findreplacedialog import FindReplaceDialog
 from .utils import Event, LineEditDialog, ViewedNoteIcon, parseHeaders, parseTitle, METADATA_CHECKER, createJS
+
+def openNotebook(parent=None):
+    dialog = NotebookListDialog(parent=parent)
+
+    if dialog.exec_() == QtWidgets.QDialog.Rejected:
+        return
+
+    notebookPath = dialog.notebookList.currentItem().data(Qt.UserRole)
+    notebookName = dialog.notebookList.currentItem().data(Qt.DisplayRole)
+
+    settings = Setting([[notebookName, notebookPath]])
+    window = MikiWindow(settings)
+    window.show()
+    count = dialog.notebookList.count()
+    notebooks = []
+    for i in range(count):
+        name = dialog.notebookList.item(i).data(Qt.DisplayRole)
+        path = dialog.notebookList.item(i).data(Qt.UserRole)
+        notebooks.append([name, path])
+    Mikibook.write(notebooks)
 
 class MikiSepNote(QtWidgets.QDockWidget):
     #This is a static widget! It is not meant to dynamically update
@@ -338,7 +360,7 @@ class MikiWindow(QtWidgets.QMainWindow):
 
         actionOpenNotebook = self.act(
             self.tr('&Open Notebook...'),
-            self.openNotebook,
+            lambda: (openNotebook(parent=self)),
             QtGui.QKeySequence.Open
         )
         self.actions.update(openNotebook=actionOpenNotebook)
@@ -888,15 +910,12 @@ class MikiWindow(QtWidgets.QMainWindow):
         self.notesTree.sortItems(0, Qt.AscendingOrder)
         self.notesTree.setCurrentItem(item)
 
-    def openNotebook(self):
-        dialog = NotebookListDialog(self)
-        if dialog.exec_():
-            pass
-
     def notebookSettings(self):
-        dialog = NotebookSettingsDialog(self)
-        if dialog.exec_():
-            pass
+        dialog = NotebookSettingsDialog(self.settings, parent=self)
+        if dialog.exec_() == QtWidgets.QDialog.Accepted:
+            # then make mikidown use these settings NOW
+            curitem = self.notesTree.currentItem()
+            self.currentItemChangedWrapper(curitem, curitem)
 
     def notebookTemplates(self):
         dialog = ManageTemplatesDialog(self.settings, parent=self)
@@ -905,9 +924,9 @@ class MikiWindow(QtWidgets.QMainWindow):
 
     def mikidownSettings(self):
         dialog = MikidownCfgDialog(self)
-        if dialog.exec_():
-            pass
-
+        if dialog.exec_() == QtWidgets.QDialog.Accepted:
+            # then make mikidown use these settings NOW
+            self.loadHighlighter()
 
     def reIndex(self):
         """ Whoosh index breaks for unknown reasons (sometimes) """

@@ -24,9 +24,8 @@ except ImportError as e:
     print("Can't find slickpicker, falling back to QLineEdit for editing mikidown colors")
     BETTER_COLOR_PICKER = False
 
-from . import mikiwindow
 from .utils import allMDExtensions
-from .config import Setting, readListFromSettings, writeListToSettings, writeDictToSettings
+from .config import readListFromSettings, writeListToSettings, writeDictToSettings
 from .fontbutton import QFontButton
 
 class ListDelegate(QtWidgets.QAbstractItemDelegate):
@@ -120,9 +119,11 @@ class NotebookExtSettingsDialog(QtWidgets.QDialog):
 class NotebookSettingsDialog(QtWidgets.QDialog):
     """Dialog for adjusting notebook settings"""
     
-    def __init__(self, parent=None):
-        super(NotebookSettingsDialog, self).__init__(parent)
+    def __init__(self, settings, parent=None):
+        super().__init__(parent=parent)
         self.setWindowTitle(self.tr("Notebook settings - mikidown"))
+
+        self.settings = settings
         
         # widgets for tab 1
         self.mdExts = QtWidgets.QListWidget()
@@ -130,7 +131,7 @@ class NotebookSettingsDialog(QtWidgets.QDialog):
         self.moveUp = QtWidgets.QPushButton('<<')
         self.moveDown = QtWidgets.QPushButton('>>')
         self.configureExtension = QtWidgets.QPushButton(self.tr('Edit Settings for this extension'))
-        self.tmpdict = deepcopy(self.parent().settings.extcfg)
+        self.tmpdict = deepcopy(self.settings.extcfg)
         
         # widgets for tab 2
         self.fExtEdit = QtWidgets.QLineEdit()
@@ -151,10 +152,10 @@ class NotebookSettingsDialog(QtWidgets.QDialog):
         # initialization functions
         self.initExtList()
         self.mdExts.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
-        self.mjEdit.setText(self.parent().settings.mathjax)
-        self.attImgEdit.setText(', '.join(self.parent().settings.attachmentImage))
-        self.attDocEdit.setText(', '.join(self.parent().settings.attachmentDocument))
-        self.fExtEdit.setText(self.parent().settings.fileExt)
+        self.mjEdit.setText(self.settings.mathjax)
+        self.attImgEdit.setText(', '.join(self.settings.attachmentImage))
+        self.attDocEdit.setText(', '.join(self.settings.attachmentDocument))
+        self.fExtEdit.setText(self.settings.fileExt)
         
         # set up tab 1
         layout = QtWidgets.QGridLayout(markupTab)
@@ -197,14 +198,14 @@ class NotebookSettingsDialog(QtWidgets.QDialog):
             self.tmpdict[ext] = dialog.configToList()
 
     def initExtList(self):
-        extset = set(self.parent().settings.extensions)
+        extset = set(self.settings.extensions)
         #for easier performance in checking
-        for ext in self.parent().settings.extensions:
+        for ext in self.settings.extensions:
             item = QtWidgets.QListWidgetItem(ext, self.mdExts)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
             item.setCheckState(Qt.Checked)
 
-        for ext in self.parent().settings.faulty_exts:
+        for ext in self.settings.faulty_exts:
             item = QtWidgets.QListWidgetItem(ext, self.mdExts)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
             item.setBackground(QtGui.QBrush(QtGui.QColor('red')))
@@ -239,7 +240,7 @@ class NotebookSettingsDialog(QtWidgets.QDialog):
 
     def accept(self):
         # write to settings first
-        msettings = self.parent().settings
+        msettings = self.settings
         nbsettings = msettings.qsettings
         
         nbsettings.setValue('mathJax', self.mjEdit.text())
@@ -261,10 +262,7 @@ class NotebookSettingsDialog(QtWidgets.QDialog):
         msettings.extcfg.update(self.tmpdict)
         msettings.md = markdown.Markdown(msettings.extensions, extension_configs=msettings.extcfg)
         
-        # then make mikidown use these settings NOW
-        curitem=self.parent().notesTree.currentItem()
-        self.parent().currentItemChangedWrapper(curitem, curitem)
-        QtGui.QDialog.accept(self)
+        super().accept()
 
 class NotebookListDialog(QtWidgets.QDialog):
     """Display, create, remove, modify notebookList """
@@ -358,23 +356,6 @@ class NotebookListDialog(QtWidgets.QDialog):
             self.notebookList.takeItem(row)
             self.notebookList.insertItem(row+1, item)
             self.notebookList.setCurrentRow(row+1)
-
-    def accept(self):
-        notebookPath = self.notebookList.currentItem().data(Qt.UserRole)
-        notebookName = self.notebookList.currentItem().data(Qt.DisplayRole)
-
-        settings = Setting([[notebookName, notebookPath]])
-        window = mikiwindow.MikiWindow(settings)
-        window.show()
-        count = self.notebookList.count()
-        notebooks = []
-        for i in range(count):
-            name = self.notebookList.item(i).data(Qt.DisplayRole)
-            path = self.notebookList.item(i).data(Qt.UserRole)
-            notebooks.append([name, path])
-        Mikibook.write(notebooks)
-
-        QtWidgets.QDialog.accept(self)
 
 class NewNotebookDlg(QtWidgets.QDialog):
     def __init__(self, parent=None):
@@ -539,8 +520,7 @@ class MikidownCfgDialog(QtWidgets.QDialog):
         QtGui.QIcon.setThemeName(self.iconTheme.text())
 
         #then make mikidown use these settings NOW
-        self.parent().loadHighlighter()
-        QtWidgets.QDialog.accept(self)
+        super().accept(self)
 
 class Mikibook():
     # ~/.config/mikidown/mikidown.conf
