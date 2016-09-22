@@ -18,6 +18,11 @@ app = QApplication(sys.argv)
 
 
 class Monolithic(unittest.TestCase):
+    CLICK_JAVASCRIPT = (
+        "var evObj = document.createEvent('MouseEvents');"
+        "evObj.initEvent('click', true, true);"
+        "this.dispatchEvent(evObj);"
+    )
 
     def step0(self):
         print("\nStep 0: create notebook")
@@ -48,12 +53,9 @@ class Monolithic(unittest.TestCase):
         self.window.saveCurrentNote()
         self.window.notesView.updateView()
 
-        #self.window.notesView.setVisible(True)
         elemCol = self.window.notesView.page().mainFrame().findAllElements("a")
-        element = elemCol.at(2)
-#        print(self.window.notesView.page().mainFrame().toHtml())
-#        print(element.attribute("href"))
-        element.evaluateJavaScript("var evObj = document.createEvent('MouseEvents');evObj.initEvent( 'click', true, true );this.dispatchEvent(evObj);")
+        element = elemCol.at(0)
+        element.evaluateJavaScript(self.CLICK_JAVASCRIPT)
 
         noteName = self.window.notesTree.currentItem().text(0)
         self.assertEqual(noteName, "subpageOne")
@@ -67,7 +69,7 @@ class Monolithic(unittest.TestCase):
 
         element = self.window.notesView.page(
         ).mainFrame().findFirstElement("a")
-        element.evaluateJavaScript("var evObj = document.createEvent('MouseEvents');evObj.initEvent( 'click', true, true );this.dispatchEvent(evObj);")
+        element.evaluateJavaScript(self.CLICK_JAVASCRIPT)
 
         noteName = self.window.notesTree.currentItem().text(0)
         self.assertEqual(noteName, "pageTwo")
