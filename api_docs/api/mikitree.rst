@@ -1,0 +1,4 @@
+mikitree.*
+===================================
+.. automodule:: mikidown.mikitree
+

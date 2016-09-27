@@ -1,0 +1,4 @@
+mikiedit.*
+===================================
+.. automodule:: mikidown.mikiedit
+

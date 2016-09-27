@@ -1,0 +1,4 @@
+mikiwindow.*
+===================================
+.. automodule:: mikidown.mikiwindow
+

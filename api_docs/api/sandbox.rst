@@ -1,0 +1,4 @@
+sandbox.*
+===================================
+.. automodule:: mikidown.sandbox
+

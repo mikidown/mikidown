@@ -1,3 +1,4 @@
+from enum import Enum
 import os
 import re
 import pkgutil
@@ -5,24 +6,87 @@ import pkgutil
 import markdown
 from markdown.extensions import __path__ as extpath
 from markdown.extensions.headerid import slugify, unique
+
+from PyQt5.QtCore import Qt
+from PyQt5 import QtCore, QtGui, QtWidgets
+"""
 from PyQt4.QtCore import Qt, QFile, QRect
 from PyQt4.QtGui import (QDialog, QDialogButtonBox, QGridLayout, QIcon, QLabel, QLineEdit, QMessageBox, QPainter, QPixmap)
-
+"""
 JSCRIPT_TPL = '<script type="text/javascript" src="{}"></script>\n'
 METADATA_CHECKER = re.compile(r'((?: {0,3}[\w\-]+:.*)(?:(?:\n {4,}.+)|(?:\n {0,3}[\w\-]+:.*))*)')
 
-class ViewedNoteIcon(QIcon):
+class TitleType(Enum):
+    FSTRING  = 0
+    DATETIME = 1
+    #COMMAND  = 2
+
+TTPL_COL_DATA = Qt.ToolTipRole
+TTPL_COL_EXTRA_DATA = Qt.UserRole
+
+class Event(list):
+    """
+    Event subscription.
+
+    A list of callable objects. Calling an instance of this will cause a
+    call to each item in the list in ascending order by index.
+
+    Source: http://stackoverflow.com/a/2022629
+
+    Example Usage:
+
+    >>> def f(x):
+    ...     print 'f(%s)' % x
+    >>> def g(x):
+    ...     print 'g(%s)' % x
+    >>> e = Event()
+    >>> e()
+    >>> e.append(f)
+    >>> e(123)
+    f(123)
+    >>> e.remove(f)
+    >>> e()
+    >>> e += (f, g)
+    >>> e(10)
+    f(10)
+    g(10)
+    >>> del e[0]
+    >>> e(2)
+    g(2)
+
+    """
+    def __call__(self, *args, **kwargs):
+        for f in self:
+            f(*args, **kwargs)
+
+    def __repr__(self):
+        return "Event(%s)" % list.__repr__(self)
+
+class ViewedNoteIcon(QtGui.QIcon):
     def __init__(self, num, parent=None):
         super(ViewedNoteIcon, self).__init__(parent)
-        pixmap = QPixmap(16, 16)
+        pixmap = QtGui.QPixmap(16, 16)
         pixmap.fill(Qt.cyan)
-        rect = QRect(0, 0, 16, 16)
-        painter = QPainter(pixmap)
+        rect = QtCore.QRect(0, 0, 16, 16)
+        painter = QtGui.QPainter(pixmap)
         painter.drawText(rect, Qt.AlignHCenter | Qt.AlignVCenter, str(num))
         self.addPixmap(pixmap)
         del painter
 
-class LineEditDialog(QDialog):
+def confirmAction(title, msg, parent=None):
+    return QtWidgets.QMessageBox.question(
+        parent,
+        title, msg,
+        buttons=(
+            QtWidgets.QMessageBox.Yes
+            | QtWidgets.QMessageBox.No
+        )
+    )
+
+
+NOTE_EXTS = ['.md', '.markdown', '.mkd']
+IMAGE_EXTS = ['', '.jpg']
+class LineEditDialog(QtWidgets.QDialog):
     """ A dialog asking for page/file name.
         It also checks for name crash.
     """
@@ -33,21 +97,22 @@ class LineEditDialog(QDialog):
 
         # newPage/newSubpage
         if parent.objectName() in ["mikiWindow", "notesTree"]:
-            editorLabel = QLabel(self.tr("Page Name:"))
-            self.extNames = [".md", ".markdown", ".mkd"]
+            editorLabel = QtWidgets.QLabel(self.tr("Page Name:"))
+            self.extNames = NOTE_EXTS
         # Copy Image to notesEdit
         elif parent.objectName() == "notesEdit":
-            editorLabel = QLabel(self.tr("File Name:"))
-            self.extNames = ["", ".jpg"]
+            editorLabel = QtWidgets.QLabel(self.tr("File Name:"))
+            self.extNames = IMAGE_EXTS
         else:
-            return
+            editorLabel = QtWidgets.QLabel(self.tr("Template Name:"))
+            self.extNames = NOTE_EXTS
 
-        self.editor = QLineEdit()
+        self.editor = QtWidgets.QLineEdit()
         editorLabel.setBuddy(self.editor)
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                          QDialogButtonBox.Cancel)
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
-        layout = QGridLayout()
+        self.buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok |
+                                                    QtWidgets.QDialogButtonBox.Cancel)
+        self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
+        layout = QtWidgets.QGridLayout()
         layout.addWidget(editorLabel, 0, 0)
         layout.addWidget(self.editor, 0, 1)
         layout.addWidget(self.buttonBox, 1, 1)
@@ -62,21 +127,28 @@ class LineEditDialog(QDialog):
         self.editor.selectAll()
 
     def updateUi(self):
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(
+        self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(
             self.editor.text() != "")
 
     def accept(self):
         notePath = os.path.join(self.path, self.editor.text())
 
-        acceptable = True
-        for ext in self.extNames:
-            if QFile.exists(notePath + ext):
-                acceptable = False
-                QMessageBox.warning(self, self.tr("Error"),
-                                    self.tr("File already exists: %s") % notePath + ext)
-                break
+        acceptable, existPath = doesFileExist(notePath, self.extNames)
         if acceptable:
-            QDialog.accept(self)
+            QtWidgets.QDialog.accept(self)
+        else:
+            QtWidgets.QMessageBox.warning(self, self.tr("Error"),
+                        self.tr("File already exists: %s") % existPath)
+
+def doesFileExist(path, altExts):
+    doesntExist = True
+    existPath = None
+    for ext in altExts:
+        if QtCore.QFile.exists(path + ext):
+            doesntExist = False
+            existPath = path + ext
+            break
+    return [doesntExist, existPath]
 
 def allMDExtensions():
     exts=[]
@@ -170,3 +242,18 @@ def parseTitle(source, fallback):
         return title.group(1).strip()
     else:
         return fallback
+
+# http://stackoverflow.com/questions/1736015/debugging-a-pyqt4-app
+def debugTrace():
+    from PyQt5.QtCore import pyqtRemoveInputHook, pyqtRestoreInputHook
+    import pdb
+    import sys
+    pyqtRemoveInputHook()
+    try:
+        debugger = pdb.Pdb()
+        debugger.reset()
+        debugger.do_next(None)
+        user_frame = sys._getframe().f_back
+        debugger.interaction(user_frame, None)
+    finally:
+        pyqtRestoreInputHook()

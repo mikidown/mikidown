@@ -73,6 +73,6 @@ class AutoTextDirectionExtension(Extension):
         md.treeprocessors.add('autotextdir', self.processor, '_begin')
 
 
-def makeExtension(configs={}):
+def makeExtension(configs=None):
+    configs = configs or {}
     return AutoTextDirectionExtension(configs=configs)
-

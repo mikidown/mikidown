@@ -1,0 +1,44 @@
+" http://stackoverflow.com/questions/1533565/how-to-get-visually-selected-text-in-vimscript
+function! GetVisualSelection()
+  " Why is this not a built-in Vim script function?!
+  let [lnum1, col1] = getpos("'<")[1:2]
+  let [lnum2, col2] = getpos("'>")[1:2]
+  let lines = getline(lnum1, lnum2)
+  let lines[-1] = lines[-1][: col2 - (&selection == 'inclusive' ? 1 : 2)]
+  let lines[0] = lines[0][col1 - 1:]
+  return join(lines, "\n")
+endfunction
+
+function! MikiGoToFile(posStart, findKind, pageName, fromVisual)
+	let highlightType = synIDattr(synID(a:posStart[0], a:posStart[1], 0), "name")
+	echom highlightType
+	if highlightType ==# "markdownUrl" && !(a:pageName =~ '^https\?')
+		if a:pageName =~ '^/'
+			exe ":" . a:findKind . " " . fnameescape(a:pageName[1:]) . ".md"
+		else
+			exe ":" . a:findKind . " " . fnameescape(a:pageName)
+		endif
+	else
+		if a:findKind ==# "find"
+			if a:fromVisual
+				normal! gvgf
+			else
+				normal! gf
+			endif
+		elseif a:findKind ==# "tabfind"
+			exe "normal! \<c-w>gf"
+		elseif a:findKind ==# "vertical sfind"
+			exe "normal! \<c-w>f"
+		else
+			return
+		endif
+	endif
+endfunction
+
+if &filetype == 'markdown' && expand('%p:h') =~ expand('<sfile>:p:h')
+	exe 'setlocal path+=' . escape(expand('<sfile>:p:h'), ' ')
+	:nnoremap <buffer> gf :call MikiGoToFile(getpos('.')[1:2], "find", expand('<cfile>'), 0)<CR>
+	:nnoremap <buffer> <c-w>gf :call MikiGoToFile(getpos('.')[1:2], "tabfind", expand('<cfile>'), 0)<CR>
+	:nnoremap <buffer> <c-w>f :call MikiGoToFile(getpos('.')[1:2], "vertical sfind", expand('<cfile>'), 0)<CR>
+	:vnoremap <buffer> gf <Esc>:call MikiGoToFile(getpos("'<")[1:2], "find", GetVisualSelection(), 1)<CR>
+endif

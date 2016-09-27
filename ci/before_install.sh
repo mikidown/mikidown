@@ -1,15 +1,20 @@
 #!/bin/sh
+
+SIPVER="4.16.9"
+PYQTVER="5.5.1"
+
 cd ..
-wget http://sourceforge.net/projects/pyqt/files/sip/sip-4.14.6/sip-4.14.6.tar.gz
-tar -xvf sip-4.14.6.tar.gz
-cd sip-4.14.6
+wget "https://sourceforge.net/projects/pyqt/files/sip/sip-${SIPVER}/sip-${SIPVER}.tar.gz"
+tar -xvf "sip-${SIPVER}.tar.gz"
+cd "sip-${SIPVER}"
 python configure.py
 make
 sudo make install
+
 cd ..
-wget http://sourceforge.net/projects/pyqt/files/PyQt4/PyQt-4.10.1/PyQt-x11-gpl-4.10.1.tar.gz
-tar -xvf PyQt-x11-gpl-4.10.1.tar.gz
-cd PyQt-x11-gpl-4.10.1
+wget "https://sourceforge.net/projects/pyqt/files/PyQt5/PyQt-${PYQTVER}/PyQt-gpl-${PYQTVER}.tar.gz"
+tar -xvf "PyQt-gpl-${PYQTVER}.tar.gz"
+cd "PyQt-gpl-${PYQTVER}"
 python configure.py --confirm-license
 make
 sudo make install

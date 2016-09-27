@@ -1,9 +1,14 @@
 import os
 from threading import Thread
 from multiprocessing import Process
+
+from PyQt5.QtCore import Qt
+from PyQt5 import QtCore, QtGui, QtWidgets, QtNetwork
+"""
 from PyQt4.QtCore import Qt, QDir, QFile, QFileInfo, QMimeData, QIODevice, QTextStream, QUrl
 from PyQt4.QtGui import QAction, QCursor, QFileDialog, QFont, QTextCursor, QTextEdit, QMessageBox, QKeySequence, QApplication
 from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkRequest
+"""
 import markdown
 from whoosh.index import open_dir
 from whoosh.writing import AsyncWriter
@@ -13,18 +18,17 @@ try:
 except ImportError:
     HAS_HTML2TEXT=False
 
+from urllib import parse as urlparse
 from .utils import LineEditDialog, parseTitle, JSCRIPT_TPL, METADATA_CHECKER
 from .mikibook import Mikibook
 
-class MikiEdit(QTextEdit):
-
+class SimpleMikiEdit(QtWidgets.QTextEdit):
     def __init__(self, parent=None):
-        super(MikiEdit, self).__init__(parent)
+        super().__init__(parent)
         self.parent = parent
         self.settings = parent.settings
         self.setFontPointSize(12)
         self.setVisible(False)
-        self.ix = open_dir(self.settings.indexdir)
 
         # Spell checker support
         try:
@@ -38,6 +42,97 @@ class MikiEdit(QTextEdit):
             print("Spell checking unavailable. Need to install dictionary (e.g. aspell-en).")
             self.speller = None
 
+    def insertFromRawHtml(self):
+        qclippy = QtWidgets.QApplication.clipboard()
+        if qclippy.mimeData().hasHtml():
+            self.insertFromMimeData(self.mimeFromText(qclippy.mimeData().html()))
+        else:
+            self.insertFromMimeData(qclippy.mimeData())
+
+    def keyPressEvent(self, event):
+        """ for Qt.Key_Tab, expand as 4 spaces (if expandTab is enabled)
+            for other keys, use default implementation
+        """
+
+        moddies = QtWidgets.QApplication.keyboardModifiers()
+        expandTab = Mikibook.settings.value(
+            'tabInsertsSpaces',
+            type=bool,
+            defaultValue=True
+        )
+        if event.key() == Qt.Key_Tab and expandTab:
+            tabWidth = Mikibook.settings.value('tabWidth', type=int, defaultValue=4)
+            self.insertPlainText(' ' * tabWidth) # use the tabWidth for tabstop!
+        elif moddies & Qt.ControlModifier and moddies & Qt.ShiftModifier and event.key() == Qt.Key_V:
+            self.insertFromRawHtml()
+        else:
+            QtWidgets.QTextEdit.keyPressEvent(self, event)
+
+    def contextMenuEvent(self, event):
+
+        def correctWord(cursor, word):
+            # From QTextCursor doc:
+            # if there is a selection, the selection is deleted and replaced
+            return lambda: cursor.insertText(word)
+
+        popup_menu = self.createStandardContextMenu()
+        paste_action = popup_menu.actions()[6]
+        paste_formatted_action = QtWidgets.QAction(self.tr("Paste raw HTML"), popup_menu)
+        paste_formatted_action.triggered.connect(self.insertFromRawHtml)
+        paste_formatted_action.setShortcut(QtGui.QKeySequence("Ctrl+Shift+V"))
+        popup_menu.insertAction(paste_action, paste_formatted_action)
+
+        # Spellcheck the word under mouse cursor, not self.textCursor
+        cursor = self.cursorForPosition(event.pos())
+        cursor.select(QtGui.QTextCursor.WordUnderCursor)
+
+        text = cursor.selectedText()
+        if self.speller and text:
+            if not self.speller.check(text):
+                lastAction = popup_menu.actions()[0]
+                for word in self.speller.suggest(text)[:10]:
+                    action = QtWidgets.QAction(word, popup_menu)
+                    action.triggered.connect(correctWord(cursor, word))
+                    defaultFamily = QtWidgets.QApplication.font().family()
+                    action.setFont(QtGui.QFont(defaultFamily, weight=QtGui.QFont.Bold))
+                    popup_menu.insertAction(lastAction, action)
+                popup_menu.insertSeparator(lastAction)
+
+        popup_menu.exec_(event.globalPos())
+
+    def mimeFromText(self, text):
+        mime = QtCore.QMimeData()
+        mime.setText(text)
+        return mime
+
+    def createMimeDataFromSelection(self):
+        """ Reimplement this to prevent copied text taken as hasHtml() """
+        plaintext = self.textCursor().selectedText()
+
+        # From QTextCursor doc:
+        # if the selection obtained from an editor spans a line break,
+        # the text will contain a Unicode U+2029 paragraph separator character
+        # instead of a newline \n character
+        text = plaintext.replace('\u2029', '\n')
+        return self.mimeFromText(text)
+
+    def insertFromMimeData(self, source):
+        if source.hasHtml():
+            html = source.html()
+            if HAS_HTML2TEXT:
+                backToMarkdown = html2text.HTML2Text()
+                markdown = backToMarkdown.handle(html)
+                super(SimpleMikiEdit, self).insertFromMimeData(self.mimeFromText(markdown))
+            else:
+                super(SimpleMikiEdit, self).insertFromMimeData(self.mimeFromText(source.text()))
+        else:
+            super(SimpleMikiEdit, self).insertFromMimeData(source)
+
+class MikiEdit(SimpleMikiEdit):
+    def __init__(self, parent=None):
+        super(MikiEdit, self).__init__(parent)
+        self.ix = open_dir(self.settings.indexdir)
+
         self.imageFilter = ""
         self.documentFilter = ""
         for ext in self.settings.attachmentImage:
@@ -48,14 +143,14 @@ class MikiEdit(QTextEdit):
         self.documentFilter = "Document (" + self.documentFilter.strip() + ")"
 
         self.downloadAs = ""
-        self.networkManager = QNetworkAccessManager()
+        self.networkManager = QtNetwork.QNetworkAccessManager()
         self.networkManager.finished.connect(self.downloadFinished)
 
 
     def updateIndex(self):
         ''' Update whoosh index, which cost much computing resource '''
         page = self.parent.notesTree.currentPage()
-        content = self.toPlainText()        
+        content = self.toPlainText()
         try:
             #writer = self.ix.writer()
             writer = AsyncWriter(self.ix)
@@ -77,28 +172,12 @@ class MikiEdit(QTextEdit):
         if reply.error():
             print("Failed to download")
         else:
-            attFile = QFile(self.downloadAs)
-            attFile.open(QIODevice.WriteOnly)
+            attFile = QtCore.QFile(self.downloadAs)
+            attFile.open(QtCore.QIODevice.WriteOnly)
             attFile.write(reply.readAll())
             attFile.close()
             print("Succeeded")
         reply.deleteLater()
-
-    def mimeFromText(self, text):
-        mime = QMimeData()
-        mime.setText(text)
-        return mime
-
-    def createMimeDataFromSelection(self):
-        """ Reimplement this to prevent copied text taken as hasHtml() """
-        plaintext = self.textCursor().selectedText()
-
-        # From QTextCursor doc:
-        # if the selection obtained from an editor spans a line break,
-        # the text will contain a Unicode U+2029 paragraph separator character
-        # instead of a newline \n character
-        text = plaintext.replace('\u2029', '\n')
-        return self.mimeFromText(text)
 
     def insertFromMimeData(self, source):
         """ Intended behavior
@@ -112,8 +191,8 @@ class MikiEdit(QTextEdit):
 
         item = self.parent.notesTree.currentItem()
         attDir = self.parent.notesTree.itemToAttachmentDir(item)
-        if not QDir(attDir).exists():
-            QDir().mkpath(attDir)
+        if not QtCore.QDir(attDir).exists():
+            QtCore.QDir().mkpath(attDir)
 
         if source.hasUrls():
             for qurl in source.urls():
@@ -122,29 +201,30 @@ class MikiEdit(QTextEdit):
                 filename = os.path.basename(filename)
                 newFilePath = os.path.join(attDir, filename + extension).replace(os.sep, '/')
                 relativeFilePath = newFilePath.replace(self.settings.notebookPath, "..")
+                quotedRFPath = urlparse.quote(relativeFilePath)
                 attachments = self.settings.attachmentImage + self.settings.attachmentDocument
 
-                if QUrl(qurl).isLocalFile():
+                if QtCore.QUrl(qurl).isLocalFile():
                     if extension.lower() in attachments:
                         nurl = url.replace("file://", "")
-                        QFile.copy(nurl, newFilePath)
+                        QtCore.QFile.copy(nurl, newFilePath)
                         self.parent.updateAttachmentView()
 
                         if extension.lower() in self.settings.attachmentImage:
-                            text = "![%s](%s)" % (filename, relativeFilePath)
+                            text = "![%s](%s)" % (filename, quotedRFPath)
                         elif extension.lower() in self.settings.attachmentDocument:
-                            text = "[%s%s](%s)\n" % (filename, extension, relativeFilePath)
+                            text = "[%s%s](%s)\n" % (filename, extension, quotedRFPath)
                     else:
                         text = "[%s%s](%s)\n" % (filename, extension, url)
                 else:
                     if extension.lower() in attachments:
                         self.downloadAs = newFilePath
-                        self.networkManager.get(QNetworkRequest(qurl))
+                        self.networkManager.get(QtNetwork.QNetworkRequest(qurl))
 
                         if extension.lower() in self.settings.attachmentImage:
-                            text = "![%s](%s)" % (filename, relativeFilePath)
+                            text = "![%s](%s)" % (filename, quotedRFPath)
                         elif extension.lower() in self.settings.attachmentDocument:
-                            text = "[%s%s](%s)\n" % (filename, extension, relativeFilePath)
+                            text = "[%s%s](%s)\n" % (filename, extension, quotedRFPath)
                     else:
                         text = "[%s%s](%s)\n" % (filename, extension, url)
 
@@ -155,21 +235,13 @@ class MikiEdit(QTextEdit):
             dialog = LineEditDialog(attDir, self)
             if dialog.exec_():
                 fileName = dialog.editor.text()
-                if not QFileInfo(fileName).suffix():
+                if not QtCore.QFileInfo(fileName).suffix():
                     fileName += '.jpg'
                 filePath = os.path.join(attDir, fileName).replace(os.sep, '/')
                 img.save(filePath)
                 relativeFilePath = filePath.replace(self.settings.notebookPath, "..")
-                text = "![%s](%s)" % (fileName, relativeFilePath)
+                text = "![%s](%s)" % (fileName, quotedRFPath)
                 super(MikiEdit, self).insertFromMimeData(self.mimeFromText(text))
-        elif source.hasHtml():
-            html = source.html()
-            if HAS_HTML2TEXT:
-                backToMarkdown = html2text.HTML2Text()
-                markdown = backToMarkdown.handle(html)
-                super(MikiEdit, self).insertFromMimeData(self.mimeFromText(markdown))
-            else:
-                super(MikiEdit, self).insertFromMimeData(self.mimeFromText(source.text()))
         else:
             super(MikiEdit, self).insertFromMimeData(source)
 
@@ -180,75 +252,25 @@ class MikiEdit(QTextEdit):
         filename = os.path.basename(filename)
         newFilePath = os.path.join(attDir, filename + extension).replace(os.sep, '/')
         relativeFilePath = newFilePath.replace(self.settings.notebookPath, "..")
+        quotedRFPath = urlparse.quote(relativeFilePath)
         if not os.path.exists(attDir):
             os.makedirs(attDir)
-        QFile.copy(filePath, newFilePath)
+        QtCore.QFile.copy(filePath, newFilePath)
         self.parent.updateAttachmentView()
         if fileType == self.imageFilter:
-            text = "![%s](%s)" % (filename, relativeFilePath)
+            text = "![%s](%s)" % (filename, quotedRFPath)
         else:
-            text = "[%s%s](%s)\n" % (filename, extension, relativeFilePath)
+            text = "[%s%s](%s)\n" % (filename, extension, quotedRFPath)
         self.insertPlainText(text)
 
     def insertAttachmentWrapper(self):
-        (filePath, fileType) = QFileDialog.getOpenFileNameAndFilter(
-            self, self.tr('Insert attachment'), '',
+        (filePath, fileType) = QtWidgets.QFileDialog.getOpenFileName(
+            self, self.tr('Insert attachment'), self.settings.notePath,
             self.imageFilter + ";;" + self.documentFilter)
         if filePath == "":
             return
         self.insertAttachment(filePath, fileType)
 
-    def insertFromRawHtml(self):
-        qclippy = QApplication.clipboard()
-        if qclippy.mimeData().hasHtml():
-            self.insertFromMimeData(self.mimeFromText(qclippy.mimeData().html()))
-        else:
-            self.insertFromMimeData(qclippy.mimeData())
-
-    def contextMenuEvent(self, event):
-
-        def correctWord(cursor, word):
-            # From QTextCursor doc:
-            # if there is a selection, the selection is deleted and replaced
-            return lambda: cursor.insertText(word)
-
-        popup_menu = self.createStandardContextMenu()
-        paste_action = popup_menu.actions()[6]
-        paste_formatted_action = QAction(self.tr("Paste raw HTML"), popup_menu)
-        paste_formatted_action.triggered.connect(self.insertFromRawHtml)
-        paste_formatted_action.setShortcut(QKeySequence("Ctrl+Shift+V"))
-        popup_menu.insertAction(paste_action, paste_formatted_action)
-
-        # Spellcheck the word under mouse cursor, not self.textCursor
-        cursor = self.cursorForPosition(event.pos())
-        cursor.select(QTextCursor.WordUnderCursor)
-
-        text = cursor.selectedText()
-        if self.speller and text:
-            if not self.speller.check(text):
-                lastAction = popup_menu.actions()[0]
-                for word in self.speller.suggest(text)[:10]:
-                    action = QAction(word, popup_menu)
-                    action.triggered.connect(correctWord(cursor, word))
-                    action.setFont(QFont(None, weight=QFont.Bold))
-                    popup_menu.insertAction(lastAction, action)
-                popup_menu.insertSeparator(lastAction)
-
-        popup_menu.exec_(event.globalPos())
-
-    def keyPressEvent(self, event):
-        """ for Qt.Key_Tab, expand as 4 spaces (if expandTab is enabled)
-            for other keys, use default implementation
-        """
-
-        moddies = QApplication.keyboardModifiers()
-
-        if event.key() == Qt.Key_Tab and Mikibook.settings.value('tabInsertsSpaces', type=bool, defaultValue=True):
-            self.insertPlainText(' '*Mikibook.settings.value('tabWidth', type=int, defaultValue=4)) # use the tabWidth for tabstop!
-        elif moddies & Qt.ControlModifier and moddies & Qt.ShiftModifier and event.key() == Qt.Key_V:
-            self.insertFromRawHtml()
-        else:
-            QTextEdit.keyPressEvent(self, event)
     '''
     def closeEvent(self, event):
         self.ix.close()
@@ -260,17 +282,18 @@ class MikiEdit(QTextEdit):
         filePath = self.parent.notesTree.itemToFile(item)
         htmlFile = self.parent.notesTree.itemToHtmlFile(item)
 
-        fh = QFile(filePath)
+        fh = QtCore.QFile(filePath)
         try:
-            if not fh.open(QIODevice.WriteOnly):
+            if not fh.open(QtCore.QIODevice.WriteOnly):
                 raise IOError(fh.errorString())
         except IOError as e:
-            QMessageBox.warning(self, self.tr("Save Error"),
+            QtWidgets.QMessageBox.warning(self, self.tr("Save Error"),
                                 self.tr("Failed to save %s: %s") % (pageName, e))
             raise
         finally:
             if fh is not None:
-                savestream = QTextStream(fh)
+                savestream = QtCore.QTextStream(fh)
+                savestream.setCodec("UTF-8")
                 savestream << self.toPlainText()
                 fh.close()
                 self.document().setModified(False)
@@ -298,11 +321,11 @@ class MikiEdit(QTextEdit):
             To be merged with saveNoteAs
         """
         if not htmlFile:
-            (htmlFile, htmlType) = QFileDialog.getSaveFileNameAndFilter(
+            (htmlFile, htmlType) = QtWidgets.QFileDialog.getSaveFileNameAndFilter(
                 self, self.tr("Export to HTML"), "", "Complete;;HTML Only")
         if htmlFile == '':
             return
-        if not QFileInfo(htmlFile).suffix():
+        if not QtCore.QFileInfo(htmlFile).suffix():
             htmlFile += '.html'
 
         if htmlType == "Complete":
@@ -311,16 +334,19 @@ class MikiEdit(QTextEdit):
             self.saveHtmlOnly(htmlFile)
 
     def saveCompleteHtml(self, htmlFile):
-        html = QFile(htmlFile)
-        html.open(QIODevice.WriteOnly)
-        savestream = QTextStream(html)
-        css = QFile(self.settings.cssfile)
-        css.open(QIODevice.ReadOnly)
+        html = QtCore.QFile(htmlFile)
+        html.open(QtCore.QIODevice.WriteOnly)
+        savestream = QtCore.QTextStream(html)
+        savestream.setCodec("UTF-8")
+        css = QtCore.QFile(self.settings.cssfile)
+        css.open(QtCore.QIODevice.ReadOnly)
         # Use a html lib may be a better idea?
         savestream << "<html><head><meta charset='utf-8'></head>"
         # Css is inlined.
         savestream << "<style>"
-        savestream << QTextStream(css).readAll()
+        cssstream = QtCore.QTextStream(css)
+        cssstream.setCodec("UTF-8")
+        savestream << cssstream.readAll()
         savestream << "</style>"
         # Note content
         savestream << self.toHtml()
@@ -329,11 +355,12 @@ class MikiEdit(QTextEdit):
 
     def saveHtmlOnly(self, htmlFile):
         fileDir = os.path.dirname(htmlFile)
-        QDir().mkpath(fileDir)
+        QtCore.QDir().mkpath(fileDir)
 
-        html = QFile(htmlFile)
-        html.open(QIODevice.WriteOnly)
-        savestream = QTextStream(html)
+        html = QtCore.QFile(htmlFile)
+        html.open(QtCore.QIODevice.WriteOnly)
+        savestream = QtCore.QTextStream(html)
+        savestream.setCodec("UTF-8")
         savestream << """
                       <html><head>
                         <meta charset="utf-8">

@@ -1,8 +1,11 @@
 import os
 import shutil
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+"""
 from PyQt4.QtCore import QSettings
 from PyQt4.QtGui import QApplication
-
+"""
 from .mikiwindow import MikiWindow
 from .mikibook import Mikibook
 from .config import Setting

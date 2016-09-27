@@ -4,18 +4,25 @@ import re
 import sys
 import signal
 
-from PyQt4.QtCore import QSettings, QTranslator, QLocale
-from PyQt4.QtGui import QApplication, QIcon, QMessageBox
+sys.path.append(os.path.dirname(__file__) + "/../")
+sys.path.append(os.path.dirname(__file__))
+
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+#from Qt.QtCore import QSettings, QTranslator, QLocale
+#from Qt.QtGui import QApplication, QIcon, QMessageBox
 
 import mikidown.mikidown_rc
+
 from .config import Setting
 from .generator import Generator
 from .mikitray import MikiTray
 from .mikiwindow import MikiWindow
 from .mikibook import Mikibook
 from .sandbox import Sandbox
+from .utils import confirmAction
 
-sys.path.append(os.path.dirname(__file__))
 
 # http://code.activestate.com/recipes/578453-python-single-instance-cross-platform/
 
@@ -38,9 +45,9 @@ def main():
         generator.generate()
         sys.exit(0)
     elif args.command == 'sandbox':
-        app = QApplication(sys.argv)
-        translator = QTranslator()
-        tpath = "locale/mikidown_{}.qm".format(QLocale.system().name())
+        app = QtWidgets.QApplication(sys.argv)
+        translator = QtCore.QTranslator()
+        tpath = "locale/mikidown_{}.qm".format(QtCore.QLocale.system().name())
         full_tpath = os.path.join("/usr/share/mikidown", tpath).replace(os.sep, "/")
         if not os.path.exists(full_tpath):
             full_tpath = os.path.join(os.path.dirname(os.path.dirname(__file__)), tpath).replace(os.sep,'/')
@@ -59,9 +66,9 @@ def main():
 
     # Instantiate a QApplication first.
     # Otherwise, Mikibook.create() won't function.
-    app = QApplication(sys.argv)
-    translator = QTranslator()
-    tpath = "locale/mikidown_{}.qm".format(QLocale.system().name())
+    app = QtWidgets.QApplication(sys.argv)
+    translator = QtCore.QTranslator()
+    tpath = "locale/mikidown_{}.qm".format(QtCore.QLocale.system().name())
     print(tpath)
     full_tpath = os.path.join("/usr/share/mikidown", tpath).replace(os.sep, "/")
     if not os.path.exists(full_tpath):
@@ -72,17 +79,22 @@ def main():
 
     # Read notebookList, open the first notebook.
     notebooks = Mikibook.read()
-    if len(notebooks) == 0:
+    if not notebooks:
         Mikibook.create()
         notebooks = Mikibook.read()
 
-    if len(notebooks) != 0:
+    if notebooks:
         #"""
         if os.path.exists(Mikibook.lockpath) and args.command != 'index':
-            ret = QMessageBox.question(None, "mikidown - lock file exists", ("It looks like the lock file for "
-                "mikidown already exists. Is mikidown currently running? "
-                "Click no to remove the lock file before rerunning mikidown."), buttons=QMessageBox.Yes|QMessageBox.No)
-            if ret == QMessageBox.Yes:
+            ret = confirmAction(
+                    "mikidown - lock file exists",
+                    (
+                        "It looks like the lock file for "
+                        "mikidown already exists. Is mikidown currently running? "
+                        "Click no to remove the lock file before rerunning mikidown."
+                    )
+                )
+            if ret == QtWidgets.QMessageBox.Yes:
                 sys.exit(1)
             else:
                 os.remove(Mikibook.lockpath)
@@ -92,15 +104,21 @@ def main():
             print("Applying single instance per user lock.")
             lock_fh = os.open(Mikibook.lockpath, os.O_CREAT | os.O_EXCL | os.O_RDWR)
         #"""
+        
         settings = Setting(notebooks)
         # Initialize application and main window.
-        icon = QIcon(":/icons/mikidown.svg")
+        icon = QtGui.QIcon(":/icons/mikidown.svg")
         app.setWindowIcon(icon)
+
+        tray = MikiTray(icon)
+        tray.show()
+
+        MikiWindow.postInit.append(tray.registerWindow)
+        MikiWindow.postClose.append(tray.unregisterWindow)
+
         window = MikiWindow(settings)
         window.show()
         window.restore()        # Restore after window show.
-        tray = MikiTray(icon, window)
-        tray.show()
 
         #"""
         def cleanup(signum, frame):

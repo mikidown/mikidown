@@ -1,0 +1,4 @@
+findreplacedialog.*
+===================================
+.. automodule:: mikidown.findreplacedialog
+

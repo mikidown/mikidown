@@ -17,7 +17,7 @@ def build_translations():
     print('running build_translations')
     error = None
     try:
-        check_call(('lrelease-qt4', 'mikidown.pro'))
+        check_call(('lrelease-qt5', 'mikidown.pro'))
     except Exception as e:
         error = e
     if error:
@@ -67,9 +67,9 @@ setup(
                 ('share/mikidown/css', glob.glob("mikidown/css/*")), 
                 ('share/icons/hicolor/scalable/apps', ['mikidown/icons/mikidown.svg']), 
                 ('share/applications', ['mikidown.desktop']),
-                ('share/mikidown/locale', os.path.join('locale', '*.qm')),
+                ('share/mikidown/locale', glob.glob(os.path.join('locale', '*.qm'))),
                 ],
-    requires=['PyQt', 'markdown', 'whoosh'],
+    requires=['PyQt5', 'markdown', 'whoosh'],
     install_requires=['Markdown >= 2.3.1', 'Whoosh >= 2.5.2'],
     cmdclass={
         'sdist': miki_sdist,

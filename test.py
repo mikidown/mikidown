@@ -4,8 +4,7 @@ import glob
 import os
 import sys
 import unittest
-from PyQt4.QtCore import QSettings
-from PyQt4.QtGui import QApplication, QIcon
+from PyQt5.QtWidgets import QApplication
 
 import mikidown
 from mikidown.mikiwindow import MikiWindow
@@ -53,8 +52,8 @@ class Monolithic(unittest.TestCase):
         elemCol = self.window.notesView.page(
         ).mainFrame().findAllElements("a")
         element = elemCol.at(2)
-        print(self.window.notesView.page().mainFrame().toHtml())
-        print(element.attribute("href"))
+#        print(self.window.notesView.page().mainFrame().toHtml())
+#        print(element.attribute("href"))
         element.evaluateJavaScript("var evObj = document.createEvent('MouseEvents');evObj.initEvent( 'click', true, true );this.dispatchEvent(evObj);")
 
         noteName = self.window.notesTree.currentItem().text(0)

@@ -1,6 +1,79 @@
 # Mikidown Changelogs
+## Version 0.3.11
+- Allow multiple open notebooks to minimize to tray
+- Improve performance when writing notebook list to settings
+- Generate structurally valid HTML from the generator
+- Explicitly document which python-asciimathml to use
+- Fix crash on notebook remove
+- Escape special characters in attachment urls inserted
+- Added utility function to allow easy debugging without pyqt scrolling the console all over the place.
+- **New Subpage** and **New Page** in the context menu use the item under
+the mouse, NOT the item we're currently looking at.
+- If the user types a slash in the note name, try to automatically create
+its parents. For instance, say you have a note tree like this:
+	&nbsp;
+		`Changelog`
+		`Durpadurp`
+	&nbsp;
+	And now you want to create Durpadurp/achild.
+	- If you do this from **New Subpage**, it will resolve it to
+	/Durpadurp/Durpadurp/achild if you right-clicked on Durpadurp. If 
+	you right-clicked on Changelog, then it will yield 
+	/Changelog/Durpadurp/achild. If you do this when nothing was under 
+	the right-click menu, it behaves just like resolving when the name
+	was typed in **New Page**.
+	- If you do this from **New Page**, it will resolve it to the root 
+	of the notebook. This yields /Durpadurp/achild
+- Templates system. You'll notice a folderlike the following
+in your notebook hierarchy when you create your first custom template:
+    &nbsp;
+		`notes/`
+		`css/`
+		`notebook.conf`
+		`templates/    <--- from here on down`
+		`	template_settings.conf`
+		`	FriendlyBodyTpl.md`
+		`	FriendlyBodyTpl2.md`
+		`	DNDCharacterSheet.md`
+    &nbsp;
+    **template_settings.conf** should look something like this:
+    &nbsp;
+		`[titleTemplates]`
+		`size=2`
+		`1\content=%Y_%m_%d`
+		`1\friendlyName=Current datetime`
+		`1\type=DATETIME`
+		`2\content=Character Sheet {}`
+		`2\friendlyName=Character Sheet`
+		`2\type=FSTRING`
+		&nbsp;
+		`[bodyTitlePairs]`
+		`size=3`
+		`1\titleNum=1`
+		`1\bodyTpl=FriendlyBodyTpl`
+		`1\friendlyName=Journal Entry`
+		`2\titleNum=1`
+		`2\bodyTpl=FriendlyBodyTpl2`
+		`2\friendlyName=Journal Entry V2`
+		`3\titleNum=2`
+		`3\bodyTpl=DNDCharacterSheet`
+		`3\friendlyName=DND Character Sheet`
+    &nbsp;
+
+## Version 0.3.10
+- Fixed a mistake with setup.py where the glob for the *.qm files wasn't expanded
+
+## Version 0.3.9
+- Fixed a mistake with setup.py not including translation files for sdist upload
 
 ## Version 0.3.8
+- Add option to change fonts
+- Add option to change whether fonts scale with header size
+- Add an example .local.vimrc file in case users want to browse their notebook with vim
+- French translation!
+- Fixes for RTL languages
+- Add the ability to view notes separately (needed since the per notebook lock)
+- Don't let lines starting with # in code blocks mangle the TOC
 - Do not use the custom icons since they could reduce accessibility with different themes
 - Add a textbox for the user to manually specify the icon theme if mikidown doesn't pick it up
 - Update Travis CI test.py and .travis.yml so it works again.
@@ -49,7 +122,7 @@ will result in asciimathml not being enabled.
 - markdown extensions that the user doesn't have, but has listed in their mikidown notebook config are temporarily disabled and marked in red.
 - There's a GUI for configuring the markdown extensions. Just click "Edit Settings for this extension" after selecting an extension to configure.
 - Single instance per user to prevent weirdness with notes. I'm currently trying to figure out how to raise the already existing window if there is one in a cross-platform manner.
-- Improvements to the HTML tag detection in syntax highlighting. Now you can properly distinguish <https://github.com/rnons/mikidown> from <i>I am a block of html stuff!</i>.
+- Improvements to the HTML tag detection in syntax highlighting. Now you can properly distinguish <https://github.com/ShadowKyogre/mikidown> from <i>I am a block of html stuff!</i>.
 - A few more fixes for setext header syntax highlighting.
 - Numbered lists are included in the syntax highlighting.
 - Search results can now be styled.
@@ -100,6 +173,6 @@ $$
         mikidown preview
 
 
-[#23]: https://github.com/rnons/mikidown/issues/23
-[#24]: https://github.com/rnons/mikidown/issues/24
+[#23]: https://github.com/ShadowKyogre/mikidown/issues/23
+[#24]: https://github.com/ShadowKyogre/mikidown/issues/24
 [pyenchant]: https://pypi.python.org/pypi/pyenchant

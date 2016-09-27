@@ -1,0 +1,2 @@
+recursive-include locale *.ts
+include mikidown.pro

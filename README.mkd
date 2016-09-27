@@ -3,7 +3,7 @@
 Master build status: [![master Build Status](https://travis-ci.org/ShadowKyogre/mikidown.svg?branch=master)](https://travis-ci.org/ShadowKyogre/mikidown)
 Develop build status: [![develop Build Status](https://travis-ci.org/ShadowKyogre/mikidown.svg?branch=develop)](https://travis-ci.org/ShadowKyogre/mikidown)
 
-Mikidown is a note taking application with markdown support.
+**Mikidown** is a note taking application with markdown.
 
 > Mikidown was inspired by [Zim] and based on [ReText]. The logo is derived from [markdown-mark].
 
@@ -29,18 +29,23 @@ Run mikidown without installing
 
 ## Dependencies
 
-- Python (>3.0)
-- PyQt
+- Python.3+
+- PyQt.5+
 - python-markdown
 - python-whoosh
 - python-html2text ( Optional for HTML to markdown conversion, otherwise, formatted text is pasted as HTML )
 - python-asciimathml ( Optional for asciimathml support )
+    - The default version of python-asciimathml doesn't support Python 3.
+    Please use the one from this repo: <https://github.com/mtahmed/python-asciimathml>
 - python-pyenchant ( Optional for spell checking )
 - slickpicker ( Optional for better color picking for mikidown highlighting colors )
 
 ## Beautiful notes powered by markdown
 
-In case you are unfamiliar with markdown, you can use this file (**Help->README**) as a simple reference to basic markdown syntax. However, I suggest you take a look at the complete [Markdown Syntax].
+In case you are unfamiliar with markdown, you can use 
+this file (**Help->README**) as a simple reference to 
+basic markdown syntax. However, 
+Its suggested to look at the complete [Markdown Syntax].
 
 ### Markdown extension
 
@@ -73,12 +78,12 @@ All python-markdown [extensions] are supported. To enable/disable extension, edi
 
 [Fork and help] are much appreciated.
 
-[markdown-mark]: https://github.com/dcurtis/markdown-mark
-[Zim]: http://zim-wiki.org/
-[ReText]: http://sourceforge.net/p/retext/
-[Markdown Syntax]: http://daringfireball.net/projects/markdown/syntax
-[Fork and help]: https://github.com/shadowkyogre/mikidown
-[ShadowKyogre]: https://github.com/ShadowKyogre
-[extensions]: http://pythonhosted.org/Markdown/extensions/index.html
+- [markdown-mark]: https://github.com/dcurtis/markdown-mark
+- [Zim]: http://zim-wiki.org/
+- [ReText]: http://sourceforge.net/p/retext/
+- [Markdown Syntax]: http://daringfireball.net/projects/markdown/syntax
+- [Fork and help]: https://github.com/shadowkyogre/mikidown
+- [ShadowKyogre]: https://github.com/ShadowKyogre
+- [extensions]: http://pythonhosted.org/Markdown/extensions/index.html
 
 Want to help? Further details are in the CONTRIBUTING.md file.

@@ -1,6 +1,6 @@
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtWidgets
 
-class SlashPleter(QtGui.QCompleter):
+class SlashPleter(QtWidgets.QCompleter):
     def splitPath(self, path):
         return path.split('/')
     def pathFromIndex(self, idx):

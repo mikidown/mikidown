@@ -1,7 +1,12 @@
 *~
 *swp
+*.pyc
 __pycache__/
 build/
+_build/
 dist/
 tags
 MANIFEST
+
+.idea/
+test_notebook/

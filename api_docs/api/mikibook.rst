@@ -1,0 +1,4 @@
+mikibook.*
+===================================
+.. automodule:: mikidown.mikibook
+
