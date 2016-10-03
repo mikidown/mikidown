@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.0" language="fr_FR" sourcelanguage="en_US">
+<!DOCTYPE TS><TS version="2.0" language="fr_FR" sourcelanguage="en_US">
 <context>
     <name>AttachmentView</name>
     <message>
-        <location filename="../mikidown/attachment.py" line="93"/>
+        <location filename="../mikidown/attachment.py" line="101"/>
         <source>Insert into note</source>
         <translation>Insérer dans la note</translation>
     </message>
     <message>
-        <location filename="../mikidown/attachment.py" line="94"/>
+        <location filename="../mikidown/attachment.py" line="102"/>
         <source>Delete</source>
         <translation>Supprimer</translation>
     </message>
@@ -17,49 +16,54 @@
 <context>
     <name>FindReplaceDialog</name>
     <message>
-        <location filename="../mikidown/findreplacedialog.py" line="16"/>
+        <location filename="../mikidown/findreplacedialog.py" line="13"/>
         <source>Match case</source>
         <translation>Respecter la casse</translation>
     </message>
     <message>
-        <location filename="../mikidown/findreplacedialog.py" line="17"/>
+        <location filename="../mikidown/findreplacedialog.py" line="14"/>
         <source>Whole words</source>
         <translation>Mots entiers</translation>
     </message>
     <message>
-        <location filename="../mikidown/findreplacedialog.py" line="18"/>
+        <location filename="../mikidown/findreplacedialog.py" line="15"/>
         <source>Regex</source>
         <translation>Expression régulière</translation>
     </message>
     <message>
-        <location filename="../mikidown/findreplacedialog.py" line="20"/>
+        <location filename="../mikidown/findreplacedialog.py" line="17"/>
         <source>Next</source>
         <translation>Suivant</translation>
     </message>
     <message>
-        <location filename="../mikidown/findreplacedialog.py" line="21"/>
+        <location filename="../mikidown/findreplacedialog.py" line="18"/>
         <source>Previous</source>
         <translation>Précédent</translation>
     </message>
     <message>
-        <location filename="../mikidown/findreplacedialog.py" line="34"/>
+        <location filename="../mikidown/findreplacedialog.py" line="39"/>
         <source>Replace</source>
         <translation>Remplacer</translation>
     </message>
     <message>
-        <location filename="../mikidown/findreplacedialog.py" line="23"/>
+        <location filename="../mikidown/findreplacedialog.py" line="20"/>
         <source>Replace All</source>
         <translation>Tout remplacer</translation>
     </message>
     <message>
-        <location filename="../mikidown/findreplacedialog.py" line="32"/>
+        <location filename="../mikidown/findreplacedialog.py" line="31"/>
         <source>Search</source>
         <translation>Rechercher</translation>
     </message>
     <message>
         <location filename="../mikidown/findreplacedialog.py" line="33"/>
         <source>    Options</source>
-        <translation>    Options</translation>
+        <translation type="obsolete">    Options</translation>
+    </message>
+    <message>
+        <location filename="../mikidown/findreplacedialog.py" line="35"/>
+        <source>        Options</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -75,12 +79,12 @@
         <translation>Nom du fichier :</translation>
     </message>
     <message>
-        <location filename="../mikidown/utils.py" line="140"/>
+        <location filename="../mikidown/utils.py" line="142"/>
         <source>Error</source>
         <translation>Erreur</translation>
     </message>
     <message>
-        <location filename="../mikidown/utils.py" line="140"/>
+        <location filename="../mikidown/utils.py" line="142"/>
         <source>File already exists: %s</source>
         <translation>Le fichier existe déjà : %s</translation>
     </message>
@@ -121,12 +125,12 @@
 <context>
     <name>MikiSepNote</name>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="49"/>
+        <location filename="../mikidown/mikiwindow.py" line="72"/>
         <source>Read Error</source>
         <translation>Erreur à la lecture</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="49"/>
+        <location filename="../mikidown/mikiwindow.py" line="72"/>
         <source>Failed to open %s: %s</source>
         <translation>L&apos;ouverture de %s a échoué : %s</translation>
     </message>
@@ -212,317 +216,317 @@
 <context>
     <name>MikiWindow</name>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="603"/>
+        <location filename="../mikidown/mikiwindow.py" line="772"/>
         <source>Read Error</source>
         <translation>Erreur à la lecture</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="603"/>
+        <location filename="../mikidown/mikiwindow.py" line="772"/>
         <source>Failed to open %s: %s</source>
         <translation>L&apos;ouverture de %s a échoué : %s</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="181"/>
+        <location filename="../mikidown/mikiwindow.py" line="229"/>
         <source>Recently Viewed</source>
         <translation>Vu récemment</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="187"/>
+        <location filename="../mikidown/mikiwindow.py" line="235"/>
         <source>Index</source>
         <translation>Index</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="188"/>
+        <location filename="../mikidown/mikiwindow.py" line="236"/>
         <source>Search</source>
         <translation>Recherche</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="192"/>
+        <location filename="../mikidown/mikiwindow.py" line="240"/>
         <source>TOC</source>
         <translation>Sommaire</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="194"/>
+        <location filename="../mikidown/mikiwindow.py" line="242"/>
         <source>Attachment</source>
         <translation>Pièces jointes</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="198"/>
+        <location filename="../mikidown/mikiwindow.py" line="246"/>
         <source>notesEdit</source>
         <translation>notesEdit</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="202"/>
+        <location filename="../mikidown/mikiwindow.py" line="250"/>
         <source>Find</source>
         <translation>Chercher</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="205"/>
+        <location filename="../mikidown/mikiwindow.py" line="253"/>
         <source>Match case</source>
         <translation>Respecter la casse</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="244"/>
+        <location filename="../mikidown/mikiwindow.py" line="315"/>
         <source>Switch to Index Tab</source>
         <translation>Basculer vers l&apos;onglet Index</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="244"/>
+        <location filename="../mikidown/mikiwindow.py" line="315"/>
         <source>Ctrl+Shift+I</source>
         <translation>Ctrl+Shift+I</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="246"/>
+        <location filename="../mikidown/mikiwindow.py" line="317"/>
         <source>Switch to Search Tab</source>
         <translation>Basculer vers l&apos;onglet Recherche</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="246"/>
+        <location filename="../mikidown/mikiwindow.py" line="317"/>
         <source>Ctrl+Shift+F</source>
         <translation>Ctrl+Shift+F</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="253"/>
+        <location filename="../mikidown/mikiwindow.py" line="324"/>
         <source>&amp;New Page...</source>
         <translation>&amp;Nouvelle page...</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="257"/>
+        <location filename="../mikidown/mikiwindow.py" line="331"/>
         <source>New Sub&amp;page...</source>
         <translation>Nouvelle sous-&amp;page...</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="257"/>
+        <location filename="../mikidown/mikiwindow.py" line="331"/>
         <source>Ctrl+Shift+N</source>
         <translation>Ctrl+Shift+N</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="261"/>
+        <location filename="../mikidown/mikiwindow.py" line="338"/>
         <source>&amp;Import Page...</source>
         <translation>&amp;Importer une page...</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="264"/>
+        <location filename="../mikidown/mikiwindow.py" line="344"/>
         <source>Notebook Set&amp;tings...</source>
         <translation>Réglages du carne&amp;t...</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="270"/>
+        <location filename="../mikidown/mikiwindow.py" line="356"/>
         <source>&amp;Mikidown Settings...</source>
         <translation>Réglages de &amp;Mikidown...</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="273"/>
+        <location filename="../mikidown/mikiwindow.py" line="362"/>
         <source>&amp;Open Notebook...</source>
         <translation>&amp;Ouvrir un carnet...</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="277"/>
+        <location filename="../mikidown/mikiwindow.py" line="369"/>
         <source>Re-index</source>
         <translation>Réindexer</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="280"/>
+        <location filename="../mikidown/mikiwindow.py" line="372"/>
         <source>&amp;Save</source>
         <translation>Enregi&amp;strer</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="285"/>
+        <location filename="../mikidown/mikiwindow.py" line="380"/>
         <source>Save &amp;As...</source>
         <translation>Enregistrer sous...</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="289"/>
+        <location filename="../mikidown/mikiwindow.py" line="387"/>
         <source>to &amp;HTML</source>
         <translation>vers &amp;HTML</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="292"/>
+        <location filename="../mikidown/mikiwindow.py" line="390"/>
         <source>&amp;Print</source>
         <translation>Im&amp;primer</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="296"/>
+        <location filename="../mikidown/mikiwindow.py" line="397"/>
         <source>&amp;Rename Page...</source>
         <translation>&amp;Renommer cette page...</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="300"/>
+        <location filename="../mikidown/mikiwindow.py" line="404"/>
         <source>&amp;Delete Page</source>
         <translation>Supprimer cette page</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="304"/>
+        <location filename="../mikidown/mikiwindow.py" line="411"/>
         <source>&amp;Quit</source>
         <translation>&amp;Quitter</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="309"/>
+        <location filename="../mikidown/mikiwindow.py" line="420"/>
         <source>&amp;Undo</source>
         <translation>Défaire</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="315"/>
+        <location filename="../mikidown/mikiwindow.py" line="426"/>
         <source>&amp;Redo</source>
         <translation>&amp;Refaire</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="321"/>
+        <location filename="../mikidown/mikiwindow.py" line="432"/>
         <source>&amp;Find Text</source>
         <translation>Chercher du texte</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="325"/>
+        <location filename="../mikidown/mikiwindow.py" line="436"/>
         <source>Find and Replace</source>
         <translation>Chercher et remplacer</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="329"/>
+        <location filename="../mikidown/mikiwindow.py" line="443"/>
         <source>Next</source>
         <translation>Suivant</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="333"/>
+        <location filename="../mikidown/mikiwindow.py" line="450"/>
         <source>Previous</source>
         <translation>Précédent</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="337"/>
+        <location filename="../mikidown/mikiwindow.py" line="457"/>
         <source>&amp;Sort Lines</source>
         <translation>Trier les lignes</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="340"/>
+        <location filename="../mikidown/mikiwindow.py" line="460"/>
         <source>&amp;Quick Open Note</source>
         <translation>Ouverture rapide</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="340"/>
+        <location filename="../mikidown/mikiwindow.py" line="460"/>
         <source>Ctrl+G</source>
         <translation>Ctrl+G</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="344"/>
+        <location filename="../mikidown/mikiwindow.py" line="467"/>
         <source>&amp;Insert Attachment</source>
         <translation>&amp;Insérer une pièce jointe</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="344"/>
+        <location filename="../mikidown/mikiwindow.py" line="467"/>
         <source>Ctrl+I</source>
         <translation>Ctrl+I</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="352"/>
+        <location filename="../mikidown/mikiwindow.py" line="480"/>
         <source>Edit</source>
         <translation>Éditeur</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="352"/>
+        <location filename="../mikidown/mikiwindow.py" line="480"/>
         <source>Ctrl+E</source>
         <translation>Ctrl+E</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="352"/>
+        <location filename="../mikidown/mikiwindow.py" line="480"/>
         <source>Edit mode (Ctrl+E)</source>
         <translation>Mode éditeur (Ctrl+E)</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="356"/>
+        <location filename="../mikidown/mikiwindow.py" line="490"/>
         <source>Split</source>
         <translation>Scinder la vue</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="356"/>
+        <location filename="../mikidown/mikiwindow.py" line="490"/>
         <source>Ctrl+R</source>
         <translation>Ctrl+R</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="356"/>
+        <location filename="../mikidown/mikiwindow.py" line="490"/>
         <source>Split mode (Ctrl+R)</source>
         <translation>Mode vue scindée</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="360"/>
+        <location filename="../mikidown/mikiwindow.py" line="500"/>
         <source>Flip Edit and View</source>
         <translation>Inverser les vues</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="373"/>
+        <location filename="../mikidown/mikiwindow.py" line="515"/>
         <source>README</source>
         <translation>README</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="376"/>
+        <location filename="../mikidown/mikiwindow.py" line="521"/>
         <source>Changelog</source>
         <translation>Changelog</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="379"/>
+        <location filename="../mikidown/mikiwindow.py" line="524"/>
         <source>About Qt</source>
         <translation>À propos de Qt</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="435"/>
+        <location filename="../mikidown/mikiwindow.py" line="582"/>
         <source>&amp;File</source>
         <translation>&amp;Fichier</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="436"/>
+        <location filename="../mikidown/mikiwindow.py" line="583"/>
         <source>&amp;Edit</source>
         <translation>&amp;Edition</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="437"/>
+        <location filename="../mikidown/mikiwindow.py" line="584"/>
         <source>&amp;View</source>
         <translation>Affichage</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="438"/>
+        <location filename="../mikidown/mikiwindow.py" line="585"/>
         <source>&amp;Help</source>
         <translation>Aide</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="452"/>
+        <location filename="../mikidown/mikiwindow.py" line="599"/>
         <source>&amp;Export</source>
         <translation>&amp;Exporter</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="471"/>
+        <location filename="../mikidown/mikiwindow.py" line="618"/>
         <source>Show/Hide</source>
         <translation>Afficher/Masquer</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="484"/>
+        <location filename="../mikidown/mikiwindow.py" line="631"/>
         <source>toolbar</source>
         <translation>Barre d&apos;outils</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="665"/>
+        <location filename="../mikidown/mikiwindow.py" line="834"/>
         <source>Save as</source>
         <translation>Enregistrer sous</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="702"/>
+        <location filename="../mikidown/mikiwindow.py" line="879"/>
         <source>All files(*)</source>
         <translation>Tous les fichiers (*)</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="702"/>
+        <location filename="../mikidown/mikiwindow.py" line="879"/>
         <source>Import file</source>
         <translation>Importer un fichier</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="719"/>
+        <location filename="../mikidown/mikiwindow.py" line="896"/>
         <source>Import Error</source>
         <translation>Erreur à l&apos;import</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="719"/>
+        <location filename="../mikidown/mikiwindow.py" line="896"/>
         <source>Page already exists: %s</source>
         <translation>La page existe déjà : %s</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikiwindow.py" line="267"/>
+        <location filename="../mikidown/mikiwindow.py" line="350"/>
         <source>Notebook Temp&amp;lates...</source>
         <translation>Modè&amp;les du carnet...</translation>
     </message>
@@ -530,42 +534,42 @@
 <context>
     <name>MikidownCfgDialog</name>
     <message>
-        <location filename="../mikidown/mikibook.py" line="453"/>
+        <location filename="../mikidown/mikibook.py" line="435"/>
         <source>Settings - mikidown</source>
         <translation>Réglages - Mikidown</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="499"/>
+        <location filename="../mikidown/mikibook.py" line="481"/>
         <source># of recently viewed notes to keep</source>
         <translation>Nombre de notes récentes à garder</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="501"/>
+        <location filename="../mikidown/mikibook.py" line="483"/>
         <source>Editor font</source>
         <translation>Police de l&apos;éditeur</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="507"/>
+        <location filename="../mikidown/mikibook.py" line="489"/>
         <source>Tabs expand to spaces?</source>
         <translation>Convertir les tabulations en espaces ?</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="509"/>
+        <location filename="../mikidown/mikibook.py" line="491"/>
         <source>Tab width</source>
         <translation>Largeur d&apos;une tabulation</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="511"/>
+        <location filename="../mikidown/mikibook.py" line="493"/>
         <source>Icon Theme</source>
         <translation>Thème d&apos;icônes</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="497"/>
+        <location filename="../mikidown/mikibook.py" line="479"/>
         <source>Minimize to tray?</source>
         <translation>Réduire dans la zone de notification ?</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="503"/>
+        <location filename="../mikidown/mikibook.py" line="485"/>
         <source>Header rank scales editor font?</source>
         <translation>Du niveau d&apos;un titre et de la police de l&apos;éditeur dépend sa taille ?</translation>
     </message>
@@ -573,44 +577,44 @@
 <context>
     <name>NewNotebookDlg</name>
     <message>
-        <location filename="../mikidown/mikibook.py" line="381"/>
+        <location filename="../mikidown/mikibook.py" line="363"/>
         <source>Add Notebook - mikidown</source>
         <translation>Ajouter un carnet - Mikidown</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="382"/>
+        <location filename="../mikidown/mikibook.py" line="364"/>
         <source>Choose a name and folder for your notebook.</source>
         <translation>Choisissez un nom et un dossier pour votre carnet.</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="382"/>
+        <location filename="../mikidown/mikibook.py" line="364"/>
         <source>
 The folder can be an existing notebook folder.</source>
         <translation>
 Le dossier peut être un dossier de carnet existant.</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="386"/>
+        <location filename="../mikidown/mikibook.py" line="368"/>
         <source>Notes</source>
         <translation>Notes</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="387"/>
+        <location filename="../mikidown/mikibook.py" line="369"/>
         <source>Name:</source>
         <translation>Nom :</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="393"/>
+        <location filename="../mikidown/mikibook.py" line="375"/>
         <source>Path:</source>
         <translation>Chemin :</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="396"/>
+        <location filename="../mikidown/mikibook.py" line="378"/>
         <source>Browse</source>
         <translation>Parcourir</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="418"/>
+        <location filename="../mikidown/mikibook.py" line="400"/>
         <source>Select Folder</source>
         <translation>Sélectionnez un dossier</translation>
     </message>
@@ -618,12 +622,12 @@ Le dossier peut être un dossier de carnet existant.</translation>
 <context>
     <name>NotebookListDialog</name>
     <message>
-        <location filename="../mikidown/mikibook.py" line="277"/>
+        <location filename="../mikidown/mikibook.py" line="276"/>
         <source>Add</source>
         <translation>Ajouter</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="278"/>
+        <location filename="../mikidown/mikibook.py" line="277"/>
         <source>Remove</source>
         <translation>Supprimer</translation>
     </message>
@@ -636,37 +640,37 @@ Le dossier peut être un dossier de carnet existant.</translation>
         <translation>Réglages du carnet - Mikidown</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="131"/>
+        <location filename="../mikidown/mikibook.py" line="133"/>
         <source>Edit Settings for this extension</source>
         <translation>Réglages de cette extension</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="148"/>
+        <location filename="../mikidown/mikibook.py" line="150"/>
         <source>File extensions</source>
         <translation>Extensions de fichiers</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="160"/>
+        <location filename="../mikidown/mikibook.py" line="162"/>
         <source>Markdown extensions</source>
         <translation>Extensions Markdown</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="165"/>
+        <location filename="../mikidown/mikibook.py" line="167"/>
         <source>MathJax Location</source>
         <translation>Emplacement de MathJax</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="170"/>
+        <location filename="../mikidown/mikibook.py" line="172"/>
         <source>Note file extension</source>
         <translation>Extension des fichiers de notes</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="171"/>
+        <location filename="../mikidown/mikibook.py" line="173"/>
         <source>Image file extension</source>
         <translation>Extension des fichiers images</translation>
     </message>
     <message>
-        <location filename="../mikidown/mikibook.py" line="172"/>
+        <location filename="../mikidown/mikibook.py" line="174"/>
         <source>Document file extension</source>
         <translation>Extension des fichiers documents</translation>
     </message>
