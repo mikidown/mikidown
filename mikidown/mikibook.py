@@ -521,7 +521,7 @@ class MikidownCfgDialog(QtWidgets.QDialog):
         QtGui.QIcon.setThemeName(self.iconTheme.text())
 
         #then make mikidown use these settings NOW
-        super().accept(self)
+        super().accept()
 
 class Mikibook():
     # ~/.config/mikidown/mikidown.conf
