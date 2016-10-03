@@ -1,5 +1,6 @@
 *~
 *swp
+*.qm
 *.pyc
 __pycache__/
 build/
