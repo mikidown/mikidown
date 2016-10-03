@@ -37,3 +37,27 @@ has syntax highlighting. Also, here's a detailed list of branches and what they'
 
 - master = The current release
 - develop = Experimental features and fixes are here. Tread with caution, unless you like breaking stuff.
+
+When you create a pull request, it should be based on `develop` since that's my main sandbox.
+
+To avoid creating miscellaneous merge commit notes, you can follow the following steps
+to always get the latest updates in your local working space
+(( even if you've written on the `master` branch of your copy )).
+
+~~~~
+# get your repo
+git clone https://github.com/${you}/mikidown
+
+# add the upstream repo as an easily referrable remote
+git remote add upstream https://github.com/shadowkyogre/mikidown
+
+# if you want to pull commits from upstream master into your master 
+# assuming you're currently on your master
+git pull upstream master
+
+# if you want to track upstream master separately
+git checkout -b upmaster upstream/master
+
+# if you want to track upstream develop separately
+git checkout -b updevel upstream/develop
+~~~~
