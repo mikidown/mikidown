@@ -7,8 +7,25 @@ from PyQt4.QtGui import QSyntaxHighlighter, QColor, QFont, QTextCharFormat
 from PyQt4.QtCore import Qt
 """
 from .mdx_strkundr import DEL_RE, INS_RE, STRONG_RE, EMPH_RE
-from .mikibook import Mikibook
 
+DEFAULT_COLORS = [
+    "#A40000",
+    "#4E9A06",
+    "#4E9A06",
+    "#4E9A06",
+    "#4E9A06",
+    "#A40000",
+    "#ff0037", #italic, not used
+    "#888A85",
+    "#888A85",
+    "#F57900",
+    "#F57900",
+    "#204A87", #underline color, not used atm
+    "#204A87",
+    "#F57900",
+    "#F57900",
+    "#F5006E",
+]
 
 class MikiHighlighter(QtGui.QSyntaxHighlighter):
 
@@ -16,6 +33,8 @@ class MikiHighlighter(QtGui.QSyntaxHighlighter):
 
     def __init__(self, parent=None, scale_font_sizes=True, baseFontFam=None, baseFontSize=12, color_settings=None):
         super(MikiHighlighter, self).__init__(parent)
+        if color_settings is None:
+            color_settings = DEFAULT_COLORS
         NUM = 16
         self.patterns = []
         regexp = [0] * NUM
@@ -123,7 +142,7 @@ class MikiHighlighter(QtGui.QSyntaxHighlighter):
             if color[i] != 0:
                 f.setForeground(color[i])
             self.patterns.append((p, f))
-        self.speller = parent.speller
+        self.speller = parent.speller if hasattr(parent, 'speller') else None
 
         fenced_font = QtGui.QFont(baseFontFam, baseFontSize, -1)
         self.fenced_block = re.compile(r"^(~{3,}|`{3,})[^`~]*(?!\1)$")

@@ -24,6 +24,7 @@ except ImportError as e:
     print("Can't find slickpicker, falling back to QLineEdit for editing mikidown colors")
     BETTER_COLOR_PICKER = False
 
+from .highlighter import DEFAULT_COLORS
 from .utils import allMDExtensions
 from .config import readListFromSettings, writeListToSettings, writeDictToSettings
 from .fontbutton import QFontButton
@@ -548,30 +549,20 @@ class Mikibook():
     @staticmethod
     def highlighterColors():
         items = []
-        defaults = ["#A40000",
-                    "#4E9A06",
-                    "#4E9A06",
-                    "#4E9A06",
-                    "#4E9A06",
-                    "#A40000",
-                    "#ff0037", #italic, not used
-                    "#888A85",
-                    "#888A85",
-                    "#F57900",
-                    "#F57900",
-                    "#204A87", #underline color, not used atm
-                    "#204A87",
-                    "#F57900",
-                    "#F57900",
-                    "#F5006E"]
         size = Mikibook.settings.beginReadArray('highlighting')
         if size == 0:
             Mikibook.settings.endArray()
-            Mikibook.setHighlighterColors(defaults)
+            Mikibook.setHighlighterColors(DEFAULT_COLORS)
             size = Mikibook.settings.beginReadArray('highlighting')
         for i in range(16):
             Mikibook.settings.setArrayIndex(i)
-            items.append(Mikibook.settings.value('color', defaultValue=defaults[i], type=str))
+            items.append(
+                Mikibook.settings.value(
+                    'color',
+                    defaultValue=DEFAULT_COLORS[i],
+                    type=str
+                )
+            )
         Mikibook.settings.endArray()
         return items
 
