@@ -135,7 +135,7 @@ class HighlighterTest(unittest.TestCase):
                 (0, 8, TESTING_COLORS[4]),
             ),
         ]
-        
+
         for txt, exp in tests:
             self.check_highlight(txt, (exp,))
 
