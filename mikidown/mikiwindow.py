@@ -205,7 +205,7 @@ class MikiWindow(QtWidgets.QMainWindow):
         self.notePath = settings.notePath
         self.lockPath = os.path.join(settings.notebookPath, '.mikidown_lock')
         print("Path: ", self.lockPath)
-        print("existst: ", os.path.exists(self.lockPath))
+        print("exists: ", os.path.exists(self.lockPath))
         if not os.path.exists(self.lockPath):
             self.lockPathFH = os.open(
                 self.lockPath,

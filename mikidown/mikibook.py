@@ -643,8 +643,6 @@ class Mikibook():
             searchCssTemplate = os.path.join(
                 os.path.dirname(__file__), "css" , "search-window.css").replace(os.sep,'/')
         # If //cssFile// already exists, copy() returns false!
-        print(cssTemplate)
-        print(searchCssTemplate)
         QtCore.QFile.copy(cssTemplate, cssFile)
         QtCore.QFile.copy(searchCssTemplate, searchCssFile)
 

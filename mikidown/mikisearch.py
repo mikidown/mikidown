@@ -21,8 +21,8 @@ class MikiSearch(QtWebKitWidgets.QWebView):
         self.link = None
         self.setMouseTracking(True)
         self.settings().setUserStyleSheetUrl(
-                        QtCore.QUrl('file://'+self.parent.settings.searchcssfile))
-        print(QtCore.QUrl('file://'+self.parent.settings.searchcssfile))
+            QtCore.QUrl('file://'+self.parent.settings.searchcssfile)
+        )
         self.page().linkHovered.connect(self.linkHovered)
         self.page().setLinkDelegationPolicy(QtWebKitWidgets.QWebPage.DelegateAllLinks)
         self.page().linkClicked.connect(self.linkClicked)
