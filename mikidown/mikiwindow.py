@@ -299,10 +299,10 @@ class MikiWindow(QtWidgets.QMainWindow):
             self.notesEdit.setFontPointSize(fntsize)
         h = MikiHighlighter(
             parent=self.notesEdit,
-            scale_font_sizes=header_scales_font,
+            scaleFont=header_scales_font,
             baseFontFam=fnt,
             baseFontSize=fntsize,
-            color_settings=Mikibook.highlighterColors()
+            colorCfg=Mikibook.highlighterColors()
         )
         tw = Mikibook.settings.value('tabWidth', type=int, defaultValue=4)
         qfm = QtGui.QFontMetrics(h.patterns[0][1].font())
@@ -768,8 +768,11 @@ class MikiWindow(QtWidgets.QMainWindow):
             if not fh.open(QtCore.QIODevice.ReadOnly):
                 raise IOError(fh.errorString())
         except IOError as e:
-            QtWidgets.QMessageBox.warning(self, self.tr('Read Error'),
-                                self.tr('Failed to open %s: %s') % (filename, e))
+            QtWidgets.QMessageBox.warning(
+                self,
+                self.tr('Read Error'),
+                self.tr('Failed to open %s: %s') % (filename, e)
+            )
         finally:
             if fh is not None:
                 notestream = QtCore.QTextStream(fh)
@@ -1043,7 +1046,10 @@ class MikiWindow(QtWidgets.QMainWindow):
         cursor.setPosition(start)
         cursor.movePosition(QtGui.QTextCursor.StartOfLine)
         cursor.setPosition(end, mode=QtGui.QTextCursor.KeepAnchor)
-        cursor.movePosition(QtGui.QTextCursor.EndOfLine, mode=QtGui.QTextCursor.KeepAnchor)
+        cursor.movePosition(
+            QtGui.QTextCursor.EndOfLine,
+            mode=QtGui.QTextCursor.KeepAnchor
+        )
         text = cursor.selectedText()
         lines = text.split('\u2029')      # '\u2029' is the line break
         sortedLines = sorted(lines)
@@ -1111,24 +1117,39 @@ class MikiWindow(QtWidgets.QMainWindow):
 
     def whoosh_index(self):
         it = QtWidgets.QTreeWidgetItemIterator(
-            self.notesTree, QtWidgets.QTreeWidgetItemIterator.All)
+            self.notesTree,
+            QtWidgets.QTreeWidgetItemIterator.All
+        )
         print("Starting complete indexing.")
         #writer = self.ix.writer()
         writer = AsyncWriter(self.ix)
         while it.value():
             treeItem = it.value()
             name = self.notesTree.itemToPage(treeItem)
-            path = os.path.join(self.notesTree.pageToFile(name)).replace(os.sep, '/')
+            path = os.path.join(
+                self.notesTree.pageToFile(name)
+            ).replace(os.sep, '/')
+
             print(path)
-            fileobj = open(path, 'r', encoding='utf-8')
-            content = fileobj.read()
-            fileobj.close()
-            if METADATA_CHECKER.match(content) and 'meta' in self.settings.extensions:
-                no_metadata_content = METADATA_CHECKER.sub("", content, count=1).lstrip()
+            with open(path, 'r', encoding='utf-8') as fileobj:
+                content = fileobj.read()
+
+            meta_check = (
+                METADATA_CHECKER.match(content)
+                and 'meta' in self.settings.extensions
+            )
+
+            if meta_check:
+                no_metadata_content = METADATA_CHECKER.sub(
+                    "", content, count=1
+                ).lstrip()
                 self.settings.md.reset().convert(content)
                 writer.update_document(
-                    path=name, title=parseTitle(content, name), content=no_metadata_content,
-                    tags=','.join(self.settings.md.Meta.get('tags', [])).strip())
+                    path=name,
+                    title=parseTitle(content, name),
+                    content=no_metadata_content,
+                    tags=','.join(self.settings.md.Meta.get('tags', [])).strip()
+                )
             else:
                 writer.add_document(
                     path=name,

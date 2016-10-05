@@ -31,10 +31,10 @@ class MikiHighlighter(QtGui.QSyntaxHighlighter):
 
     WORDS = r'(?iu)[\w\']+'
 
-    def __init__(self, parent=None, scale_font_sizes=True, baseFontFam=None, baseFontSize=12, color_settings=None):
+    def __init__(self, parent=None, scaleFont=True, baseFontFam=None, baseFontSize=12, colorCfg=None):
         super(MikiHighlighter, self).__init__(parent)
-        if color_settings is None:
-            color_settings = DEFAULT_COLORS
+        if colorCfg is None:
+            colorCfg = DEFAULT_COLORS
         NUM = 16
         self.patterns = []
         regexp = [0] * NUM
@@ -45,50 +45,53 @@ class MikiHighlighter(QtGui.QSyntaxHighlighter):
         # less naive html regex
         regexp[0] = r'</?\w+((\s+\w+(\s*=\s*(?:".*?"|\'.*?\'|[^\'">\s]+))?)+\s*|\s*)/?>'
         font[0] = QtGui.QFont(baseFontFam, baseFontSize, -1)
-        color[0] = QtGui.QColor(color_settings[0])
+        color[0] = QtGui.QColor(colorCfg[0])
 
         # 1: h1 - #
         regexp[1] = '^#[^#]+'
-        color[1] = QtGui.QColor(color_settings[1])
-        if scale_font_sizes:
-            font[1] = QtGui.QFont(baseFontFam, 2*baseFontSize, QtGui.QFont.Bold)
-        else:
-            font[1] = QtGui.QFont(baseFontFam, baseFontSize, QtGui.QFont.Bold)
+        color[1] = QtGui.QColor(colorCfg[1])
+        font[1] = QtGui.QFont(
+            baseFontFam,
+            (2 * baseFontSize) if scaleFont else baseFontSize,
+            QtGui.QFont.Bold
+        )
 
         # 2: h2 - ##
         regexp[2] = '^##[^#]+'
-        color[2] = QtGui.QColor(color_settings[2])
-        if scale_font_sizes:
-            font[2] = QtGui.QFont(baseFontFam, 5.0/3*baseFontSize, QtGui.QFont.Bold)
-        else:
-            font[2] = QtGui.QFont(baseFontFam, baseFontSize, QtGui.QFont.Bold)
+        color[2] = QtGui.QColor(colorCfg[2])
+        font[2] = QtGui.QFont(
+            baseFontFam,
+            (5.0 / 3 * baseFontSize) if scaleFont else baseFontSize,
+            QtGui.QFont.Bold
+        )
 
         # 3: h3 - ###
         regexp[3] = '^###[^#]+'
-        color[3] = QtGui.QColor(color_settings[3])
-        if scale_font_sizes:
-            font[3] = QtGui.QFont(baseFontFam, 4.0/3*baseFontSize, QtGui.QFont.Bold)
-        else:
-            font[3] = QtGui.QFont(baseFontFam, baseFontSize, QtGui.QFont.Bold)
+        color[3] = QtGui.QColor(colorCfg[3])
+        font[3] = QtGui.QFont(
+            baseFontFam,
+            (4.0 / 3 * baseFontSize) if scaleFont else baseFontSize,
+            QtGui.QFont.Bold
+        )
 
         # 4: h4 and more - ####
         regexp[4] = '^####.+'
-        color[4] = QtGui.QColor(color_settings[4])
+        color[4] = QtGui.QColor(colorCfg[4])
         font[4] = QtGui.QFont(baseFontFam, baseFontSize, QtGui.QFont.Bold)
 
         # 5: html symbols - &gt;
         regexp[5] = '&[^; ].+;'
-        color[5] = QtGui.QColor(color_settings[5])
+        color[5] = QtGui.QColor(colorCfg[5])
         font[5] = QtGui.QFont(baseFontFam, baseFontSize, -1)
 
         # 6: html comments - <!-- -->
         regexp[6] = '<!--.+-->'
-        color[6] = QtGui.QColor(color_settings[6])
+        color[6] = QtGui.QColor(colorCfg[6])
         font[6] = QtGui.QFont(baseFontFam, baseFontSize, -1)
 
         # 7: delete - ~~delete~~
         regexp[7] = DEL_RE
-        color[7] = QtGui.QColor(color_settings[7])
+        color[7] = QtGui.QColor(colorCfg[7])
         font[7] = QtGui.QFont(baseFontFam, baseFontSize, -1)
 
         # 8: insert - __insert__
@@ -98,12 +101,12 @@ class MikiHighlighter(QtGui.QSyntaxHighlighter):
 
         # 9: strong - **strong**
         regexp[9] = STRONG_RE
-        color[9] = QtGui.QColor(color_settings[9])
+        color[9] = QtGui.QColor(colorCfg[9])
         font[9] = QtGui.QFont(baseFontFam, baseFontSize, QtGui.QFont.Bold)
 
         # 10: emphasis - //emphasis//
         regexp[10] = EMPH_RE
-        color[10] = QtGui.QColor(color_settings[10])
+        color[10] = QtGui.QColor(colorCfg[10])
         font[10] = QtGui.QFont(baseFontFam, baseFontSize, -1, True)
 
         # 11: links - (links) after [] or links after []:
@@ -116,22 +119,22 @@ class MikiHighlighter(QtGui.QSyntaxHighlighter):
         #.setUnderlineColor("#204A87")
         # 12: link/image references - [] or ![]
         regexp[12] = r'!?\[[^\[\]]*\]'
-        color[12] = QtGui.QColor(color_settings[12])
+        color[12] = QtGui.QColor(colorCfg[12])
         font[12] = QtGui.QFont(baseFontFam, baseFontSize, -1)
 
         # 13: blockquotes and lists -  > or - or * or 0.
         regexp[13] = r'(^>+)|(^(?:    |\t)*[0-9]+\. )|(^(?:    |\t)*- )|(^(?:    |\t)*\* )'
-        color[13] = QtGui.QColor(color_settings[13])
+        color[13] = QtGui.QColor(colorCfg[13])
         font[13] = QtGui.QFont(baseFontFam, baseFontSize, -1)
 
         # 14: fence - ``` or ~~~
         regexp[14] = '^(?:~{3,}|`{3,}).*$'
-        color[14] = QtGui.QColor(color_settings[14])
+        color[14] = QtGui.QColor(colorCfg[14])
         font[14] = QtGui.QFont(baseFontFam, baseFontSize, QtGui.QFont.Bold)
 
         # 15: math - $$
         regexp[15] = r'^(?:\${2}).*$'
-        color[15] = QtGui.QColor(color_settings[15])
+        color[15] = QtGui.QColor(colorCfg[15])
         font[15] = QtGui.QFont(baseFontFam, baseFontSize, QtGui.QFont.Bold)
 
         for i in range(NUM):

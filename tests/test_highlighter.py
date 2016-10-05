@@ -33,7 +33,7 @@ class HighlighterTest(unittest.TestCase):
         self.editor = QTextEdit()
         self.highlighter = MikiHighlighter(
             parent=self.editor,
-            color_settings=TESTING_COLORS,
+            colorCfg=TESTING_COLORS,
         )
 
     def test_html_tag(self):

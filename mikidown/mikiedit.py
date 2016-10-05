@@ -24,7 +24,7 @@ from .mikibook import Mikibook
 
 class SimpleMikiEdit(QtWidgets.QTextEdit):
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__(parent=parent)
         self.parent = parent
         self.settings = parent.settings
         self.setFontPointSize(12)
@@ -45,7 +45,9 @@ class SimpleMikiEdit(QtWidgets.QTextEdit):
     def insertFromRawHtml(self):
         qclippy = QtWidgets.QApplication.clipboard()
         if qclippy.mimeData().hasHtml():
-            self.insertFromMimeData(self.mimeFromText(qclippy.mimeData().html()))
+            self.insertFromMimeData(
+                self.mimeFromText(qclippy.mimeData().html())
+            )
         else:
             self.insertFromMimeData(qclippy.mimeData())
 
@@ -60,10 +62,23 @@ class SimpleMikiEdit(QtWidgets.QTextEdit):
             type=bool,
             defaultValue=True
         )
+        ctrl_shift_v_evt = (
+            moddies
+            & (
+                Qt.ControlModifier
+                | Qt.ShiftModifier
+            )
+            and event.key() == Qt.Key_V
+        )
+
         if event.key() == Qt.Key_Tab and expandTab:
-            tabWidth = Mikibook.settings.value('tabWidth', type=int, defaultValue=4)
+            tabWidth = Mikibook.settings.value(
+                'tabWidth',
+                type=int,
+                defaultValue=4
+            )
             self.insertPlainText(' ' * tabWidth) # use the tabWidth for tabstop!
-        elif moddies & Qt.ControlModifier and moddies & Qt.ShiftModifier and event.key() == Qt.Key_V:
+        elif ctrl_shift_v_evt:
             self.insertFromRawHtml()
         else:
             QtWidgets.QTextEdit.keyPressEvent(self, event)
@@ -153,17 +168,31 @@ class MikiEdit(SimpleMikiEdit):
         content = self.toPlainText()
         try:
             #writer = self.ix.writer()
+            # redundant code should be refactored outside of mikiedit later
             writer = AsyncWriter(self.ix)
-            if METADATA_CHECKER.match(content) and 'meta' in self.settings.extensions:
-                no_metadata_content = METADATA_CHECKER.sub("", content, count=1).lstrip()
+            meta_check = (
+                METADATA_CHECKER.match(content)
+                and 'meta' in self.settings.extensions
+            )
+            if meta_check:
+                no_metadata_content = METADATA_CHECKER.sub(
+                    "", content, count=1
+                ).lstrip()
                 self.settings.md.reset().convert(content)
                 writer.update_document(
-                    path=page, title=parseTitle(content, page), content=no_metadata_content,
-                    tags=','.join(self.settings.md.Meta.get('tags', [])).strip())
+                    path=page,
+                    title=parseTitle(content, page),
+                    content=no_metadata_content,
+                    tags=','.join(self.settings.md.Meta.get('tags', [])).strip()
+                )
                 writer.commit()
             else:
                 writer.update_document(
-                    path=page, title=parseTitle(content, page), content=content, tags='')
+                    path=page,
+                    title=parseTitle(content, page),
+                    content=content,
+                    tags=''
+                )
                 writer.commit()
         except:
             print("Whoosh commit failed.")
@@ -199,36 +228,50 @@ class MikiEdit(SimpleMikiEdit):
                 url = qurl.toString()
                 filename, extension = os.path.splitext(url)
                 filename = os.path.basename(filename)
-                newFilePath = os.path.join(attDir, filename + extension).replace(os.sep, '/')
-                relativeFilePath = newFilePath.replace(self.settings.notebookPath, "..")
-                quotedRFPath = urlparse.quote(relativeFilePath)
-                attachments = self.settings.attachmentImage + self.settings.attachmentDocument
+                newFilePath = os.path.join(
+                    attDir,
+                    ''.join((
+                        filename,
+                        extension
+                    ))
+                ).replace(os.sep, '/')
 
+                relativeFilePath = newFilePath.replace(
+                    self.settings.notebookPath, ".."
+                )
+                quotedRFPath = urlparse.quote(relativeFilePath)
+                attachments = ''.join((
+                    self.settings.attachmentImage,
+                    self.settings.attachmentDocument
+                ))
+
+                ext_lower = extension.lower()
                 if QtCore.QUrl(qurl).isLocalFile():
-                    if extension.lower() in attachments:
+                    if ext_lower in attachments:
                         nurl = url.replace("file://", "")
                         QtCore.QFile.copy(nurl, newFilePath)
                         self.parent.updateAttachmentView()
 
-                        if extension.lower() in self.settings.attachmentImage:
+                        if ext_lower in self.settings.attachmentImage:
                             text = "![%s](%s)" % (filename, quotedRFPath)
-                        elif extension.lower() in self.settings.attachmentDocument:
+                        elif ext_lower in self.settings.attachmentDocument:
                             text = "[%s%s](%s)\n" % (filename, extension, quotedRFPath)
                     else:
                         text = "[%s%s](%s)\n" % (filename, extension, url)
                 else:
-                    if extension.lower() in attachments:
+                    if ext_lower in attachments:
                         self.downloadAs = newFilePath
                         self.networkManager.get(QtNetwork.QNetworkRequest(qurl))
 
-                        if extension.lower() in self.settings.attachmentImage:
+                        if ext_lower in self.settings.attachmentImage:
                             text = "![%s](%s)" % (filename, quotedRFPath)
-                        elif extension.lower() in self.settings.attachmentDocument:
+                        elif ext_lower in self.settings.attachmentDocument:
                             text = "[%s%s](%s)\n" % (filename, extension, quotedRFPath)
                     else:
                         text = "[%s%s](%s)\n" % (filename, extension, url)
 
                 super(MikiEdit, self).insertFromMimeData(self.mimeFromText(text))
+
         elif source.hasImage():
             img = source.imageData()
             attDir = self.parent.notesTree.itemToAttachmentDir(item)
@@ -239,7 +282,9 @@ class MikiEdit(SimpleMikiEdit):
                     fileName += '.jpg'
                 filePath = os.path.join(attDir, fileName).replace(os.sep, '/')
                 img.save(filePath)
-                relativeFilePath = filePath.replace(self.settings.notebookPath, "..")
+                relativeFilePath = filePath.replace(
+                    self.settings.notebookPath, ".."
+                )
                 text = "![%s](%s)" % (fileName, quotedRFPath)
                 super(MikiEdit, self).insertFromMimeData(self.mimeFromText(text))
         else:
@@ -250,7 +295,13 @@ class MikiEdit(SimpleMikiEdit):
         attDir = self.parent.notesTree.itemToAttachmentDir(item)
         filename, extension = os.path.splitext(filePath)
         filename = os.path.basename(filename)
-        newFilePath = os.path.join(attDir, filename + extension).replace(os.sep, '/')
+        newFilePath = os.path.join(
+            attDir,
+            ''.join((
+                filename,
+                extension
+            ))
+        ).replace(os.sep, '/')
         relativeFilePath = newFilePath.replace(self.settings.notebookPath, "..")
         quotedRFPath = urlparse.quote(relativeFilePath)
         if not os.path.exists(attDir):
@@ -287,8 +338,11 @@ class MikiEdit(SimpleMikiEdit):
             if not fh.open(QtCore.QIODevice.WriteOnly):
                 raise IOError(fh.errorString())
         except IOError as e:
-            QtWidgets.QMessageBox.warning(self, self.tr("Save Error"),
-                                self.tr("Failed to save %s: %s") % (pageName, e))
+            QtWidgets.QMessageBox.warning(
+                self,
+                self.tr("Save Error"),
+                self.tr("Failed to save %s: %s") % (pageName, e)
+            )
             raise
         finally:
             if fh is not None:
@@ -321,8 +375,12 @@ class MikiEdit(SimpleMikiEdit):
             To be merged with saveNoteAs
         """
         if not htmlFile:
-            (htmlFile, htmlType) = QtWidgets.QFileDialog.getSaveFileNameAndFilter(
-                self, self.tr("Export to HTML"), "", "Complete;;HTML Only")
+            htmlFile, htmlType = QtWidgets.QFileDialog.getSaveFileNameAndFilter(
+                self,
+                self.tr("Export to HTML"),
+                "",
+                "Complete;;HTML Only"
+            )
         if htmlFile == '':
             return
         if not QtCore.QFileInfo(htmlFile).suffix():

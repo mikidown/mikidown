@@ -179,7 +179,8 @@ def parseHeaders(source, strip_fenced_block=False, strip_ascii_math=False):
 
     hdrs = []
     headers = []
-    used_ids = set()           # In case there are headers with the same name.
+    # In case there are headers with the same name.
+    used_ids = set() 
 
     # copied from the asciimathml so we don't have to have a hard dependency to strip
     ASCIIMATHML_RE = re.compile(r'^(.*)\$\$([^\$]*)\$\$(.*)$', re.M)

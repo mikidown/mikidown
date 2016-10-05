@@ -28,7 +28,9 @@ from .utils import confirmAction
 
 def main():
 
-    parser = argparse.ArgumentParser(description='A note taking application, featuring markdown syntax')
+    parser = argparse.ArgumentParser(
+        description='A note taking application, featuring markdown syntax'
+    )
     subparsers = parser.add_subparsers(dest='command')
     parser_generate = subparsers.add_parser('generate',
         help='generate a static html site from notebook')
@@ -48,9 +50,15 @@ def main():
         app = QtWidgets.QApplication(sys.argv)
         translator = QtCore.QTranslator()
         tpath = "locale/mikidown_{}.qm".format(QtCore.QLocale.system().name())
-        full_tpath = os.path.join("/usr/share/mikidown", tpath).replace(os.sep, "/")
+
+        full_tpath = os.path.join(
+            "/usr/share/mikidown", tpath
+        ).replace(os.sep, "/")
+
         if not os.path.exists(full_tpath):
-            full_tpath = os.path.join(os.path.dirname(os.path.dirname(__file__)), tpath).replace(os.sep,'/')
+            full_tpath = os.path.join(
+                os.path.dirname(os.path.dirname(__file__)), tpath
+            ).replace(os.sep,'/')
         translator.load(full_tpath)
         app.installTranslator(translator)
         sandbox = Sandbox()
@@ -70,9 +78,13 @@ def main():
     translator = QtCore.QTranslator()
     tpath = "locale/mikidown_{}.qm".format(QtCore.QLocale.system().name())
     print(tpath)
-    full_tpath = os.path.join("/usr/share/mikidown", tpath).replace(os.sep, "/")
+    full_tpath = os.path.join(
+        "/usr/share/mikidown", tpath
+    ).replace(os.sep, "/")
     if not os.path.exists(full_tpath):
-        full_tpath = os.path.join(os.path.dirname(os.path.dirname(__file__)), tpath).replace(os.sep,'/')
+        full_tpath = os.path.join(
+            os.path.dirname(os.path.dirname(__file__)),tpath
+        ).replace(os.sep,'/')
     translator.load(full_tpath)
     app.installTranslator(translator)
     print(sys.argv)
@@ -102,7 +114,10 @@ def main():
             exit_code = app.exec_()
         else:
             print("Applying single instance per user lock.")
-            lock_fh = os.open(Mikibook.lockpath, os.O_CREAT | os.O_EXCL | os.O_RDWR)
+            lock_fh = os.open(
+                Mikibook.lockpath,
+                os.O_CREAT | os.O_EXCL | os.O_RDWR
+            )
         #"""
         
         settings = Setting(notebooks)

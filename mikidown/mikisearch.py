@@ -24,7 +24,9 @@ class MikiSearch(QtWebKitWidgets.QWebView):
             QtCore.QUrl('file://'+self.parent.settings.searchcssfile)
         )
         self.page().linkHovered.connect(self.linkHovered)
-        self.page().setLinkDelegationPolicy(QtWebKitWidgets.QWebPage.DelegateAllLinks)
+        self.page().setLinkDelegationPolicy(
+            QtWebKitWidgets.QWebPage.DelegateAllLinks
+        )
         self.page().linkClicked.connect(self.linkClicked)
 
     def linkClicked(self, qurl):

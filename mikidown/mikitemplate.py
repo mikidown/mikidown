@@ -20,7 +20,12 @@ from .utils import TitleType, NOTE_EXTS, doesFileExist, LineEditDialog, confirmA
 
 def makeDefaultBody(title, dt_in_body_txt):
     dtnow = datetime.datetime.now()
-    filled_title = makeTemplateTitle(TitleType.FSTRING, "{}", dtnow=dtnow, userinput=title)
+    filled_title = makeTemplateTitle(
+        TitleType.FSTRING,
+        "{}",
+        dtnow=dtnow,
+        userinput=title
+    )
     return makeTemplateBody(filled_title, dt_in_body_txt=dt_in_body_txt)
 
 def makeTemplateTitle(title_type, title, dtnow=None, userinput=""):
@@ -95,19 +100,28 @@ class EditTitleTemplateDialog(QtWidgets.QDialog):
         self.buttonBox.rejected.connect(self.reject)
 
     def updateUi(self, newstr):
+        ok_button = self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok)
         if newstr:
-            self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(True)
+            ok_button.setEnabled(True)
         else:
-            self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
+            ok_button.setEnabled(False)
 
     def accept(self):
         acceptable = False
         tplContent = self.titleTemplateContent.text()
         try:
             if self.usesDate.isChecked():
-                makeTemplateTitle(TitleType.DATETIME, tplContent, userinput="TestString")
+                makeTemplateTitle(
+                    TitleType.DATETIME,
+                    tplContent,
+                    userinput="TestString"
+                )
             else:
-                makeTemplateTitle(TitleType.FSTRING, tplContent, userinput="TestString")
+                makeTemplateTitle(
+                    TitleType.FSTRING,
+                    tplContent,
+                    userinput="TestString"
+                )
             acceptable = True
         except Exception as e:
             acceptable = False
@@ -149,8 +163,16 @@ class EditBodyTemplateDialog(QtWidgets.QDialog):
 
         self.templateEdit = SimpleMikiEdit(self)
         fnt = Mikibook.settings.value('editorFont', defaultValue=None)
-        fntsize = Mikibook.settings.value('editorFontSize', type=int, defaultValue=12)
-        header_scales_font = Mikibook.settings.value('headerScaleFont', type=bool, defaultValue=True)
+        fntsize = Mikibook.settings.value(
+            'editorFontSize',
+            type=int,
+            defaultValue=12
+        )
+        header_scales_font = Mikibook.settings.value(
+            'headerScaleFont',
+            type=bool,
+            defaultValue=True
+        )
         if fnt is not None:
             self.templateEdit.setFontFamily(fnt)
             self.templateEdit.setFontPointSize(fntsize)
@@ -373,8 +395,13 @@ class ManageBodiesWidget(BaseCRUDListView):
                 if not fh.open(QtCore.QIODevice.WriteOnly):
                     raise IOError(fh.errorString())
             except IOError as e:
-                QtWidgets.QMessageBox.warning(self, self.tr("Save Error"),
-                                    self.tr("Failed to save %s: %s") % (path.basename(filePath), e))
+                QtWidgets.QMessageBox.warning(
+                    self,
+                    self.tr("Save Error"),
+                    self.tr("Failed to save %s: %s") % (
+                        path.basename(filePath), e
+                    )
+                )
                 raise
             finally:
                 if fh is not None:
@@ -400,7 +427,10 @@ class ManageBodiesWidget(BaseCRUDListView):
     def addItem(self, checked):
         dialog = LineEditDialog(self.settings.templatesPath, self)
         if dialog.exec_():
-            templateName = '{}{}'.format(dialog.editor.text(), self.settings.fileExt)
+            templateName = ''.join((
+                dialog.editor.text(),
+                self.settings.fileExt
+            ))
             outPath = path.join(self.settings.templatesPath, templateName)
             with open(outPath, 'w', encoding='utf-8') as f:
                 pass

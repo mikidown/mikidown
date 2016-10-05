@@ -26,7 +26,7 @@ from . import mikitemplate
 class MikiTree(QtWidgets.QTreeWidget):
 
     def __init__(self, parent=None):
-        super(MikiTree, self).__init__(parent)
+        super(MikiTree, self).__init__(parent=parent)
         self.parent = parent
         self.settings = parent.settings
         self.notePath = self.settings.notePath
@@ -97,7 +97,10 @@ class MikiTree(QtWidgets.QTreeWidget):
             extName.remove(defExt)
         else:
             print("Warning: detected file extension name is", defExt)
-            print("    Your config file is located in", self.notePath + "/notebook.conf")
+            print(
+                "    Your config file is located in",
+                self.notePath + "/notebook.conf"
+            )
         extName.insert(0, defExt)
         for ext in extName:
             filepath = os.path.join(self.notePath, page + ext)
@@ -136,36 +139,79 @@ class MikiTree(QtWidgets.QTreeWidget):
         item = self.itemAt(qpoint)
         menu = QtWidgets.QMenu()
         if item is None or item.parent() is None:
-            menu.addAction(self.tr("New Page..."), lambda: self.newPageCore(self, None))
+            menu.addAction(
+                self.tr("New Page..."),
+                lambda: self.newPageCore(self, None)
+            )
         else:
-            menu.addAction(self.tr("New Page..."), lambda: self.newPageCore(item.parent(), None))
+            menu.addAction(
+                self.tr("New Page..."),
+                lambda: self.newPageCore(item.parent(), None)
+            )
         
         if item is None:
-            menu.addAction(self.tr("New Subpage..."), lambda: self.newPageCore(self, None))
+            menu.addAction(
+                self.tr("New Subpage..."),
+                lambda: self.newPageCore(self, None)
+            )
         else:
-            menu.addAction(self.tr("New Subpage..."), lambda: self.newPageCore(item, None))
+            menu.addAction(
+                self.tr("New Subpage..."),
+                lambda: self.newPageCore(item, None)
+            )
 
         if item is None or item.parent() is None:
-            menu.addAction(self.tr("New page from template..."), lambda: self.newPageCore(self, None, useTemplate=True))
+            menu.addAction(
+                self.tr("New page from template..."),
+                lambda: self.newPageCore(self, None, useTemplate=True)
+            )
         else:
-            menu.addAction(self.tr("New page from template..."), lambda: self.newPageCore(item.parent(), None, useTemplate=True))
+            menu.addAction(
+                self.tr("New page from template..."),
+                lambda: self.newPageCore(item.parent(), None, useTemplate=True)
+            )
 
         if item is None:
-            menu.addAction(self.tr("New subpage from template..."), lambda: self.newPageCore(self, None, useTemplate=True))
+            menu.addAction(
+                self.tr("New subpage from template..."),
+                lambda: self.newPageCore(self, None, useTemplate=True)
+            )
         else:
-            menu.addAction(self.tr("New subpage from template..."), lambda: self.newPageCore(item, None, useTemplate=True))
-        menu.addAction(self.tr("View separately"), lambda: self.nvwCallback(item))
-        menu.addAction(self.tr("View separately (plain text)"), lambda: self.nvwtCallback(item))
+            menu.addAction(
+                self.tr("New subpage from template..."),
+                lambda: self.newPageCore(item, None, useTemplate=True)
+            )
+
+        menu.addAction(
+            self.tr("View separately"),
+            lambda: self.nvwCallback(item)
+        )
+        menu.addAction(
+            self.tr("View separately (plain text)"),
+            lambda: self.nvwtCallback(item)
+        )
+
         menu.addSeparator()
-        menu.addAction(self.tr("Collapse This Note Tree"),
-                       lambda: self.recurseCollapse(item))
-        menu.addAction(self.tr("Uncollapse This Note Tree"),
-                       lambda: self.recurseExpand(item))
+
+        menu.addAction(
+            self.tr("Collapse This Note Tree"),
+            lambda: self.recurseCollapse(item)
+        )
+        menu.addAction(
+            self.tr("Uncollapse This Note Tree"),
+            lambda: self.recurseExpand(item)
+        )
         menu.addAction(self.tr("Collapse All"), self.collapseAll)
         menu.addAction(self.tr("Uncollapse All"), self.expandAll)
         menu.addSeparator()
-        menu.addAction(self.tr('Rename Page...'), lambda: self.renamePage(item))
-        menu.addAction(self.tr("Delete Page"), lambda: self.delPage(item))
+        menu.addAction(
+            self.tr('Rename Page...'),
+            lambda: self.renamePage(item)
+        )
+        menu.addAction(
+            self.tr("Delete Page"),
+            lambda: self.delPage(item)
+        )
         menu.exec_(self.mapToGlobal(qpoint))
 
     def newPage(self, name=None):
@@ -183,14 +229,23 @@ class MikiTree(QtWidgets.QTreeWidget):
         self.newPageCore(item, name)
 
     def newPageCore(self, item, newPageName, useTemplate=False, templateTitle=None, templateBody=None):
-        pagePath = os.path.join(self.notePath, self.itemToPage(item)).replace(os.sep, '/')
+        pagePath = os.path.join(
+            self.notePath, self.itemToPage(item)
+        ).replace(os.sep, '/')
+
         if not newPageName:
             if useTemplate:
-                dialog = mikitemplate.PickTemplateDialog(pagePath, self.settings, parent=self)
+                dialog = mikitemplate.PickTemplateDialog(
+                    pagePath,
+                    self.settings,
+                    parent=self
+                )
+
                 if dialog.exec_():
                     curTitleIdx = dialog.titleTemplates.currentIndex()
                     curBodyIdx = dialog.bodyTemplates.currentIndex()
                     dtnow = datetime.datetime.now()
+
                     if curTitleIdx > -1:
                         titleItem = dialog.titleTemplates.model().item(curTitleIdx)
                         titleItemContent = titleItem.data(TTPL_COL_DATA)
@@ -198,6 +253,7 @@ class MikiTree(QtWidgets.QTreeWidget):
                         titleParameter = dialog.titleTemplateParameter.text()
                         newPageName = mikitemplate.makeTemplateTitle(titleItemType, 
                             titleItemContent, dtnow=dtnow, userinput=titleParameter)
+
                     if curBodyIdx > -1:
                         bodyItemIdx = dialog.bodyTemplates.rootModelIndex().child(curBodyIdx, 0)
                         bodyFPath = dialog.bodyTemplates.model().filePath(bodyItemIdx)
@@ -227,13 +283,26 @@ class MikiTree(QtWidgets.QTreeWidget):
                 #create the needed hierarchy in reverse order
                 for i, needed_parent in enumerate(needed_parents[::-1]):
                     paritem = self.pageToItem(needed_parent)
+                    needed_parent_exists = QtCore.QDir(
+                        os.path.join(
+                            self.notePath,
+                            needed_parent
+                        ).replace(os.sep, '/')
+                    ).exists()
+
                     if paritem is None:
                         if i == 0:
-                            self.newPageCore(item, os.path.basename(needed_parent))
+                            self.newPageCore(
+                                item,
+                                os.path.basename(needed_parent)
+                            )
                         else:
-                            self.newPageCore(prevparitem, os.path.basename(needed_parent))
+                            self.newPageCore(
+                                prevparitem,
+                                os.path.basename(needed_parent)
+                            )
                         QtCore.QDir(pagePath).mkdir(needed_parent)
-                    elif not QtCore.QDir(os.path.join(self.notePath, needed_parent).replace(os.sep, '/')).exists():
+                    elif not needed_parent_exists:
                         QtCore.QDir(pagePath).mkdir(needed_parent)
                     if paritem is not None:
                         prevparitem = paritem
@@ -248,16 +317,27 @@ class MikiTree(QtWidgets.QTreeWidget):
             if useTemplate and bodyFPath is not None:
                 with open(bodyFPath, 'r', encoding='utf-8') as templatef:
                     savestream << mikitemplate.makeTemplateBody(
-                        os.path.basename(newPageName), dtnow=dtnow, 
+                        os.path.basename(newPageName), dtnow=dtnow,
                         dt_in_body_txt=self.tr("Created {}"),
-                        body=templatef.read())
+                        body=templatef.read()
+                    )
             else:
-                savestream << mikitemplate.makeDefaultBody(os.path.basename(newPageName), self.tr("Created {}"))
+                savestream << mikitemplate.makeDefaultBody(
+                    os.path.basename(newPageName),
+                    self.tr("Created {}")
+                )
             fh.close()
             if prevparitem is not None:
-                QtWidgets.QTreeWidgetItem(prevparitem, [os.path.basename(newPageName)])
+                QtWidgets.QTreeWidgetItem(
+                    prevparitem,
+                    [os.path.basename(newPageName)]
+                )
             else:
-                QtWidgets.QTreeWidgetItem(item, [os.path.basename(newPageName)])
+                QtWidgets.QTreeWidgetItem(
+                    item,
+                    [os.path.basename(newPageName)]
+                )
+
             newItem = self.pageToItem(pagePath + newPageName)
             self.sortItems(0, Qt.AscendingOrder)
             self.setCurrentItem(newItem)
@@ -282,7 +362,11 @@ class MikiTree(QtWidgets.QTreeWidget):
 
     def dropEvent(self, event):
         """ A note is related to four parts:
-            note file, note folder containing child note, parent note folder, attachment folder.
+            note file,
+            note folder containing child note,
+            parent note folder,
+            and attachment folder.
+
         When drag/drop, should take care of:
         1. rename note file ("rename" is just another way of saying "move")
         2. rename note folder
@@ -303,8 +387,11 @@ class MikiTree(QtWidgets.QTreeWidget):
         newDir = os.path.join(targetPage, sourceItem.text(0))
 
         if QtCore.QFile.exists(newFile):
-            QtWidgets.QMessageBox.warning(self, self.tr("Error"),
-                                self.tr("File already exists: %s") % newFile)
+            QtWidgets.QMessageBox.warning(
+                self,
+                self.tr("Error"),
+                self.tr("File already exists: %s") % newFile
+            )
             return
 
         # rename file/folder, remove parent note folder if necessary

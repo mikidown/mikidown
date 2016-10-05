@@ -20,7 +20,9 @@ class MikiView(QtWebKitWidgets.QWebView):
         self.settings().setUserStyleSheetUrl(
             QtCore.QUrl('file://'+self.parent.settings.cssfile)
         )
-        self.page().setLinkDelegationPolicy(QtWebKitWidgets.QWebPage.DelegateAllLinks)
+        self.page().setLinkDelegationPolicy(
+            QtWebKitWidgets.QWebPage.DelegateAllLinks
+        )
 
         self.page().linkClicked.connect(self.linkClicked)
         self.page().linkHovered.connect(self.linkHovered)

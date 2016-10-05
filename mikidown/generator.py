@@ -23,10 +23,23 @@ class Generator():
 
     def __init__(self, notebookPath):
         self.notebookPath = notebookPath
-        self.notepath = os.path.join(notebookPath, "notes").replace(os.sep, '/')
-        self.sitepath = os.path.join(notebookPath, "_site").replace(os.sep, '/')
-        self.htmlpath = os.path.join(notebookPath, "_site/notes").replace(os.sep, '/')
-        self.configfile = os.path.join(self.notebookPath, "notebook.conf").replace(os.sep, '/')
+
+        self.notepath = os.path.join(
+            notebookPath, "notes"
+        ).replace(os.sep, '/')
+
+        self.sitepath = os.path.join(
+            notebookPath, "_site"
+        ).replace(os.sep, '/')
+
+        self.htmlpath = os.path.join(
+            notebookPath, "_site/notes"
+        ).replace(os.sep, '/')
+
+        self.configfile = os.path.join(
+            self.notebookPath, "notebook.conf"
+        ).replace(os.sep, '/')
+
         self.qsettings = QtCore.QSettings(
             self.configfile,
             QtCore.QSettings.NativeFormat
@@ -169,7 +182,10 @@ class Generator():
             self.convert(notefile, chtmlfile, path, os.path.join(parent,name))
 
             li = ET.Element('li')
-            link = ET.SubElement(li, 'a', href="/notes/{0}.html".format(filename))
+            link = ET.SubElement(
+                li, 'a',
+                href="/notes/{0}.html".format(filename)
+            )
             link.text = name
             children.append(ET.tostring(li, encoding='unicode'))
             # append subpages to page
