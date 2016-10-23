@@ -61,7 +61,7 @@ class Setting():
         )
 
         if os.path.exists(self.configfile):
-            self.extensions = readListFromSettings(self.qsettings,
+            self.markdown_extentions = readListFromSettings(self.qsettings,
                                                    "extensions")
             self.fileExt = self.qsettings.value("fileExt")
             self.attachmentImage = self.qsettings.value("attachmentImage")
@@ -89,7 +89,7 @@ class Setting():
                     'extensionsConfig'
                 )
         else:
-            self.extensions = []
+            self.markdown_extentions = []
             self.fileExt = ""
             self.attachmentImage = []
             self.attachmentDocument = []
@@ -135,8 +135,8 @@ class Setting():
 
         # Default enabled python-markdown extensions.
         # http://pythonhosted.org/Markdown/extensions/index.html
-        if not self.extensions:
-            self.extensions = [
+        if not self.markdown_extentions:
+            self.markdown_extentions = [
                    'nl2br',          # newline to break
                    'strkundr',       # bold-italics-underline-delete style
                    'codehilite',     # code syntax highlight
@@ -146,7 +146,7 @@ class Setting():
                    'footnotes',
                    'asciimathml',
                  ]
-            writeListToSettings(self.qsettings, "extensions", self.extensions)
+            writeListToSettings(self.qsettings, "extensions", self.markdown_extentions)
 
         disable_msg = (
             'If you want to permanently disable this,'
@@ -164,30 +164,30 @@ class Setting():
         )
 
         while True:
-             print(self.extensions)
+             print(self.markdown_extentions)
              try:
-                 markdown.markdown("", extensions=self.extensions)
+                 markdown.markdown("", extensions=self.markdown_extentions)
              except AttributeError as e:
                  remove_this = NOT_EXT.findall(e.args[0])[0]
-                 if remove_this in self.extensions:
+                 if remove_this in self.markdown_extentions:
                      print(invalid_ext_msg.format(remove_this))
                      print(disable_msg)
-                     self.extensions.remove(remove_this)
+                     self.markdown_extentions.remove(remove_this)
                      self.faulty_exts.append(remove_this)
              except ImportError as e:
-                 if e.name.startswith('mdx_') and e.name[4:] in self.extensions:
+                 if e.name.startswith('mdx_') and e.name[4:] in self.markdown_extentions:
                      print(missing_ext_msg.format(e.name[4:]))
                      print(disable_msg)
-                     self.extensions.remove(e.name[4:])
+                     self.markdown_extentions.remove(e.name[4:])
                      self.faulty_exts.append(e.name[4:])
-                 elif e.name in self.extensions:
+                 elif e.name in self.markdown_extentions:
                      print(missing_ext_msg.format(e.name))
                      print(disable_msg)
-                     self.extensions.remove(e.name)
+                     self.markdown_extentions.remove(e.name)
                      self.faulty_exts.append(e.name)
              else:
                  self.md = markdown.Markdown(
-                     self.extensions,
+                     self.markdown_extentions,
                      extension_configs=self.extcfg
                  )
                  break
