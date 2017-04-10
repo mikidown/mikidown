@@ -833,7 +833,7 @@ class MikiWindow(QtWidgets.QMainWindow):
 
     def saveNoteAs(self):
         self.saveCurrentNote()
-        fileName = QtWidgets.QFileDialog.getSaveFileName(
+        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(
             self,
             self.tr('Save as'),
             '',
