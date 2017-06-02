@@ -321,7 +321,6 @@ class MikiEdit(SimpleMikiEdit):
             To be merged with saveNoteAs
         """
         if not htmlFile:
-            #(htmlFile, htmlType) = QtWidgets.QFileDialog.getSaveFileName(self, self.tr('Export to HTML'), '', self.tr('Complete;;HTML Only'))[0]
             (htmlFile, htmlType) = QtWidgets.QFileDialog.getSaveFileName(self, self.tr("Export to HTML"), "", "Complete;;HTML Only")
         if htmlFile == '':
             return
