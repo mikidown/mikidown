@@ -580,7 +580,7 @@ class Mikibook():
         version = Mikibook.settings.value("version", defaultValue=None)
         if not version: #before 0.3.4, since we're migrating the notebooklist to be plaintext
             Mikibook.nbListMigration()
-            Mikibook.settings.setValue("version", defaultValue="0") #dummy value until mikiwindow properly sets this
+            Mikibook.settings.setValue("version", "0") #dummy value until mikiwindow properly sets this
         items = []
         size = Mikibook.settings.beginReadArray("notebookList")
         for i in range(size):
