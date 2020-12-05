@@ -3,6 +3,8 @@
 Master build status: [![master Build Status](https://travis-ci.org/ShadowKyogre/mikidown.svg?branch=master)](https://travis-ci.org/ShadowKyogre/mikidown)
 Develop build status: [![develop Build Status](https://travis-ci.org/ShadowKyogre/mikidown.svg?branch=develop)](https://travis-ci.org/ShadowKyogre/mikidown)
 
+Maintenance status: [![Not Maintained](https://img.shields.io/badge/Maintenance%20Level-Not%20Maintained-yellow.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d)
+
 **Mikidown** is a note taking application with markdown.
 
 > Mikidown was inspired by [Zim] and based on [ReText]. The logo is derived from [markdown-mark].
