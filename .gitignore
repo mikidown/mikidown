@@ -10,3 +10,4 @@ MANIFEST
 
 .idea/
 test_notebook/
+venv/

@@ -3,29 +3,27 @@ Search module
 
 Search results are displayed in a QWebView widget.
 """
-from PyQt5 import QtCore, QtGui, QtWidgets, QtWebKitWidgets
-"""
-from PyQt4.QtCore import QSize, QUrl
-from PyQt4.QtGui import QCursor, QToolTip
-from PyQt4.QtWebKit import QWebView, QWebPage
-"""
+from PyQt5 import QtCore, QtGui, QtWidgets, QtWebEngineWidgets
 
-class MikiSearch(QtWebKitWidgets.QWebView):
+
+class MikiSearch(QtWebEngineWidgets.QWebEngineView):
 
     def __init__(self, parent=None):
         super(MikiSearch, self).__init__(parent)
         self.parent = parent
 
-        self.settings().clearMemoryCaches()
+        # TODO self.settings().clearMemoryCaches()
         self.flag = False
         self.link = None
         self.setMouseTracking(True)
-        self.settings().setUserStyleSheetUrl(
-                        QtCore.QUrl('file://'+self.parent.settings.searchcssfile))
-        print(QtCore.QUrl('file://'+self.parent.settings.searchcssfile))
+
+        # So cant do this on webengine.. ;-( nmeeds javascript
+        # TODO webengine self.settings().setUserStyleSheetUrl(
+        #                 QtCore.QUrl('file://'+self.parent.settings.searchcssfile))
+        #print(QtCore.QUrl('file://'+self.parent.settings.searchcssfile))
         self.page().linkHovered.connect(self.linkHovered)
-        self.page().setLinkDelegationPolicy(QtWebKitWidgets.QWebPage.DelegateAllLinks)
-        self.page().linkClicked.connect(self.linkClicked)
+        # TODO webengine self.page().setLinkDelegationPolicy(QtWebEngineWidgets.QWebEnginePage.DelegateAllLinks)
+        # TODO webengine self.page().linkClicked.connect(self.linkClicked)
 
     def linkClicked(self, qurl):
         """ Overload function.

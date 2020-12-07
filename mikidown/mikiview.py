@@ -1,7 +1,7 @@
 import re
 
 from PyQt5.QtCore import Qt
-from PyQt5 import QtCore, QtGui, QtWidgets, QtWebKitWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets, QtWebEngineWidgets
 """
 from PyQt4.QtCore import QDir, QPoint, QTimer, QUrl
 from PyQt4.QtGui import QDesktopServices
@@ -9,23 +9,22 @@ from PyQt4.QtWebKit import QWebView, QWebPage
 """
 import markdown
 
-class MikiView(QtWebKitWidgets.QWebView):
+class MikiView(QtWebEngineWidgets.QWebEngineView):
 
     def __init__(self, parent=None):
         super(MikiView, self).__init__(parent)
         self.parent = parent
 
-        self.settings().clearMemoryCaches()
+       # TODO webengine  self.settings().clearMemoryCaches()
         self.notePath = parent.settings.notePath
-        self.settings().setUserStyleSheetUrl(
-            QtCore.QUrl('file://'+self.parent.settings.cssfile))
-        print(QtCore.QUrl('file://'+self.parent.settings.cssfile))
-        self.page().setLinkDelegationPolicy(QtWebKitWidgets.QWebPage.DelegateAllLinks)
+        # self.settings().setUserStyleSheetUrl(
+        #     QtCore.QUrl('file://'+self.parent.settings.cssfile))
+        # print(QtCore.QUrl('file://'+self.parent.settings.cssfile))
+        # self.page().setLinkDelegationPolicy(QtWebEngineWidgets.QWebPage.DelegateAllLinks)
 
-        self.page().linkClicked.connect(self.linkClicked)
+        #self.page().linkClicked.connect(self.linkClicked)
         self.page().linkHovered.connect(self.linkHovered)
-        self.page().mainFrame(
-        ).contentsSizeChanged.connect(self.contentsSizeChanged)
+        self.page().contentsSizeChanged.connect(self.contentsSizeChanged)
 
         self.scrollPosition = QtCore.QPoint(0, 0)
 
@@ -65,7 +64,7 @@ class MikiView(QtWebKitWidgets.QWebView):
             viewFrame = self.page().mainFrame()
             self.scrollPosition = viewFrame.scrollPosition()
 
-    def linkHovered(self, link, title, textContent):
+    def linkHovered(self, link, title=None, textContent=None):
         '''show link in status bar
             ref link shown as: /parent/child/pageName
             toc link shown as: /parent/child/pageName#anchor (ToFix)
@@ -92,14 +91,16 @@ class MikiView(QtWebKitWidgets.QWebView):
 
     def updateView(self):
         # url_notebook = 'file://' + os.path.join(self.notePath, '/')
-        viewFrame = self.page().mainFrame()
+        #viewFrame = self.page().mainFrame()
+        viewFrame = self.page()
         # Store scrollPosition before update notesView
         self.scrollPosition = viewFrame.scrollPosition()
         self.contentsSize = viewFrame.contentsSize()
         url_notebook = 'file://' + self.notePath + '/'
         self.setHtml(self.parent.notesEdit.toHtml(), QtCore.QUrl(url_notebook))
         # Restore previous scrollPosition
-        viewFrame.setScrollPosition(self.scrollPosition)
+        # viewFrame.setScrollPosition(self.scrollPosition)
+        # TODO QWebEngineView()->page()->runJavaScript(QString("window.scrollTo(%1, %2);").arg(scrollX).arg(scrollY));
 
     def updateLiveView(self):
         if self.parent.actions.get('split').isChecked():

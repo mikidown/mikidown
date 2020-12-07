@@ -5,14 +5,18 @@ import pkgutil
 
 import markdown
 from markdown.extensions import __path__ as extpath
-from markdown.extensions.headerid import slugify, unique
+#from markdown.extensions.headerid import slugify, unique
+import slugify
+
+def unique(txt, user_ids):
+    xid = "{}-{}".format(txt,len(user_ids))
+    user_ids.append(xid)
+    return xid
+
 
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore, QtGui, QtWidgets
-"""
-from PyQt4.QtCore import Qt, QFile, QRect
-from PyQt4.QtGui import (QDialog, QDialogButtonBox, QGridLayout, QIcon, QLabel, QLineEdit, QMessageBox, QPainter, QPixmap)
-"""
+
 JSCRIPT_TPL = '<script type="text/javascript" src="{}"></script>\n'
 METADATA_CHECKER = re.compile(r'((?: {0,3}[\w\-]+:.*)(?:(?:\n {4,}.+)|(?:\n {0,3}[\w\-]+:.*))*)')
 
@@ -177,7 +181,8 @@ def parseHeaders(source, strip_fenced_block=False, strip_ascii_math=False):
 
     hdrs = []
     headers = []
-    used_ids = set()           # In case there are headers with the same name.
+    #used_ids = set()           # In case there are headers with the same name.
+    used_ids = []  # In case there are headers with the same name.
 
     # copied from the asciimathml so we don't have to have a hard dependency to strip
     ASCIIMATHML_RE = re.compile(r'^(.*)\$\$([^\$]*)\$\$(.*)$', re.M)
@@ -230,7 +235,8 @@ def parseHeaders(source, strip_fenced_block=False, strip_ascii_math=False):
 
     hdrs.sort()
     for (p, l, h) in hdrs:
-        anchor = unique(slugify(h, '-'), used_ids)
+        #anchor = unique(slugify(h, '-'), used_ids)
+        anchor = unique(slugify.slugify(h, separator='-'), used_ids)
         headers.append((l, h, p, anchor))
     return headers
 
