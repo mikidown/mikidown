@@ -1,6 +1,6 @@
 """
 AutoTextDirection Extension for Python-Markdown
-========================================
+====================================================
 
 With AutoTextDirection, #Header will become
 

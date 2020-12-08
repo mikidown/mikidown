@@ -1,4 +1,8 @@
 attachment.*
-===================================
-.. automodule:: mikidown.attachment
+==========================================================
+
+.. automodule:: attachment
+    :members:
+    :undoc-members:
+    :show-inheritance:
 

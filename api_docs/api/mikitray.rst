@@ -1,4 +1,8 @@
 mikitray.*
-===================================
-.. automodule:: mikidown.mikitray
+==========================================================
+
+.. automodule:: mikitray
+    :members:
+    :undoc-members:
+    :show-inheritance:
 

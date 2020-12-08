@@ -11,3 +11,5 @@ MANIFEST
 .idea/
 test_notebook/
 venv/
+public
+.sass-cache
