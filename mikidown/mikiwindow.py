@@ -1,6 +1,5 @@
-"""
-The mainwindow module.
-"""
+
+
 import os
 import shutil
 import re
@@ -13,7 +12,6 @@ from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser, RegexPlugin
 from whoosh.writing import AsyncWriter
 
-import mikidown.mikidown_rc
 from .slashpleter import SlashPleter
 from .config import __appname__, __version__
 from .mikibook import NotebookListDialog, NotebookSettingsDialog, Mikibook, MikidownCfgDialog
