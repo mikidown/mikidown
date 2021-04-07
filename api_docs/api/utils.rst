@@ -1,4 +1,8 @@
 utils.*
-===================================
-.. automodule:: mikidown.utils
+==========================================================
+
+.. automodule:: utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
 

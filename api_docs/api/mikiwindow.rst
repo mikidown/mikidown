@@ -1,4 +1,8 @@
 mikiwindow.*
-===================================
-.. automodule:: mikidown.mikiwindow
+==========================================================
+
+.. automodule:: mikiwindow
+    :members:
+    :undoc-members:
+    :show-inheritance:
 

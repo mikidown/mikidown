@@ -7,8 +7,8 @@ Contents:
 .. toctree::
    :maxdepth: 1
 
-   api_mikidown.rst
-   api_markdown.rst
+   api/index.rst
+
     
 
 Indices and tables

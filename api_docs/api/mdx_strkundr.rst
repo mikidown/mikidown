@@ -1,4 +1,8 @@
 mdx_strkundr.*
-===================================
-.. automodule:: mikidown.mdx_strkundr
+==========================================================
+
+.. automodule:: mdx_strkundr
+    :members:
+    :undoc-members:
+    :show-inheritance:
 

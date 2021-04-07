@@ -1,4 +1,8 @@
 mikitemplate.*
-===================================
-.. automodule:: mikidown.mikitemplate
+==========================================================
+
+.. automodule:: mikitemplate
+    :members:
+    :undoc-members:
+    :show-inheritance:
 

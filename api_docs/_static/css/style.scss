@@ -1,0 +1,398 @@
+
+//@import url('https://fonts.googleapis.com/css?family=Anton');
+
+
+$font-logo: "arial";
+$font_size: 0.9em;
+$openplc_red: #9D0A0E;
+
+$class_color:  #277200;
+$method_color: #91473A;
+$function_color: purple;
+$namespace_color: #666666;
+$attribute_color: #2747A7;
+$property_color: #2E47BC;
+
+
+.main {
+    width: 100%;
+    max-width: 1200px;
+}
+
+.navbar-brand {
+    font-size: 16pt;
+    width: 250px;
+   font-family: $font-logo;
+
+}
+.navbar-brand .coil {
+    color: #dddddd;
+}
+.navbar-brand .logo_plc {
+    color: $openplc_red;
+    font-size: 17pt;
+}
+
+
+img.logo {
+    background-color: white;
+    border-radius: 4px;
+    padding: 3px;
+    margin-right: 5px;
+}
+
+.navbar-version {
+    font-size: 8pt;
+    min-width: 50px;
+}
+
+.sphinxsidebar {
+    //background-color: green;
+    padding: 0;
+    margin: 0;
+}
+
+.sphinxsidebarwrapper {
+   // background-color: blue;
+    border-right: 1px solid #dddddd;
+    font-size: $font_size;
+    position: static;
+    margin: 0;
+    padding: 0;
+
+    a {
+        color: #222222;
+    }
+
+    a:hover {
+        text-decoration: none;
+
+    }
+
+    ul {
+
+            //margin: 0;
+            padding-left: 10px;
+         li {
+           // background-color: pink;
+           // margin: 0;
+           // padding: 0;
+         }
+    }
+
+    h3 {
+       //background-color: blue;
+       padding: 0;
+       margin-left: 0;
+       a {
+           //background-color: red;
+           padding: 0;
+           margin: 0;
+           font-size: 0.9em;
+       }
+    }
+}
+
+.body {
+
+     font-size: $font_size;
+
+    h1 {
+        font-size: 2.1em;
+        color: #eeeeee;
+        background-color: #666666;
+        border-radius: 5px;
+        padding: 10px 5px;
+    }
+
+    h2 {
+        font-size: 1.8em;
+        color: #444444;
+        background-color: #eeeeee;
+        border-radius: 5px;
+    }
+
+     // the (brackets)
+    .sig-paren {
+        color: #777777;
+    }
+
+    // params list
+    .sig-param {
+        //font-size: $font_size;
+         color: #444444;
+    }
+
+    .viewcode-link {
+        font-size: 0.7em;
+    }
+
+    dl.class {
+
+        // `class`` text
+        em.property {
+            color: $class_color;
+        }
+
+        // class `path.part.`
+        code.descclassname {
+            color: $namespace_color;
+        }
+        // the `ClassName`
+        code.descname {
+            color: $class_color;
+            font-size: 1em;
+        }
+
+        // parent class
+        code.xref {
+            color: #555555;
+        }
+
+        border-top: 1px solid #cccccc;
+
+        dt {
+            //background-color: pink;
+        }
+        dd {
+            //background-color: blue;
+
+            margin-left: 50px;
+        }
+
+        .attribute code.descname {
+            color: $attribute_color;
+            //font-size: $font_size;
+        }
+
+        .method code.descname {
+            color: $method_color;
+
+        }
+        .method .property {
+            color: $property_color;
+            //background-color: $property_bg_color;
+            font-size: 0.7em;
+        }
+
+
+    }
+
+    dl.attribute {
+        code.descname {
+            color: yellow;
+        }
+        em.property {
+            color: black;
+        }
+    }
+
+    dl.function {
+        // class `path.part.`
+        code.descclassname {
+            color: $namespace_color;
+        }
+        // the `function_name()`
+        code.descname {
+            color: $function_color;
+            font-size: 1em;
+        }
+    }
+
+    // mod constants
+    dl.data {
+        code.descclassname {
+            color: $namespace_color;
+        }
+        // the `CONST`
+        code.descname {
+            color: $attribute_color;
+            font-size: 1em;
+
+        }
+    }
+
+
+    // Params
+    dl.field-list {
+        dt {
+
+            //background-color: red;
+            //flex-basis: 20%;
+            border-right: 1px dotted #cccccc;
+            border-top: 1px dotted #cccccc;
+            font-weight: normal;
+            font-size: 0.9em;
+        }
+
+        dd {
+            margin-inline-start: 20px;
+
+        }
+    }
+
+
+    // glossary
+    dl.glossary {
+
+        dt {
+            border-top: 1px dashed #dddddd;
+            border-right: 1px dashed #dddddd;
+        }
+        dd {
+            margin-left: 20px;
+            border-right: 1px dashed #dddddd;
+        }
+    }
+
+    // Notes etc
+
+    .admonition {
+        padding: 10px;
+        border-radius: 10px;
+        //margin: 0;
+    }
+
+    // Tables
+
+    table.docutils {
+    font-size: 0.9em;
+        thead tr.row-odd {
+            background-color: #444444 !important;
+            color: #dddddd;
+            text-align: left;
+        }
+
+        tbody tr th {
+            text-align: left;
+        }
+    }
+
+}
+
+//===================================================
+
+.ags-csv-rule {
+  background-color: #00CCCC;
+  color: black;
+  padding: 3px 6px 3px 6px;
+  border-radius: 5px;
+  font-size: 8pt;
+  border: 1px solid black;
+ }
+
+.ags-data-rule {
+  background-color: #FFFF00;
+  color: black;
+  padding: 3px 6px 3px 6px;
+  border-radius: 5px;
+  font-size: 8pt;
+  border: 1px solid black;
+}
+
+//===================================================
+.bg-ogt-meta {
+    background-color: #222222;
+}
+.bg-ogt-py {
+    background-color: #FFD546;
+
+    .navbar-brand {
+        color: #3775A9;
+    }
+
+    .nav-link {
+        color: #444444 !important;
+    }
+}
+
+.bg-unofficial-ags4 {
+    background-color: #338521;
+
+    .navbar-brand {
+        color: white;
+    }
+
+    .nav-link {
+        color: #eeeeee !important;
+    }
+}
+.bg-ogt-mobile {
+    background-color: #48A0DC;
+
+    .navbar-brand {
+        color: white;
+    }
+
+    .nav-link {
+        color: #eeeeee !important;
+    }
+}
+
+
+.bg-ogt-project {
+    background-color: #9E5015;
+
+    .navbar-brand {
+        color: white;
+    }
+
+    .nav-link {
+        color: #eeeeee !important;
+    }
+}
+
+.bg-ogt-go {
+    background-color: #69D7E2;
+
+    .navbar-brand {
+        color: white;
+    }
+
+    .nav-link {
+        color: #eeeeee !important;
+    }
+}
+
+
+.projects {
+    a {
+        text-decoration: none;
+        color: #333333;
+    }
+    a:hover {
+        color: black;
+    }
+    .blip {
+        background-color: #eeeeee;
+        text-align: center;
+        margin: 4px;
+        padding: 0;
+        img {
+            margin: 5px;
+            padding: 5px;
+            border-radius: 6px;
+            background-color: white;
+            height: 50px;
+        }
+
+        h2 {
+            font-size: 1.4em;
+        }
+
+        border-left: 1px solid #eeeeee;
+        border-right: 1px solid #eeeeee;
+
+    }
+    .blip:hover {
+
+        border-left: 1px solid #666666;
+        border-right: 1px solid #666666;
+        }
+
+    .xbar {
+        height: 4px;
+        //background-color: red;
+
+    }
+}

@@ -1,4 +1,8 @@
 highlighter.*
-===================================
-.. automodule:: mikidown.highlighter
+==========================================================
+
+.. automodule:: highlighter
+    :members:
+    :undoc-members:
+    :show-inheritance:
 

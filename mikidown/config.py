@@ -4,8 +4,7 @@ import re
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-#from PyQt4.QtCore import QDir, QFile, QSettings, Qt
-#from PyQt4.QtGui  import QStandardItem, QStandardItemModel, QFileSystemModel
+
 from whoosh import fields
 import markdown
 
@@ -135,7 +134,7 @@ class Setting():
                      self.extensions.remove(e.name)
                      self.faulty_exts.append(e.name)
              else:
-                 self.md = markdown.Markdown(self.extensions, extension_configs=self.extcfg)
+                 self.md = markdown.Markdown(extensions=self.extensions, extension_configs=self.extcfg)
                  break
 
         # Default file extension name

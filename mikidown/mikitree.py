@@ -10,10 +10,8 @@ import datetime
 
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore, QtGui, QtWidgets
-"""
-from PyQt4.QtCore import Qt, QDir, QFile, QIODevice, QSize, QTextStream
-from PyQt4.QtGui import (QAbstractItemView, QCursor, QMenu, QMessageBox, QTreeWidget, QTreeWidgetItem)
-"""
+
+
 from whoosh.index import open_dir
 from whoosh.qparser import QueryParser
 from whoosh.writing import AsyncWriter

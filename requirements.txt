@@ -1,0 +1,12 @@
+
+# On linux - this can confuse/corrupt an apt-get install, so is omitted
+# On windows - it is the recommnded install method
+#
+# PyQt5
+# PyQtWebEngine
+
+
+markdown
+whoosh
+
+pyenchant

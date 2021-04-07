@@ -1,4 +1,8 @@
 slashpleter.*
-===================================
-.. automodule:: mikidown.slashpleter
+==========================================================
+
+.. automodule:: slashpleter
+    :members:
+    :undoc-members:
+    :show-inheritance:
 

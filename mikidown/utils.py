@@ -2,17 +2,35 @@ from enum import Enum
 import os
 import re
 import pkgutil
-
-import markdown
-from markdown.extensions import __path__ as extpath
-from markdown.extensions.headerid import slugify, unique
+import unicodedata
 
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore, QtGui, QtWidgets
-"""
-from PyQt4.QtCore import Qt, QFile, QRect
-from PyQt4.QtGui import (QDialog, QDialogButtonBox, QGridLayout, QIcon, QLabel, QLineEdit, QMessageBox, QPainter, QPixmap)
-"""
+
+import markdown
+from markdown.extensions import __path__ as extpath
+
+def slugify(value, separator):
+    """ Slugify a string, to make it URL friendly. """
+    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
+    value = re.sub(r'[^\w\s-]', '', value.decode('ascii')).strip().lower()
+    return re.sub(r'[%s\s]+' % separator, separator, value)
+
+IDCOUNT_RE = re.compile(r'^(.*)_([0-9]+)$')
+
+def unique(id, ids):
+    """ Ensure id is unique in set of ids. Append '_1', '_2'... if not """
+    while id in ids or not id:
+        m = IDCOUNT_RE.match(id)
+        if m:
+            id = '%s_%d' % (m.group(1), int(m.group(2))+1)
+        else:
+            id = '%s_%d' % (id, 1)
+    ids.add(id)
+    return id
+
+
+
 JSCRIPT_TPL = '<script type="text/javascript" src="{}"></script>\n'
 METADATA_CHECKER = re.compile(r'((?: {0,3}[\w\-]+:.*)(?:(?:\n {4,}.+)|(?:\n {0,3}[\w\-]+:.*))*)')
 
@@ -177,7 +195,7 @@ def parseHeaders(source, strip_fenced_block=False, strip_ascii_math=False):
 
     hdrs = []
     headers = []
-    used_ids = set()           # In case there are headers with the same name.
+    used_ids = set()  # In case there are headers with the same name.
 
     # copied from the asciimathml so we don't have to have a hard dependency to strip
     ASCIIMATHML_RE = re.compile(r'^(.*)\$\$([^\$]*)\$\$(.*)$', re.M)
@@ -230,6 +248,7 @@ def parseHeaders(source, strip_fenced_block=False, strip_ascii_math=False):
 
     hdrs.sort()
     for (p, l, h) in hdrs:
+        #anchor = unique(slugify(h, '-'), used_ids)
         anchor = unique(slugify(h, '-'), used_ids)
         headers.append((l, h, p, anchor))
     return headers
