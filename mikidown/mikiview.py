@@ -1,13 +1,6 @@
 import re
 
-from PyQt5.QtCore import Qt
 from PyQt5 import QtCore, QtGui, QtWidgets, QtWebEngineWidgets
-"""
-from PyQt4.QtCore import QDir, QPoint, QTimer, QUrl
-from PyQt4.QtGui import QDesktopServices
-from PyQt4.QtWebKit import QWebView, QWebPage
-"""
-import markdown
 
 class MikiView(QtWebEngineWidgets.QWebEngineView):
 

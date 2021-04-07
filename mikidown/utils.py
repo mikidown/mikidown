@@ -4,19 +4,19 @@ import re
 import pkgutil
 import unicodedata
 
+from PyQt5.QtCore import Qt
+from PyQt5 import QtCore, QtGui, QtWidgets
+
 import markdown
 from markdown.extensions import __path__ as extpath
-#from markdown.extensions.headerid import slugify, unique
-#import slugify
+
 def slugify(value, separator):
     """ Slugify a string, to make it URL friendly. """
     value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
     value = re.sub(r'[^\w\s-]', '', value.decode('ascii')).strip().lower()
     return re.sub(r'[%s\s]+' % separator, separator, value)
 
-
 IDCOUNT_RE = re.compile(r'^(.*)_([0-9]+)$')
-
 
 def unique(id, ids):
     """ Ensure id is unique in set of ids. Append '_1', '_2'... if not """
@@ -30,9 +30,6 @@ def unique(id, ids):
     return id
 
 
-
-from PyQt5.QtCore import Qt
-from PyQt5 import QtCore, QtGui, QtWidgets
 
 JSCRIPT_TPL = '<script type="text/javascript" src="{}"></script>\n'
 METADATA_CHECKER = re.compile(r'((?: {0,3}[\w\-]+:.*)(?:(?:\n {4,}.+)|(?:\n {0,3}[\w\-]+:.*))*)')
